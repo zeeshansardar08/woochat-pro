@@ -55,7 +55,17 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items) {
 
     $body = implode("\n", $items);
     $message = "👋 Hey! You left items in your cart:\n\n$body\n\nTotal: $total PKR\nClick here to complete your order: " . wc_get_cart_url();
-    
+
+    // Check if test mode is enabled
+    $test_mode = get_option('wcwp_test_mode_enabled', 'no');
+    if ($test_mode === 'yes') {
+        // Log message to debug.log
+        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+            error_log("[WooChat Pro - TEST MODE] Message to $phone: $message");
+        }
+        return; // Skip sending real message
+    }
+
     if (function_exists('wcwp_send_whatsapp_message')) {
         wcwp_send_whatsapp_message($phone, $message);
     }

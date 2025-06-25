@@ -26,6 +26,8 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_chatbot_enabled');
     register_setting('wcwp_settings_group', 'wcwp_faq_pairs');
     register_setting('wcwp_settings_group', 'wcwp_license_key');
+    register_setting('wcwp_settings_group', 'wcwp_test_mode_enabled');
+
 }
 
 function wcwp_render_settings_page() {
@@ -98,6 +100,13 @@ function wcwp_render_settings_page() {
                             }
                             ?>
                         </p>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Enable Test Mode</th>
+                    <td>
+                        <input type="checkbox" name="wcwp_test_mode_enabled" value="yes" <?php checked(get_option('wcwp_test_mode_enabled'), 'yes'); ?> />
+                        <label for="wcwp_test_mode_enabled">Log messages instead of sending via WhatsApp (for testing only)</label>
                     </td>
                 </tr>
             </table>
