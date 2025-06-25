@@ -53,9 +53,9 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items) {
         $items[] = "- $name × $qty";
     }
 
-    $body = implode(\"\\n\", $items);
-    $message = \"👋 Hey! You left items in your cart:\\n\\n$body\\n\\nTotal: $total PKR\\nClick here to complete your order: \" . wc_get_cart_url();
-
+    $body = implode("\n", $items);
+    $message = "👋 Hey! You left items in your cart:\n\n$body\n\nTotal: $total PKR\nClick here to complete your order: " . wc_get_cart_url();
+    
     if (function_exists('wcwp_send_whatsapp_message')) {
         wcwp_send_whatsapp_message($phone, $message);
     }
