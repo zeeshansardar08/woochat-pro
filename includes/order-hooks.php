@@ -24,6 +24,15 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
 }
 
 function wcwp_send_whatsapp_message($to, $message) {
+    $test_mode = get_option('wcwp_test_mode_enabled', 'no');
+
+    if ($test_mode === 'yes') {
+        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+            error_log("[WooChat Pro - TEST MODE] Order message to $to: $message");
+        }
+        return; // ✅ Skip real Twilio request
+    }
+
     $sid = get_option('wcwp_twilio_sid');
     $token = get_option('wcwp_twilio_auth_token');
     $from = get_option('wcwp_twilio_from');
@@ -57,3 +66,4 @@ function wcwp_send_whatsapp_message($to, $message) {
         error_log("WhatsApp message sent to $to_number");
     }
 }
+
