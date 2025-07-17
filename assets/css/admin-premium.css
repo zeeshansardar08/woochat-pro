@@ -1,0 +1,131 @@
+/* WooChat Pro – Premium Admin UI Styles */
+
+/* Layout and container */
+.wcwp-admin-premium-wrap {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 32px 32px 24px 32px;
+  max-width: 900px;
+  margin: 32px auto;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+/* Header */
+.wcwp-admin-premium-wrap h1 {
+  font-size: 2.2rem;
+  margin-bottom: 18px;
+  color: #1c7c54;
+  letter-spacing: -1px;
+}
+
+/* Tab navigation */
+.wcwp-tabs {
+  display: flex;
+  border-bottom: 2px solid #e5e5e5;
+  margin-bottom: 24px;
+  gap: 0.5rem;
+}
+.wcwp-tab {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1.08rem;
+  padding: 12px 24px 10px 24px;
+  cursor: pointer;
+  color: #888;
+  border-radius: 8px 8px 0 0;
+  transition: background 0.2s, color 0.2s;
+}
+.wcwp-tab.active {
+  background: #1c7c54;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Form table */
+.wcwp-admin-premium-wrap .form-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 16px;
+}
+.wcwp-admin-premium-wrap .form-table th {
+  text-align: left;
+  width: 220px;
+  color: #1c7c54;
+  font-weight: 500;
+  padding-top: 8px;
+}
+.wcwp-admin-premium-wrap .form-table td {
+  padding-top: 8px;
+}
+
+/* Inputs */
+.wcwp-admin-premium-wrap input[type="text"],
+.wcwp-admin-premium-wrap textarea,
+.wcwp-admin-premium-wrap select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1e7dd;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #f8f9fa;
+  transition: border 0.2s;
+}
+.wcwp-admin-premium-wrap input[type="text"]:focus,
+.wcwp-admin-premium-wrap textarea:focus,
+.wcwp-admin-premium-wrap select:focus {
+  border-color: #1c7c54;
+  background: #fff;
+}
+
+/* Description/help text */
+.wcwp-admin-premium-wrap .description {
+  color: #6c757d;
+  font-size: 0.97rem;
+  margin-top: 4px;
+}
+
+/* Submit button */
+.wcwp-admin-premium-wrap .button-primary {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 12px 32px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.wcwp-admin-premium-wrap .button-primary:hover {
+  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.13);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .wcwp-admin-premium-wrap {
+    padding: 12px 4px;
+  }
+  .wcwp-admin-premium-wrap .form-table th {
+    width: 100px;
+    font-size: 0.98rem;
+  }
+}
+
+/* Upgrade/Pro banner */
+.wcwp-pro-banner {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  color: #fff;
+  padding: 18px 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.wcwp-pro-banner .dashicons {
+  font-size: 2rem;
+  margin-right: 10px;
+} 
