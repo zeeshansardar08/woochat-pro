@@ -25,32 +25,63 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
 
 function wcwp_send_whatsapp_message($to, $message) {
     $test_mode = get_option('wcwp_test_mode_enabled', 'no');
+    $provider = get_option('wcwp_api_provider', 'twilio');
 
     if ($test_mode === 'yes') {
         if (defined('WP_DEBUG') && WP_DEBUG === true) {
             error_log("[WooChat Pro - TEST MODE] Order message to $to: $message");
         }
-        return; // ✅ Skip real Twilio request
+        return; // ✅ Skip real API request
     }
 
+    if ($provider === 'cloud') {
+        $token = get_option('wcwp_cloud_token');
+        $phone_id = get_option('wcwp_cloud_phone_id');
+        $from = get_option('wcwp_cloud_from');
+        $to_number = preg_replace('/[^0-9]/', '', $to);
+        if (!$token || !$phone_id || !$from) {
+            error_log('WooChat Error: Missing WhatsApp Cloud API credentials');
+            return;
+        }
+        $url = "https://graph.facebook.com/v19.0/$phone_id/messages";
+        $body = [
+            'messaging_product' => 'whatsapp',
+            'to' => $to_number,
+            'type' => 'text',
+            'text' => [ 'body' => $message ]
+        ];
+        $response = wp_remote_post($url, [
+            'method'  => 'POST',
+            'timeout' => 30,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            'body' => json_encode($body),
+        ]);
+        if (is_wp_error($response)) {
+            error_log('WhatsApp Cloud API Error: ' . $response->get_error_message());
+        } else {
+            error_log("WhatsApp Cloud message sent to $to_number");
+        }
+        return;
+    }
+
+    // Default: Twilio
     $sid = get_option('wcwp_twilio_sid');
     $token = get_option('wcwp_twilio_auth_token');
     $from = get_option('wcwp_twilio_from');
     $to_number = 'whatsapp:+' . preg_replace('/[^0-9]/', '', $to);
-
     if (!$sid || !$token || !$from) {
         error_log('WooChat Error: Missing Twilio credentials');
         return;
     }
-
     $url = "https://api.twilio.com/2010-04-01/Accounts/$sid/Messages.json";
-
     $body = [
         'From' => $from,
         'To' => $to_number,
         'Body' => $message
     ];
-
     $response = wp_remote_post($url, [
         'method'  => 'POST',
         'timeout' => 30,
@@ -59,7 +90,6 @@ function wcwp_send_whatsapp_message($to, $message) {
         ],
         'body' => $body,
     ]);
-
     if (is_wp_error($response)) {
         error_log('WhatsApp Error: ' . $response->get_error_message());
     } else {

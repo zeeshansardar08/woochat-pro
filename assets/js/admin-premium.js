@@ -111,4 +111,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const icon = toggle.querySelector('.wcwp-dark-icon');
         if (icon) icon.textContent = darkMode ? '🌙' : '☀️';
     });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const apiProvider = document.getElementById('wcwp_api_provider');
+    const cloudFields = document.querySelectorAll('.wcwp-cloud-fields');
+    function toggleCloudFields() {
+        if (!apiProvider) return;
+        const show = apiProvider.value === 'cloud';
+        cloudFields.forEach(f => f.style.display = show ? '' : 'none');
+    }
+    if (apiProvider) {
+        apiProvider.addEventListener('change', toggleCloudFields);
+        toggleCloudFields();
+    }
 }); 
