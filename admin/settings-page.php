@@ -27,7 +27,10 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_faq_pairs');
     register_setting('wcwp_settings_group', 'wcwp_license_key');
     register_setting('wcwp_settings_group', 'wcwp_test_mode_enabled');
-
+    register_setting('wcwp_settings_group', 'wcwp_api_provider');
+    register_setting('wcwp_settings_group', 'wcwp_cloud_token');
+    register_setting('wcwp_settings_group', 'wcwp_cloud_phone_id');
+    register_setting('wcwp_settings_group', 'wcwp_cloud_from');
 }
 
 function wcwp_render_settings_page() {
@@ -109,6 +112,40 @@ function wcwp_render_settings_page() {
                     <tr>
                         <th scope="row"><label for="wcwp_twilio_from">WhatsApp From Number</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">The WhatsApp-enabled number from your Twilio or Cloud API account. Format: whatsapp:+1234567890</span></span></th>
                         <td><input type="text" name="wcwp_twilio_from" id="wcwp_twilio_from" value="<?php echo esc_attr(get_option('wcwp_twilio_from')); ?>" class="regular-text" placeholder="e.g. whatsapp:+14155238886" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_api_provider">API Provider</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Choose which WhatsApp API to use: Twilio or WhatsApp Cloud (Meta).</span></span></th>
+                        <td>
+                            <select name="wcwp_api_provider" id="wcwp_api_provider">
+                                <option value="twilio" <?php selected(get_option('wcwp_api_provider', 'twilio'), 'twilio'); ?>>Twilio</option>
+                                <option value="cloud" <?php selected(get_option('wcwp_api_provider', 'twilio'), 'cloud'); ?>>WhatsApp Cloud</option>
+                            </select>
+                            <p class="description">Select your WhatsApp API provider.</p>
+                        </td>
+                    </tr>
+                    <tr class="wcwp-cloud-fields" style="display:none;">
+                        <th scope="row"><label for="wcwp_cloud_token">Cloud API Token</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Your WhatsApp Cloud API access token from Meta.</span></span></th>
+                        <td><input type="text" name="wcwp_cloud_token" id="wcwp_cloud_token" value="<?php echo esc_attr(get_option('wcwp_cloud_token')); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr class="wcwp-cloud-fields" style="display:none;">
+                        <th scope="row"><label for="wcwp_cloud_phone_id">Phone Number ID</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Your WhatsApp Cloud API phone number ID.</span></span></th>
+                        <td><input type="text" name="wcwp_cloud_phone_id" id="wcwp_cloud_phone_id" value="<?php echo esc_attr(get_option('wcwp_cloud_phone_id')); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr class="wcwp-cloud-fields" style="display:none;">
+                        <th scope="row"><label for="wcwp_cloud_from">From Number</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">The WhatsApp-enabled number from your Cloud API account. Format: +1234567890</span></span></th>
+                        <td><input type="text" name="wcwp_cloud_from" id="wcwp_cloud_from" value="<?php echo esc_attr(get_option('wcwp_cloud_from')); ?>" class="regular-text" placeholder="e.g. +14155238886" /></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div style="background: #fff3cd; color: #856404; border: 1px solid #ffe066; border-radius: 8px; padding: 18px 22px; margin-top: 18px; display: flex; align-items: center; gap: 16px;">
+                                <span style="font-size: 2rem;">⚠️</span>
+                                <div>
+                                    <label style="font-weight: 600; font-size: 1.1rem;" for="wcwp_test_mode_enabled">Test Mode</label>
+                                    <input type="checkbox" name="wcwp_test_mode_enabled" value="yes" id="wcwp_test_mode_enabled" <?php checked(get_option('wcwp_test_mode_enabled'), 'yes'); ?> style="margin-left: 10px;" />
+                                    <div style="font-size: 0.98rem; margin-top: 4px;">Enable this for safe testing. <b>Messages will be logged, not sent.</b> Don't forget to turn it off in production!</div>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -206,13 +243,6 @@ function wcwp_render_settings_page() {
                                 }
                                 ?>
                             </p>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Enable Test Mode<span class="wcwp-help-icon">?<span class="wcwp-tooltip">Enable to log messages instead of sending them (for testing only).</span></span></th>
-                        <td>
-                            <input type="checkbox" name="wcwp_test_mode_enabled" value="yes" <?php checked(get_option('wcwp_test_mode_enabled'), 'yes'); ?> />
-                            <label for="wcwp_test_mode_enabled">Log messages instead of sending via WhatsApp (for testing only)</label>
                         </td>
                     </tr>
                 </table>
