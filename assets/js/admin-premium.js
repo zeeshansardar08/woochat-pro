@@ -97,15 +97,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // Add toggle button
     let toggle = document.createElement('button');
-    toggle.className = 'button wcwp-dark-toggle';
-    toggle.style.float = 'right';
-    toggle.style.marginTop = '-48px';
-    toggle.innerHTML = '<span class="dashicons dashicons-lightbulb"></span> Dark Mode';
+    toggle.className = 'wcwp-dark-toggle';
+    toggle.setAttribute('type', 'button');
+    toggle.setAttribute('aria-label', 'Toggle dark mode');
+    toggle.innerHTML = '<span class="wcwp-dark-icon">' + (darkMode ? '🌙' : '☀️') + '</span>';
     if (wrapper) wrapper.prepend(toggle);
     applyDarkMode(darkMode);
     toggle.addEventListener('click', function () {
         darkMode = !darkMode;
         localStorage.setItem('wcwp-dark-mode', darkMode);
         applyDarkMode(darkMode);
+        // Animate icon and swap sun/moon
+        const icon = toggle.querySelector('.wcwp-dark-icon');
+        if (icon) icon.textContent = darkMode ? '🌙' : '☀️';
     });
 }); 

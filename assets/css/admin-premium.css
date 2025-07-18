@@ -599,4 +599,49 @@
   font-weight: 700;
   color: #1c7c54;
   letter-spacing: -1px;
+}
+
+/* Enhanced Dark Mode Toggle */
+.wcwp-dark-toggle {
+  position: absolute;
+  top: 18px;
+  right: 32px;
+  z-index: 10;
+  background: #23272b;
+  color: #ffe066;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  box-shadow: 0 2px 12px rgba(44,62,80,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+  outline: none;
+  animation: wcwp-glow 2s infinite alternate;
+}
+.wcwp-dark-toggle:hover {
+  background: #ffe066;
+  color: #23272b;
+  box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18);
+  transform: scale(1.08) rotate(-8deg);
+}
+@keyframes wcwp-glow {
+  from { box-shadow: 0 2px 12px #ffe06633, 0 2px 12px rgba(44,62,80,0.18); }
+  to   { box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18); }
+}
+.wcwp-dark-toggle .wcwp-dark-icon {
+  transition: transform 0.4s cubic-bezier(.4,2,.6,1), color 0.2s;
+}
+.wcwp-dark-mode .wcwp-dark-toggle {
+  background: #ffe066;
+  color: #23272b;
+  box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18);
+}
+.wcwp-dark-mode .wcwp-dark-toggle .wcwp-dark-icon {
+  transform: rotate(180deg) scale(1.2);
+  color: #23272b;
 } 
