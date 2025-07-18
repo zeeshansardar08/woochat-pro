@@ -1,0 +1,647 @@
+/* WooChat Pro – Premium Admin UI Styles */
+
+/* Layout and container */
+.wcwp-admin-premium-wrap {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  padding: 32px 32px 24px 32px;
+  max-width: 900px;
+  margin: 32px auto;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+/* Header */
+.wcwp-admin-premium-wrap h1 {
+  font-size: 2.2rem;
+  margin-bottom: 18px;
+  color: #1c7c54;
+  letter-spacing: -1px;
+}
+
+/* Tab navigation */
+.wcwp-tabs {
+  display: flex;
+  border-bottom: 2px solid #e5e5e5;
+  margin-bottom: 24px;
+  gap: 0.5rem;
+  position: relative;
+}
+.wcwp-tab {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1.08rem;
+  padding: 12px 24px 10px 24px;
+  cursor: pointer;
+  color: #888;
+  border-radius: 8px 8px 0 0;
+  transition: background 0.2s, color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.wcwp-tab.active {
+  background: #1c7c54;
+  color: #fff;
+  font-weight: 600;
+}
+.wcwp-tab.active::after {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 0; right: 0; bottom: -2px;
+  height: 4px;
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  border-radius: 2px 2px 0 0;
+  animation: wcwp-underline 0.3s cubic-bezier(.4,1.4,.6,1) 1;
+}
+@keyframes wcwp-underline {
+  from { width: 0; opacity: 0; }
+  to { width: 100%; opacity: 1; }
+}
+
+/* Form table */
+.wcwp-admin-premium-wrap .form-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 16px;
+}
+.wcwp-admin-premium-wrap .form-table th {
+  text-align: left;
+  width: 220px;
+  color: #1c7c54;
+  font-weight: 500;
+  padding-top: 8px;
+}
+.wcwp-admin-premium-wrap .form-table td {
+  padding-top: 8px;
+}
+
+/* Inputs */
+.wcwp-admin-premium-wrap input[type="text"],
+.wcwp-admin-premium-wrap textarea,
+.wcwp-admin-premium-wrap select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1e7dd;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #f8f9fa;
+  transition: border 0.2s;
+}
+.wcwp-admin-premium-wrap input[type="text"]:focus,
+.wcwp-admin-premium-wrap textarea:focus,
+.wcwp-admin-premium-wrap select:focus {
+  border-color: #1c7c54;
+  background: #fff;
+}
+
+/* Description/help text */
+.wcwp-admin-premium-wrap .description {
+  color: #6c757d;
+  font-size: 0.97rem;
+  margin-top: 4px;
+}
+
+/* Submit button */
+.wcwp-admin-premium-wrap .button-primary {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 12px 32px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.wcwp-admin-premium-wrap .button-primary:hover {
+  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.13);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .wcwp-admin-premium-wrap {
+    padding: 12px 4px;
+  }
+  .wcwp-admin-premium-wrap .form-table th {
+    width: 100px;
+    font-size: 0.98rem;
+  }
+}
+
+/* Pro Upgrade Banner */
+.wcwp-pro-banner {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  color: #fff;
+  padding: 18px 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.13);
+}
+.wcwp-pro-banner .dashicons {
+  font-size: 2rem;
+  margin-right: 10px;
+}
+
+/* Feature Gating Overlay */
+.wcwp-pro-locked {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.wcwp-pro-locked-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1c7c54;
+  color: #fff;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.13);
+  text-align: center;
+}
+
+/* Upgrade Modal */
+#wcwp-upgrade-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(44,62,80,0.18);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.wcwp-upgrade-modal-content {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(44,62,80,0.18);
+  padding: 36px 40px 28px 40px;
+  max-width: 540px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+.wcwp-upgrade-modal-content h2 {
+  color: #1c7c54;
+  margin-bottom: 12px;
+}
+.wcwp-upgrade-modal-content .wcwp-comparison-table {
+  width: 100%;
+  margin: 18px 0 24px 0;
+  border-collapse: collapse;
+}
+.wcwp-upgrade-modal-content .wcwp-comparison-table th,
+.wcwp-upgrade-modal-content .wcwp-comparison-table td {
+  border: 1px solid #e5e5e5;
+  padding: 10px 8px;
+  font-size: 1rem;
+}
+.wcwp-upgrade-modal-content .wcwp-comparison-table th {
+  background: #f8f9fa;
+  color: #1c7c54;
+}
+.wcwp-upgrade-modal-content .wcwp-comparison-table .pro {
+  color: #2ec4b6;
+  font-weight: bold;
+}
+.wcwp-upgrade-modal-content .wcwp-upgrade-btn {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 38px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 18px;
+  transition: background 0.2s;
+}
+.wcwp-upgrade-modal-content .wcwp-upgrade-btn:hover {
+  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
+}
+.wcwp-upgrade-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 1.6rem;
+  color: #888;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Tooltips and help icons */
+.wcwp-help-icon {
+  display: inline-block;
+  margin-left: 6px;
+  color: #2ec4b6;
+  background: #e5f7f6;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  font-size: 1rem;
+  line-height: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+.wcwp-help-icon:hover {
+  background: #2ec4b6;
+  color: #fff;
+}
+.wcwp-tooltip {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 28px;
+  transform: translateX(-50%);
+  background: #222;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.97rem;
+  white-space: pre-line;
+  z-index: 100;
+  min-width: 180px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.13);
+}
+.wcwp-help-icon:hover .wcwp-tooltip {
+  display: block;
+}
+
+/* Chatbot Customizer */
+.wcwp-chatbot-customizer {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 24px 24px 18px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 8px rgba(44,62,80,0.07);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: flex-start;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.wcwp-chatbot-customizer:hover {
+  box-shadow: 0 4px 24px rgba(44,62,80,0.13);
+  transform: translateY(-2px) scale(1.01);
+}
+.wcwp-chatbot-customizer-controls {
+  flex: 1 1 220px;
+  min-width: 220px;
+}
+.wcwp-chatbot-customizer-preview {
+  flex: 1 1 260px;
+  min-width: 260px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 8px rgba(44,62,80,0.09);
+  padding: 18px 12px 18px 12px;
+  text-align: center;
+}
+.wcwp-chatbot-preview-bubble {
+  display: inline-block;
+  background: var(--wcwp-chatbot-bg, #1c7c54);
+  color: var(--wcwp-chatbot-color, #fff);
+  border-radius: 24px 24px 24px 0;
+  padding: 16px 28px;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.13);
+  position: relative;
+}
+.wcwp-chatbot-preview-icon {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  color: var(--wcwp-chatbot-icon, #2ec4b6);
+}
+.wcwp-chatbot-customizer label {
+  font-weight: 500;
+  color: #1c7c54;
+  margin-bottom: 6px;
+  display: block;
+}
+.wcwp-chatbot-customizer input[type="color"] {
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  margin-right: 10px;
+  background: #e5e5e5;
+  cursor: pointer;
+}
+.wcwp-chatbot-customizer .wcwp-icon-select {
+  display: flex;
+  gap: 10px;
+  margin: 8px 0 16px 0;
+}
+.wcwp-chatbot-customizer .wcwp-icon-option {
+  font-size: 2rem;
+  background: #e5f7f6;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border 0.2s, background 0.2s;
+}
+.wcwp-chatbot-customizer .wcwp-icon-option.selected {
+  border: 2px solid #1c7c54;
+  background: #2ec4b6;
+  color: #fff;
+}
+
+/* Dashboard Widget */
+.wcwp-dashboard-widget {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(44,62,80,0.07);
+  padding: 24px 24px 18px 24px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: flex-start;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.wcwp-dashboard-widget:hover {
+  box-shadow: 0 4px 24px rgba(44,62,80,0.13);
+  transform: translateY(-2px) scale(1.01);
+}
+.wcwp-dashboard-widget-stats {
+  flex: 1 1 220px;
+  min-width: 220px;
+  display: flex;
+  gap: 18px;
+}
+.wcwp-dashboard-widget-stat {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px 18px;
+  text-align: center;
+  flex: 1 1 0;
+  box-shadow: 0 1px 8px rgba(44,62,80,0.07);
+}
+.wcwp-dashboard-widget-stat .dashicons {
+  font-size: 2rem;
+  color: #1c7c54;
+  margin-bottom: 6px;
+}
+.wcwp-dashboard-widget-stat .wcwp-stat-label {
+  color: #888;
+  font-size: 0.97rem;
+}
+.wcwp-dashboard-widget-actions {
+  flex: 1 1 120px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+.wcwp-dashboard-widget-actions .button {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.wcwp-dashboard-widget-actions .button:hover {
+  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
+}
+
+/* Dark Mode */
+.wcwp-dark-mode,
+.wcwp-dark-mode .wcwp-admin-premium-wrap,
+.wcwp-dark-mode .wcwp-dashboard-widget,
+.wcwp-dark-mode .wcwp-chatbot-customizer,
+.wcwp-dark-mode .wcwp-upgrade-modal-content {
+  background: #181c1f !important;
+  color: #e5e5e5 !important;
+  transition: background 0.3s, color 0.3s;
+}
+.wcwp-dark-mode .form-table th,
+.wcwp-dark-mode .wcwp-tabs,
+.wcwp-dark-mode .wcwp-chatbot-customizer label {
+  color: #2ec4b6 !important;
+}
+.wcwp-dark-mode .form-table td,
+.wcwp-dark-mode .description {
+  color: #b2f7ef !important;
+}
+.wcwp-dark-mode .wcwp-tab {
+  background: #23272b !important;
+  color: #b2f7ef !important;
+}
+.wcwp-dark-mode .wcwp-tab.active {
+  background: #2ec4b6 !important;
+  color: #181c1f !important;
+}
+.wcwp-dark-mode input,
+.wcwp-dark-mode textarea,
+.wcwp-dark-mode select {
+  background: #23272b !important;
+  color: #e5e5e5 !important;
+  border-color: #2ec4b6 !important;
+}
+.wcwp-dark-mode .wcwp-dashboard-widget-stat {
+  background: #23272b !important;
+  color: #b2f7ef !important;
+}
+.wcwp-dark-mode .wcwp-pro-banner,
+.wcwp-dark-mode .wcwp-pro-locked-message {
+  background: linear-gradient(90deg, #2ec4b6 60%, #1c7c54 100%) !important;
+  color: #181c1f !important;
+}
+.wcwp-dark-mode .wcwp-upgrade-btn,
+.wcwp-dark-mode .button-primary,
+.wcwp-dark-mode .button {
+  background: linear-gradient(90deg, #2ec4b6 60%, #1c7c54 100%) !important;
+  color: #181c1f !important;
+}
+.wcwp-dark-mode .wcwp-help-icon {
+  background: #23272b !important;
+  color: #2ec4b6 !important;
+}
+.wcwp-dark-mode .wcwp-tooltip {
+  background: #23272b !important;
+  color: #b2f7ef !important;
+}
+
+/* Support/Contact Form */
+.wcwp-support-form {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 24px 24px 18px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 8px rgba(44,62,80,0.07);
+  max-width: 480px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.wcwp-support-form:hover {
+  box-shadow: 0 4px 24px rgba(44,62,80,0.13);
+  transform: translateY(-2px) scale(1.01);
+}
+.wcwp-support-form label {
+  font-weight: 500;
+  color: #1c7c54;
+  margin-bottom: 6px;
+  display: block;
+}
+.wcwp-support-form input[type="text"],
+.wcwp-support-form input[type="email"],
+.wcwp-support-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1e7dd;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
+  margin-bottom: 12px;
+  transition: border 0.2s;
+}
+.wcwp-support-form input[type="text"]:focus,
+.wcwp-support-form input[type="email"]:focus,
+.wcwp-support-form textarea:focus {
+  border-color: #1c7c54;
+  background: #f8f9fa;
+}
+.wcwp-support-form .button {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.wcwp-support-form .button:hover {
+  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
+}
+.wcwp-support-form .wcwp-support-success {
+  color: #1c7c54;
+  background: #e5f7f6;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+.wcwp-support-form .wcwp-support-error {
+  color: #fff;
+  background: #e74c3c;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+/* Microinteractions & Branding */
+.button, .button-primary, .wcwp-upgrade-btn {
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+.button:active, .button-primary:active, .wcwp-upgrade-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 4px rgba(44,62,80,0.13);
+}
+.wcwp-dashboard-widget, .wcwp-chatbot-customizer, .wcwp-support-form {
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.wcwp-dashboard-widget:hover, .wcwp-chatbot-customizer:hover, .wcwp-support-form:hover {
+  box-shadow: 0 4px 24px rgba(44,62,80,0.13);
+  transform: translateY(-2px) scale(1.01);
+}
+
+/* Branded illustration for empty states */
+.wcwp-empty-illustration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 32px 0;
+  color: #2ec4b6;
+  font-size: 2.5rem;
+  opacity: 0.7;
+}
+.wcwp-empty-illustration span {
+  font-size: 4rem;
+  margin-bottom: 8px;
+}
+
+/* Plugin icon splash */
+.wcwp-plugin-splash {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.wcwp-plugin-splash .wcwp-plugin-logo {
+  font-size: 2.6rem;
+  color: #2ec4b6;
+  background: #e5f7f6;
+  border-radius: 50%;
+  padding: 10px 16px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.09);
+}
+.wcwp-plugin-splash .wcwp-plugin-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1c7c54;
+  letter-spacing: -1px;
+}
+
+/* Enhanced Dark Mode Toggle */
+.wcwp-dark-toggle {
+  position: absolute;
+  top: 18px;
+  right: 32px;
+  z-index: 10;
+  background: #23272b;
+  color: #ffe066;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  box-shadow: 0 2px 12px rgba(44,62,80,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+  outline: none;
+  animation: wcwp-glow 2s infinite alternate;
+}
+.wcwp-dark-toggle:hover {
+  background: #ffe066;
+  color: #23272b;
+  box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18);
+  transform: scale(1.08) rotate(-8deg);
+}
+@keyframes wcwp-glow {
+  from { box-shadow: 0 2px 12px #ffe06633, 0 2px 12px rgba(44,62,80,0.18); }
+  to   { box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18); }
+}
+.wcwp-dark-toggle .wcwp-dark-icon {
+  transition: transform 0.4s cubic-bezier(.4,2,.6,1), color 0.2s;
+}
+.wcwp-dark-mode .wcwp-dark-toggle {
+  background: #ffe066;
+  color: #23272b;
+  box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18);
+}
+.wcwp-dark-mode .wcwp-dark-toggle .wcwp-dark-icon {
+  transform: rotate(180deg) scale(1.2);
+  color: #23272b;
+} 
