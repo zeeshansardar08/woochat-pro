@@ -18,6 +18,7 @@ function wcwp_cart_recovery_script() {
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce'    => wp_create_nonce('wcwp_cart_nonce'),
     ]);
+    wp_localize_script('wcwp-cart-tracker', 'wcwp_cart_recovery_delay', get_option('wcwp_cart_recovery_delay', 20));
 }
 
 // Handle AJAX for cart tracking
@@ -54,16 +55,36 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items) {
     }
 
     $body = implode("\n", $items);
-    $message = "👋 Hey! You left items in your cart:\n\n$body\n\nTotal: $total PKR\nClick here to complete your order: " . wc_get_cart_url();
+    $cart_url = wc_get_cart_url();
+    $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}");
+    $message = str_replace(
+        ['{items}', '{total}', '{cart_url}'],
+        [$body, $total, $cart_url],
+        $template
+    );
+
+    // Log all attempts
+    $log_file = WCWP_PATH . 'woochat-pro.log';
+    $log_msg = "[WooChat Pro - Cart Recovery] Attempt to $phone: $message\n";
+    @error_log($log_msg, 3, $log_file);
+
+    // Store attempt in transient for admin UI
+    $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];
+    $attempts[] = [
+        'time' => current_time('mysql'),
+        'phone' => $phone,
+        'message' => $message,
+        'items' => $items,
+        'total' => $total
+    ];
+    set_transient('wcwp_cart_recovery_attempts', $attempts, DAY_IN_SECONDS);
 
     // Check if test mode is enabled
     $test_mode = get_option('wcwp_test_mode_enabled', 'no');
     if ($test_mode === 'yes') {
-        // Log message to debug.log
-        if (defined('WP_DEBUG') && WP_DEBUG === true) {
-            error_log("[WooChat Pro - TEST MODE] Message to $phone: $message");
-        }
-        return; // Skip sending real message
+        $log_msg = "[WooChat Pro - Cart Recovery TEST MODE] Message to $phone: $message\n";
+        @error_log($log_msg, 3, $log_file);
+        return;
     }
 
     if (function_exists('wcwp_send_whatsapp_message')) {
