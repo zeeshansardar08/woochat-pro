@@ -31,6 +31,8 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_cloud_token');
     register_setting('wcwp_settings_group', 'wcwp_cloud_phone_id');
     register_setting('wcwp_settings_group', 'wcwp_cloud_from');
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_delay');
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_message');
 }
 
 function wcwp_render_settings_page() {
@@ -216,7 +218,39 @@ function wcwp_render_settings_page() {
                             <p class="description">Automatically remind users via WhatsApp if they abandon the cart.</p>
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_cart_recovery_delay">Reminder Delay (minutes)</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">How many minutes after cart abandonment should the WhatsApp reminder be sent?</span></span></th>
+                        <td><input type="number" min="1" name="wcwp_cart_recovery_delay" id="wcwp_cart_recovery_delay" value="<?php echo esc_attr(get_option('wcwp_cart_recovery_delay', 20)); ?>" class="small-text" />
+                        <p class="description">Default: 20 minutes</p></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_cart_recovery_message">Cart Recovery Message</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Customize the WhatsApp message sent for cart recovery. Use placeholders: {items}, {total}, {cart_url}</span></span></th>
+                        <td>
+                            <textarea name="wcwp_cart_recovery_message" id="wcwp_cart_recovery_message" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}")); ?></textarea>
+                            <p class="description">Use placeholders: {items}, {total}, {cart_url}</p>
+                        </td>
+                    </tr>
                 </table>
+                <?php
+                // After the cart recovery settings table, show the last 10 recovery attempts
+                $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];
+                $attempts = array_slice(array_reverse($attempts), 0, 10);
+                if (!empty($attempts)) {
+                    echo '<h3 style="margin-top:32px;">Recent Cart Recovery Attempts</h3>';
+                    echo '<table class="widefat striped" style="margin-top:10px;">';
+                    echo '<thead><tr><th>Time</th><th>Phone</th><th>Items</th><th>Total</th><th>Message</th></tr></thead><tbody>';
+                    foreach ($attempts as $a) {
+                        echo '<tr>';
+                        echo '<td>' . esc_html($a['time']) . '</td>';
+                        echo '<td>' . esc_html($a['phone']) . '</td>';
+                        echo '<td><pre style="white-space:pre-line;font-size:0.97em;">' . esc_html(implode("\n", $a['items'])) . '</pre></td>';
+                        echo '<td>' . esc_html($a['total']) . '</td>';
+                        echo '<td><pre style="white-space:pre-line;font-size:0.97em;max-width:320px;overflow-x:auto;">' . esc_html($a['message']) . '</pre></td>';
+                        echo '</tr>';
+                    }
+                    echo '</tbody></table>';
+                }
+                ?>
             </div>
             <div id="wcwp-tab-content-analytics" class="wcwp-tab-content" style="display:none;">
                 <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong>Analytics Dashboard</strong> is available in <b>WooChat Pro</b>. <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;">Upgrade</button></div>

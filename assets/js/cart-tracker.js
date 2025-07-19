@@ -1,11 +1,12 @@
 jQuery(document).ready(function ($) {
     const phoneInputSelector = 'input[name=billing_phone]'; // Woo default
+    const delayMinutes = typeof wcwp_cart_recovery_delay !== 'undefined' ? parseInt(wcwp_cart_recovery_delay) : 20;
 
     function getCartData() {
         let items = [];
         $('.woocommerce-cart-form .cart_item').each(function () {
             let name = $(this).find('.product-name').text().trim();
-            let price = parseFloat($(this).find('.product-price .amount').text().replace(/[^\d.]/g, ''));
+            let price = parseFloat($(this).find('.product-price .amount').text().replace(/[^0-9.]/g, ''));
             let qty = parseInt($(this).find('.qty').val());
 
             if (name && qty > 0) {
@@ -32,7 +33,7 @@ jQuery(document).ready(function ($) {
                     cart: JSON.stringify(cart)
                 });
             }
-        }, 20 * 60 * 1000); // 20 minutes
+        }, delayMinutes * 60 * 1000);
     }
 
     $(document).on('change', '.cart_item input.qty, input[name=billing_phone]', function () {
