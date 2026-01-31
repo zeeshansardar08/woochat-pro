@@ -33,6 +33,7 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_cloud_from');
     register_setting('wcwp_settings_group', 'wcwp_cart_recovery_delay');
     register_setting('wcwp_settings_group', 'wcwp_cart_recovery_message');
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_require_consent');
 }
 
 function wcwp_render_settings_page() {
@@ -40,6 +41,10 @@ function wcwp_render_settings_page() {
     wp_enqueue_style('wcwp-admin-premium-css', WCWP_URL . 'assets/css/admin-premium.css', [], null);
     // Enqueue premium admin JS
     wp_enqueue_script('wcwp-admin-premium-js', WCWP_URL . 'assets/js/admin-premium.js', [], null, true);
+    wp_localize_script('wcwp-admin-premium-js', 'wcwpAdminData', [
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'resendNonce' => wp_create_nonce('wcwp_resend_cart')
+    ]);
     // Enqueue onboarding CSS/JS
     wp_enqueue_style('wcwp-onboarding-css', WCWP_URL . 'assets/css/onboarding.css', [], null);
     wp_enqueue_script('wcwp-onboarding-js', WCWP_URL . 'assets/js/onboarding.js', [], null, true);
@@ -224,6 +229,16 @@ function wcwp_render_settings_page() {
                         <p class="description">Default: 20 minutes</p></td>
                     </tr>
                     <tr>
+                        <th scope="row"><label for="wcwp_cart_recovery_require_consent">Require Consent (checkout)</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Show a consent checkbox on checkout and only send reminders when checked.</span></span></th>
+                        <td>
+                            <select name="wcwp_cart_recovery_require_consent" id="wcwp_cart_recovery_require_consent">
+                                <option value="no" <?php selected(get_option('wcwp_cart_recovery_require_consent', 'no'), 'no'); ?>>No</option>
+                                <option value="yes" <?php selected(get_option('wcwp_cart_recovery_require_consent', 'no'), 'yes'); ?>>Yes</option>
+                            </select>
+                            <p class="description">Recommmended for compliance; captures user opt-in on checkout.</p>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><label for="wcwp_cart_recovery_message">Cart Recovery Message</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Customize the WhatsApp message sent for cart recovery. Use placeholders: {items}, {total}, {cart_url}</span></span></th>
                         <td>
                             <textarea name="wcwp_cart_recovery_message" id="wcwp_cart_recovery_message" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}")); ?></textarea>
@@ -233,12 +248,11 @@ function wcwp_render_settings_page() {
                 </table>
                 <?php
                 // After the cart recovery settings table, show the last 10 recovery attempts
-                $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];
-                $attempts = array_slice(array_reverse($attempts), 0, 10);
+                $attempts = wcwp_get_cart_recovery_attempts();
                 if (!empty($attempts)) {
                     echo '<h3 style="margin-top:32px;">Recent Cart Recovery Attempts</h3>';
                     echo '<table class="widefat striped" style="margin-top:10px;">';
-                    echo '<thead><tr><th>Time</th><th>Phone</th><th>Items</th><th>Total</th><th>Message</th></tr></thead><tbody>';
+                    echo '<thead><tr><th>Time</th><th>Phone</th><th>Items</th><th>Total</th><th>Message</th><th>Actions</th></tr></thead><tbody>';
                     foreach ($attempts as $a) {
                         echo '<tr>';
                         echo '<td>' . esc_html($a['time']) . '</td>';
@@ -246,6 +260,11 @@ function wcwp_render_settings_page() {
                         echo '<td><pre style="white-space:pre-line;font-size:0.97em;">' . esc_html(implode("\n", $a['items'])) . '</pre></td>';
                         echo '<td>' . esc_html($a['total']) . '</td>';
                         echo '<td><pre style="white-space:pre-line;font-size:0.97em;max-width:320px;overflow-x:auto;">' . esc_html($a['message']) . '</pre></td>';
+                        if (!empty($a['id'])) {
+                            echo '<td><button type="button" class="button wcwp-resend-cart" data-attempt="' . esc_attr($a['id']) . '">Resend</button></td>';
+                        } else {
+                            echo '<td><em>N/A</em></td>';
+                        }
                         echo '</tr>';
                     }
                     echo '</tbody></table>';

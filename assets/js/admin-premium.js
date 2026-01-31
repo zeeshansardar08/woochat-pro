@@ -81,6 +81,42 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// Resend cart recovery attempts from admin table
+document.addEventListener('DOMContentLoaded', function () {
+    const resendButtons = document.querySelectorAll('.wcwp-resend-cart');
+    if (!resendButtons.length) return;
+
+    resendButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const attempt = btn.getAttribute('data-attempt');
+            if (!attempt) return;
+            btn.disabled = true;
+            btn.textContent = 'Resending...';
+
+            const formData = new FormData();
+            formData.append('action', 'wcwp_resend_cart_recovery');
+            formData.append('attempt_id', attempt);
+            formData.append('nonce', (window.wcwpAdminData && wcwpAdminData.resendNonce) ? wcwpAdminData.resendNonce : '');
+
+            fetch((window.wcwpAdminData && wcwpAdminData.ajaxUrl) ? wcwpAdminData.ajaxUrl : '', {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: formData
+            }).then(res => res.json())
+              .then(data => {
+                btn.textContent = data && data.success ? 'Resent' : 'Failed';
+                if (!data || !data.success) {
+                    setTimeout(() => { btn.textContent = 'Resend'; btn.disabled = false; }, 1200);
+                }
+              })
+              .catch(() => {
+                btn.textContent = 'Failed';
+                setTimeout(() => { btn.textContent = 'Resend'; btn.disabled = false; }, 1200);
+              });
+        });
+    });
+}); 
+
 // Dark Mode Toggle
 
 document.addEventListener('DOMContentLoaded', function () {
