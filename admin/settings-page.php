@@ -41,6 +41,11 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_gpt_api_endpoint');
     register_setting('wcwp_settings_group', 'wcwp_gpt_api_key');
     register_setting('wcwp_settings_group', 'wcwp_gpt_model');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_bg');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_text');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon_color');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_welcome');
 }
 
 function wcwp_render_settings_page() {
@@ -180,20 +185,22 @@ function wcwp_render_settings_page() {
                 <div class="wcwp-chatbot-customizer">
                     <div class="wcwp-chatbot-customizer-controls">
                         <label for="wcwp-chatbot-bg">Chatbot Bubble Color</label>
-                        <input type="color" id="wcwp-chatbot-bg" value="#1c7c54">
+                        <input type="color" id="wcwp-chatbot-bg" name="wcwp_chatbot_bg" value="<?php echo esc_attr(get_option('wcwp_chatbot_bg', '#1c7c54')); ?>">
                         <label for="wcwp-chatbot-color">Text Color</label>
-                        <input type="color" id="wcwp-chatbot-color" value="#ffffff">
+                        <input type="color" id="wcwp-chatbot-color" name="wcwp_chatbot_text" value="<?php echo esc_attr(get_option('wcwp_chatbot_text', '#ffffff')); ?>">
                         <label for="wcwp-chatbot-icon">Icon Color</label>
-                        <input type="color" id="wcwp-chatbot-icon" value="#2ec4b6">
+                        <input type="color" id="wcwp-chatbot-icon" name="wcwp_chatbot_icon_color" value="<?php echo esc_attr(get_option('wcwp_chatbot_icon_color', '#2ec4b6')); ?>">
                         <label>Choose Icon</label>
                         <div class="wcwp-icon-select">
-                            <span class="wcwp-icon-option selected">💬</span>
-                            <span class="wcwp-icon-option">🤖</span>
-                            <span class="wcwp-icon-option">🟢</span>
-                            <span class="wcwp-icon-option">📞</span>
+                            <?php $icon_option = get_option('wcwp_chatbot_icon', '💬'); ?>
+                            <span class="wcwp-icon-option <?php echo $icon_option === '💬' ? 'selected' : ''; ?>">💬</span>
+                            <span class="wcwp-icon-option <?php echo $icon_option === '🤖' ? 'selected' : ''; ?>">🤖</span>
+                            <span class="wcwp-icon-option <?php echo $icon_option === '🟢' ? 'selected' : ''; ?>">🟢</span>
+                            <span class="wcwp-icon-option <?php echo $icon_option === '📞' ? 'selected' : ''; ?>">📞</span>
                         </div>
+                        <input type="hidden" id="wcwp-chatbot-icon-value" name="wcwp_chatbot_icon" value="<?php echo esc_attr($icon_option); ?>" />
                         <label for="wcwp-chatbot-welcome">Welcome Message</label>
-                        <input type="text" id="wcwp-chatbot-welcome" value="Hi! How can I help you?">
+                        <input type="text" id="wcwp-chatbot-welcome" name="wcwp_chatbot_welcome" value="<?php echo esc_attr(get_option('wcwp_chatbot_welcome', 'Hi! How can I help you?')); ?>">
                     </div>
                     <div class="wcwp-chatbot-customizer-preview">
                         <div class="wcwp-chatbot-preview-icon">💬</div>
