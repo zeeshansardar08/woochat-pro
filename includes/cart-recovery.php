@@ -65,6 +65,7 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items) {
     $total = 0;
     $items = [];
     $attempt_id = uniqid('wcwp_cart_', true);
+    $event_id = null;
 
     foreach ($cart_items as $item) {
         $name  = sanitize_text_field($item['name']);
@@ -76,10 +77,19 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items) {
 
     $body = implode("\n", $items);
     $cart_url = wc_get_cart_url();
+    if (function_exists('wcwp_analytics_log_event')) {
+        $event_id = wcwp_analytics_log_event('sent', [
+            'status' => 'pending',
+            'phone' => $phone,
+            'message_preview' => '',
+            'meta' => ['items' => $items, 'total' => $total, 'source' => 'cart_recovery'],
+        ]);
+    }
+    $tracked_cart_url = ($event_id && function_exists('wcwp_analytics_tracking_url')) ? wcwp_analytics_tracking_url($event_id, $cart_url) : $cart_url;
     $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}");
     $message = str_replace(
         ['{items}', '{total}', '{cart_url}'],
-        [$body, $total, $cart_url],
+        [$body, $total, $tracked_cart_url],
         $template
     );
 
@@ -105,11 +115,17 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items) {
     if ($test_mode === 'yes') {
         $log_msg = "[WooChat Pro - Cart Recovery TEST MODE] {$attempt_id} to $phone: $message\n";
         @error_log($log_msg, 3, $log_file);
+        if ($event_id && function_exists('wcwp_analytics_update_event')) {
+            wcwp_analytics_update_event($event_id, ['status' => 'test', 'message_preview' => $message]);
+        }
         return;
     }
 
     if (function_exists('wcwp_send_whatsapp_message')) {
-        wcwp_send_whatsapp_message($phone, $message);
+        $result = wcwp_send_whatsapp_message($phone, $message, false, ['type' => 'cart_recovery', 'event_id' => $event_id]);
+        if ($event_id && function_exists('wcwp_analytics_update_event')) {
+            wcwp_analytics_update_event($event_id, ['status' => $result === true ? 'sent' : 'failed', 'message_preview' => $message]);
+        }
     }
 }
 

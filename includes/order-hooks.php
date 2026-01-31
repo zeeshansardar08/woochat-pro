@@ -20,7 +20,7 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
         $template
     );
 
-    wcwp_send_whatsapp_message($to, $message);
+    wcwp_send_whatsapp_message($to, $message, false, ['type' => 'order', 'order_id' => $order_id]);
 }
 
 // Add manual WhatsApp message button to order admin screen
@@ -40,7 +40,7 @@ add_action('wp_ajax_wcwp_send_manual_whatsapp', function() {
     $total = $order->get_total();
     $template = get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} PKR.');
     $message = str_replace(['{name}', '{order_id}', '{total}'], [$name, $order_id, $total], $template);
-    $result = wcwp_send_whatsapp_message($to, $message, true);
+    $result = wcwp_send_whatsapp_message($to, $message, true, ['type' => 'order', 'order_id' => $order_id]);
     if ($result === true) {
         wp_safe_redirect( admin_url('post.php?post=' . $order_id . '&action=edit&wcwp_msg=success') );
     } else {
@@ -60,7 +60,7 @@ add_action('admin_notices', function() {
 });
 
 // Refactor error handling in wcwp_send_whatsapp_message
-function wcwp_send_whatsapp_message($to, $message, $manual = false) {
+function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = []) {
     $test_mode = get_option('wcwp_test_mode_enabled', 'no');
     $provider = get_option('wcwp_api_provider', 'twilio');
     $plugin_log_file = WCWP_PATH . 'woochat-pro.log';
@@ -68,6 +68,26 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false) {
     $log_file = is_writable(dirname($plugin_log_file)) ? $plugin_log_file : $fallback_log_file;
     $log_prefix = $manual ? '[WooChat Pro - MANUAL]' : '[WooChat Pro]';
     $log_failed = false;
+
+    $event_id = $context['event_id'] ?? null;
+    if (function_exists('wcwp_analytics_log_event')) {
+        if (!$event_id) {
+            $event_id = wcwp_analytics_log_event('sent', [
+                'status' => 'pending',
+                'phone' => $to,
+                'order_id' => isset($context['order_id']) ? intval($context['order_id']) : 0,
+                'message_preview' => $message,
+                'provider' => $provider,
+                'meta' => ['source' => $context['type'] ?? 'order', 'manual' => $manual ? 'yes' : 'no'],
+            ]);
+        } else {
+            wcwp_analytics_update_event($event_id, [
+                'status' => 'pending',
+                'provider' => $provider,
+                'message_preview' => $message,
+            ]);
+        }
+    }
 
     $log_write = function($msg) use ($log_file, &$log_failed) {
         if (@error_log($msg, 3, $log_file) === false) {
@@ -79,6 +99,9 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false) {
         $log_msg = "$log_prefix TEST MODE: Order message to $to: $message\n";
         $log_write($log_msg);
         wcwp_maybe_log_notice($log_failed);
+        if (function_exists('wcwp_analytics_update_event') && $event_id) {
+            wcwp_analytics_update_event($event_id, ['status' => 'test']);
+        }
         return true;
     }
 
@@ -113,6 +136,7 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false) {
             $log_msg = "$log_prefix WhatsApp Cloud API Error: " . $response->get_error_message() . "\n";
             $log_write($log_msg);
             wcwp_maybe_log_notice($log_failed);
+            if (function_exists('wcwp_analytics_update_event') && $event_id) wcwp_analytics_update_event($event_id, ['status' => 'failed']);
             return false;
         } else {
             $body = wp_remote_retrieve_body($response);
@@ -121,11 +145,19 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false) {
                 $log_msg = "$log_prefix WhatsApp Cloud API Error: " . print_r($data['error'], true) . "\n";
                 $log_write($log_msg);
                 wcwp_maybe_log_notice($log_failed);
+                if (function_exists('wcwp_analytics_update_event') && $event_id) wcwp_analytics_update_event($event_id, ['status' => 'failed']);
                 return false;
             }
+            $msg_id = isset($data['messages'][0]['id']) ? sanitize_text_field($data['messages'][0]['id']) : '';
             $log_msg = "$log_prefix WhatsApp Cloud message sent to $to_number\n";
             $log_write($log_msg);
             wcwp_maybe_log_notice($log_failed);
+            if (function_exists('wcwp_analytics_update_event') && $event_id) {
+                wcwp_analytics_update_event($event_id, ['status' => 'sent', 'message_id' => $msg_id]);
+            }
+            if (function_exists('wcwp_analytics_increment_total')) {
+                wcwp_analytics_increment_total('sent');
+            }
             return true;
         }
     }
@@ -139,6 +171,7 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false) {
         $log_msg = "$log_prefix Twilio Error: Missing credentials\n";
         $log_write($log_msg);
         wcwp_maybe_log_notice($log_failed);
+        if (function_exists('wcwp_analytics_update_event') && $event_id) wcwp_analytics_update_event($event_id, ['status' => 'failed']);
         return false;
     }
     $url = "https://api.twilio.com/2010-04-01/Accounts/$sid/Messages.json";
@@ -159,6 +192,7 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false) {
         $log_msg = "$log_prefix Twilio Error: " . $response->get_error_message() . "\n";
         $log_write($log_msg);
         wcwp_maybe_log_notice($log_failed);
+        if (function_exists('wcwp_analytics_update_event') && $event_id) wcwp_analytics_update_event($event_id, ['status' => 'failed']);
         return false;
     } else {
         $body = wp_remote_retrieve_body($response);
@@ -167,11 +201,17 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false) {
             $log_msg = "$log_prefix Twilio API Error: [{$data['code']}] {$data['message']}\n";
             $log_write($log_msg);
             wcwp_maybe_log_notice($log_failed);
+            if (function_exists('wcwp_analytics_update_event') && $event_id) wcwp_analytics_update_event($event_id, ['status' => 'failed']);
             return false;
         }
+        $msg_id = isset($data['sid']) ? sanitize_text_field($data['sid']) : '';
         $log_msg = "$log_prefix WhatsApp message sent to $to_number\n";
         $log_write($log_msg);
         wcwp_maybe_log_notice($log_failed);
+        if (function_exists('wcwp_analytics_update_event') && $event_id) wcwp_analytics_update_event($event_id, ['status' => 'sent', 'message_id' => $msg_id]);
+        if (function_exists('wcwp_analytics_increment_total')) {
+            wcwp_analytics_increment_total('sent');
+        }
         return true;
     }
 }

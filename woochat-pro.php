@@ -12,7 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 define( 'WCWP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WCWP_URL', plugin_dir_url( __FILE__ ) );
 
-// Load Order Hooks
+// Load core modules
+require_once WCWP_PATH . 'includes/analytics.php';
 require_once WCWP_PATH . 'includes/order-hooks.php';
 require_once WCWP_PATH . 'admin/settings-page.php';
 require_once WCWP_PATH . 'includes/cart-recovery.php';
