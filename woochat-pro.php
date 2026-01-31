@@ -18,6 +18,7 @@ require_once WCWP_PATH . 'admin/settings-page.php';
 require_once WCWP_PATH . 'includes/cart-recovery.php';
 require_once WCWP_PATH . 'includes/chatbot-engine.php';
 require_once WCWP_PATH . 'includes/license-manager.php';
+require_once WCWP_PATH . 'includes/scheduler.php';
 
 // Browser polyfills used across frontend hooks
 add_action('wp_head', function() {
