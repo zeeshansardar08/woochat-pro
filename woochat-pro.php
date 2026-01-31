@@ -13,6 +13,7 @@ define( 'WCWP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WCWP_URL', plugin_dir_url( __FILE__ ) );
 
 // Load core modules
+require_once WCWP_PATH . 'includes/helpers.php';
 require_once WCWP_PATH . 'includes/analytics.php';
 require_once WCWP_PATH . 'includes/order-hooks.php';
 require_once WCWP_PATH . 'admin/settings-page.php';
@@ -20,6 +21,25 @@ require_once WCWP_PATH . 'includes/cart-recovery.php';
 require_once WCWP_PATH . 'includes/chatbot-engine.php';
 require_once WCWP_PATH . 'includes/license-manager.php';
 require_once WCWP_PATH . 'includes/scheduler.php';
+require_once WCWP_PATH . 'includes/optout.php';
+
+register_activation_hook(__FILE__, 'wcwp_activate_plugin');
+register_deactivation_hook(__FILE__, 'wcwp_deactivate_plugin');
+
+function wcwp_activate_plugin() {
+	if (function_exists('wcwp_create_cart_recovery_table')) {
+		wcwp_create_cart_recovery_table();
+	}
+	if (function_exists('wcwp_schedule_cart_recovery_cron')) {
+		wcwp_schedule_cart_recovery_cron();
+	}
+}
+
+function wcwp_deactivate_plugin() {
+	if (function_exists('wcwp_unschedule_cart_recovery_cron')) {
+		wcwp_unschedule_cart_recovery_cron();
+	}
+}
 
 // Browser polyfills used across frontend hooks
 add_action('wp_head', function() {

@@ -26,6 +26,7 @@ function wcwp_analytics_log_event($type, $data = []) {
     ];
 
     array_unshift($events, $event);
+    $events = wcwp_analytics_apply_retention($events);
     if (count($events) > WCWP_ANALYTICS_MAX_EVENTS) {
         $events = array_slice($events, 0, WCWP_ANALYTICS_MAX_EVENTS);
     }
@@ -75,7 +76,24 @@ function wcwp_analytics_get_totals() {
 
 function wcwp_analytics_get_events($limit = 50) {
     $events = get_option('wcwp_analytics_events', []);
+    $events = wcwp_analytics_apply_retention($events);
+    update_option('wcwp_analytics_events', $events, false);
     return array_slice($events, 0, absint($limit));
+}
+
+function wcwp_analytics_apply_retention($events) {
+    $days = absint(get_option('wcwp_data_retention_days', 0));
+    if ($days < 1) return $events;
+    $cutoff = time() - ($days * DAY_IN_SECONDS);
+    $filtered = [];
+    foreach ($events as $evt) {
+        $time_str = isset($evt['time']) ? $evt['time'] : '';
+        $ts = $time_str ? strtotime($time_str) : 0;
+        if ($ts && $ts >= $cutoff) {
+            $filtered[] = $evt;
+        }
+    }
+    return $filtered;
 }
 
 function wcwp_analytics_tracking_url($event_id, $redirect_url) {
