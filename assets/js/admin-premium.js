@@ -81,6 +81,106 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// Resend cart recovery attempts from admin table
+document.addEventListener('DOMContentLoaded', function () {
+    const resendButtons = document.querySelectorAll('.wcwp-resend-cart');
+    if (!resendButtons.length) return;
+
+    resendButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const attempt = btn.getAttribute('data-attempt');
+            if (!attempt) return;
+            btn.disabled = true;
+            btn.textContent = 'Resending...';
+
+            const formData = new FormData();
+            formData.append('action', 'wcwp_resend_cart_recovery');
+            formData.append('attempt_id', attempt);
+            formData.append('nonce', (window.wcwpAdminData && wcwpAdminData.resendNonce) ? wcwpAdminData.resendNonce : '');
+
+            fetch((window.wcwpAdminData && wcwpAdminData.ajaxUrl) ? wcwpAdminData.ajaxUrl : '', {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: formData
+            }).then(res => res.json())
+              .then(data => {
+                btn.textContent = data && data.success ? 'Resent' : 'Failed';
+                if (!data || !data.success) {
+                    setTimeout(() => { btn.textContent = 'Resend'; btn.disabled = false; }, 1200);
+                }
+              })
+              .catch(() => {
+                btn.textContent = 'Failed';
+                setTimeout(() => { btn.textContent = 'Resend'; btn.disabled = false; }, 1200);
+              });
+        });
+    });
+}); 
+
+// License activation/deactivation
+document.addEventListener('DOMContentLoaded', function () {
+    const activateBtn = document.getElementById('wcwp-activate-license');
+    const deactivateBtn = document.getElementById('wcwp-deactivate-license');
+    const statusBadge = document.getElementById('wcwp-license-status');
+    const keyField = document.getElementById('wcwp_license_key');
+
+    function setStatus(text, success) {
+        if (!statusBadge) return;
+        statusBadge.textContent = text;
+        statusBadge.classList.remove('wcwp-badge-success', 'wcwp-badge-muted');
+        statusBadge.classList.add(success ? 'wcwp-badge-success' : 'wcwp-badge-muted');
+    }
+
+    function postLicense(action, key) {
+        const formData = new FormData();
+        formData.append('action', action);
+        formData.append('nonce', (window.wcwpAdminData && wcwpAdminData.licenseNonce) ? wcwpAdminData.licenseNonce : '');
+        if (key) formData.append('license_key', key);
+
+        return fetch((window.wcwpAdminData && wcwpAdminData.ajaxUrl) ? wcwpAdminData.ajaxUrl : '', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData
+        }).then(res => res.json());
+    }
+
+    if (activateBtn) {
+        activateBtn.addEventListener('click', function () {
+            if (!keyField || !keyField.value) {
+                setStatus('Key required', false);
+                return;
+            }
+            setStatus('Activating…', false);
+            activateBtn.disabled = true;
+            postLicense('wcwp_activate_license', keyField.value).then(data => {
+                if (data && data.success) {
+                    setStatus('Active', true);
+                } else {
+                    setStatus((data && data.data && data.data.message) ? data.data.message : 'Activation failed', false);
+                }
+            }).catch(() => setStatus('Activation failed', false)).finally(() => {
+                activateBtn.disabled = false;
+            });
+        });
+    }
+
+    if (deactivateBtn) {
+        deactivateBtn.addEventListener('click', function () {
+            setStatus('Deactivating…', false);
+            deactivateBtn.disabled = true;
+            postLicense('wcwp_deactivate_license').then(data => {
+                if (data && data.success) {
+                    setStatus('Inactive', false);
+                } else {
+                    setStatus('Deactivation failed', false);
+                }
+            }).catch(() => setStatus('Deactivation failed', false)).finally(() => {
+                deactivateBtn.disabled = false;
+            });
+        });
+    }
+});
+
 // Dark Mode Toggle
 
 document.addEventListener('DOMContentLoaded', function () {

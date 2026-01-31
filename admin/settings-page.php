@@ -33,6 +33,14 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_cloud_from');
     register_setting('wcwp_settings_group', 'wcwp_cart_recovery_delay');
     register_setting('wcwp_settings_group', 'wcwp_cart_recovery_message');
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_require_consent');
+    register_setting('wcwp_settings_group', 'wcwp_followup_enabled');
+    register_setting('wcwp_settings_group', 'wcwp_followup_delay_minutes');
+    register_setting('wcwp_settings_group', 'wcwp_followup_template');
+    register_setting('wcwp_settings_group', 'wcwp_followup_use_gpt');
+    register_setting('wcwp_settings_group', 'wcwp_gpt_api_endpoint');
+    register_setting('wcwp_settings_group', 'wcwp_gpt_api_key');
+    register_setting('wcwp_settings_group', 'wcwp_gpt_model');
 }
 
 function wcwp_render_settings_page() {
@@ -40,6 +48,11 @@ function wcwp_render_settings_page() {
     wp_enqueue_style('wcwp-admin-premium-css', WCWP_URL . 'assets/css/admin-premium.css', [], null);
     // Enqueue premium admin JS
     wp_enqueue_script('wcwp-admin-premium-js', WCWP_URL . 'assets/js/admin-premium.js', [], null, true);
+    wp_localize_script('wcwp-admin-premium-js', 'wcwpAdminData', [
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'resendNonce' => wp_create_nonce('wcwp_resend_cart'),
+        'licenseNonce' => wp_create_nonce('wcwp_license_nonce'),
+    ]);
     // Enqueue onboarding CSS/JS
     wp_enqueue_style('wcwp-onboarding-css', WCWP_URL . 'assets/css/onboarding.css', [], null);
     wp_enqueue_script('wcwp-onboarding-js', WCWP_URL . 'assets/js/onboarding.js', [], null, true);
@@ -91,6 +104,7 @@ function wcwp_render_settings_page() {
             <button type="button" class="wcwp-tab" data-tab="messaging">Messaging</button>
             <button type="button" class="wcwp-tab" data-tab="chatbot">Chatbot</button>
             <button type="button" class="wcwp-tab" data-tab="cart-recovery">Cart Recovery</button>
+            <button type="button" class="wcwp-tab" data-tab="scheduler">Scheduler</button>
             <button type="button" class="wcwp-tab" data-tab="analytics">Analytics</button>
             <button type="button" class="wcwp-tab" data-tab="license">License</button>
         </div>
@@ -224,6 +238,16 @@ function wcwp_render_settings_page() {
                         <p class="description">Default: 20 minutes</p></td>
                     </tr>
                     <tr>
+                        <th scope="row"><label for="wcwp_cart_recovery_require_consent">Require Consent (checkout)</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Show a consent checkbox on checkout and only send reminders when checked.</span></span></th>
+                        <td>
+                            <select name="wcwp_cart_recovery_require_consent" id="wcwp_cart_recovery_require_consent">
+                                <option value="no" <?php selected(get_option('wcwp_cart_recovery_require_consent', 'no'), 'no'); ?>>No</option>
+                                <option value="yes" <?php selected(get_option('wcwp_cart_recovery_require_consent', 'no'), 'yes'); ?>>Yes</option>
+                            </select>
+                            <p class="description">Recommmended for compliance; captures user opt-in on checkout.</p>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><label for="wcwp_cart_recovery_message">Cart Recovery Message</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Customize the WhatsApp message sent for cart recovery. Use placeholders: {items}, {total}, {cart_url}</span></span></th>
                         <td>
                             <textarea name="wcwp_cart_recovery_message" id="wcwp_cart_recovery_message" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}")); ?></textarea>
@@ -233,12 +257,11 @@ function wcwp_render_settings_page() {
                 </table>
                 <?php
                 // After the cart recovery settings table, show the last 10 recovery attempts
-                $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];
-                $attempts = array_slice(array_reverse($attempts), 0, 10);
+                $attempts = wcwp_get_cart_recovery_attempts();
                 if (!empty($attempts)) {
                     echo '<h3 style="margin-top:32px;">Recent Cart Recovery Attempts</h3>';
                     echo '<table class="widefat striped" style="margin-top:10px;">';
-                    echo '<thead><tr><th>Time</th><th>Phone</th><th>Items</th><th>Total</th><th>Message</th></tr></thead><tbody>';
+                    echo '<thead><tr><th>Time</th><th>Phone</th><th>Items</th><th>Total</th><th>Message</th><th>Actions</th></tr></thead><tbody>';
                     foreach ($attempts as $a) {
                         echo '<tr>';
                         echo '<td>' . esc_html($a['time']) . '</td>';
@@ -246,6 +269,11 @@ function wcwp_render_settings_page() {
                         echo '<td><pre style="white-space:pre-line;font-size:0.97em;">' . esc_html(implode("\n", $a['items'])) . '</pre></td>';
                         echo '<td>' . esc_html($a['total']) . '</td>';
                         echo '<td><pre style="white-space:pre-line;font-size:0.97em;max-width:320px;overflow-x:auto;">' . esc_html($a['message']) . '</pre></td>';
+                        if (!empty($a['id'])) {
+                            echo '<td><button type="button" class="button wcwp-resend-cart" data-attempt="' . esc_attr($a['id']) . '">Resend</button></td>';
+                        } else {
+                            echo '<td><em>N/A</em></td>';
+                        }
                         echo '</tr>';
                     }
                     echo '</tbody></table>';
@@ -259,24 +287,93 @@ function wcwp_render_settings_page() {
                     <div class="wcwp-empty-illustration"><span>📊</span>No analytics data yet.<br>Upgrade to Pro to see your message stats!</div>
                 </div>
             </div>
+            <div id="wcwp-tab-content-scheduler" class="wcwp-tab-content" style="display:none;">
+                <?php $is_pro = function_exists('wcwp_is_pro_active') && wcwp_is_pro_active(); ?>
+                <?php if (!$is_pro) : ?>
+                    <div class="wcwp-pro-banner"><span class="dashicons dashicons-clock"></span> <strong>Scheduler</strong> is a Pro feature. <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;">Upgrade</button></div>
+                <?php endif; ?>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><label for="wcwp_followup_enabled">Enable Follow-up</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Schedule a WhatsApp follow-up message after an order is placed.</span></span></th>
+                        <td>
+                            <select name="wcwp_followup_enabled" id="wcwp_followup_enabled" <?php disabled(!$is_pro); ?>>
+                                <option value="yes" <?php selected(get_option('wcwp_followup_enabled', 'no'), 'yes'); ?>>Yes</option>
+                                <option value="no" <?php selected(get_option('wcwp_followup_enabled', 'no'), 'no'); ?>>No</option>
+                            </select>
+                            <p class="description">Requires valid license. Sends one follow-up per order.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_followup_delay_minutes">Delay (minutes)</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">How long after order completion/processing should the follow-up be sent?</span></span></th>
+                        <td>
+                            <input type="number" min="1" name="wcwp_followup_delay_minutes" id="wcwp_followup_delay_minutes" value="<?php echo esc_attr(get_option('wcwp_followup_delay_minutes', 120)); ?>" class="small-text" <?php disabled(!$is_pro); ?> />
+                            <p class="description">Default: 120 minutes.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_followup_template">Follow-up Template</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Placeholders: {name}, {order_id}, {total}, {status}, {date}</span></span></th>
+                        <td>
+                            <textarea name="wcwp_followup_template" id="wcwp_followup_template" rows="5" class="large-text" <?php disabled(!$is_pro); ?>><?php echo esc_textarea(get_option('wcwp_followup_template', "Hi {name}, thanks again for your order #{order_id}! Reply if you have any questions.")); ?></textarea>
+                            <p class="description">Sent once per order after the delay.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_followup_use_gpt">Use GPT (optional)</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Generate the follow-up copy with your GPT endpoint; falls back to the template if the call fails.</span></span></th>
+                        <td>
+                            <select name="wcwp_followup_use_gpt" id="wcwp_followup_use_gpt" <?php disabled(!$is_pro); ?>>
+                                <option value="no" <?php selected(get_option('wcwp_followup_use_gpt', 'no'), 'no'); ?>>No</option>
+                                <option value="yes" <?php selected(get_option('wcwp_followup_use_gpt', 'no'), 'yes'); ?>>Yes</option>
+                            </select>
+                            <p class="description">Supports free/alt GPT endpoints by configuring the URL and key below.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_gpt_api_endpoint">GPT API Endpoint</label></th>
+                        <td>
+                            <input type="text" name="wcwp_gpt_api_endpoint" id="wcwp_gpt_api_endpoint" value="<?php echo esc_attr(get_option('wcwp_gpt_api_endpoint', 'https://api.openai.com/v1/chat/completions')); ?>" class="regular-text" <?php disabled(!$is_pro); ?> />
+                            <p class="description">Set to your free/alt GPT API endpoint.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_gpt_api_key">GPT API Key</label></th>
+                        <td>
+                            <input type="password" name="wcwp_gpt_api_key" id="wcwp_gpt_api_key" value="<?php echo esc_attr(get_option('wcwp_gpt_api_key', '')); ?>" class="regular-text" autocomplete="off" <?php disabled(!$is_pro); ?> />
+                            <p class="description">Stored in WordPress options; use a non-production key if possible.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_gpt_model">GPT Model</label></th>
+                        <td>
+                            <input type="text" name="wcwp_gpt_model" id="wcwp_gpt_model" value="<?php echo esc_attr(get_option('wcwp_gpt_model', 'gpt-3.5-turbo')); ?>" class="regular-text" <?php disabled(!$is_pro); ?> />
+                            <p class="description">Adjust for your provider (e.g., gpt-3.5-turbo, gpt-4o-mini, or a free-tier model).</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
             <div id="wcwp-tab-content-license" class="wcwp-tab-content" style="display:none;">
                 <table class="form-table">
                     <tr>
                         <th scope="row"><label for="wcwp_license_key">License Key</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Enter your Pro license key to unlock premium features.</span></span></th>
                         <td>
                             <input type="text" name="wcwp_license_key" id="wcwp_license_key" value="<?php echo esc_attr(get_option('wcwp_license_key')); ?>" class="regular-text" />
-                            <p class="description">
-                                <?php
-                                $status = get_option('wcwp_license_status', 'not checked');
-                                if ($status === 'valid') {
-                                    echo '<span style="color:green;">✅ License is active</span>';
-                                } elseif ($status === 'invalid') {
-                                    echo '<span style="color:red;">❌ Invalid License</span>';
-                                } else {
-                                    echo 'Enter your Pro license key to enable premium features.';
-                                }
-                                ?>
-                            </p>
+                            <div style="margin-top:8px; display:flex; align-items:center; gap:12px;">
+                                <?php $status = get_option('wcwp_license_status', 'inactive'); ?>
+                                <span id="wcwp-license-status" class="wcwp-badge <?php echo $status === 'valid' ? 'wcwp-badge-success' : 'wcwp-badge-muted'; ?>">
+                                    <?php echo $status === 'valid' ? 'Active' : ucfirst($status); ?>
+                                </span>
+                                <button type="button" class="button button-primary" id="wcwp-activate-license">Activate</button>
+                                <button type="button" class="button" id="wcwp-deactivate-license">Deactivate</button>
+                            </div>
+                            <?php
+                            $expires = get_option('wcwp_license_expires');
+                            $message = get_option('wcwp_license_message');
+                            if ($expires) {
+                                echo '<p class="description">Expires: ' . esc_html($expires) . '</p>';
+                            }
+                            if ($message) {
+                                echo '<p class="description">' . esc_html($message) . '</p>';
+                            }
+                            ?>
                         </td>
                     </tr>
                 </table>
