@@ -46,7 +46,7 @@ function wcwp_send_followup_message_handler($order_id) {
     }
 
     if (function_exists('wcwp_send_whatsapp_message')) {
-        $result = wcwp_send_whatsapp_message($to, $message);
+        $result = wcwp_send_whatsapp_message($to, $message, false, ['type' => 'followup', 'order_id' => $order_id]);
         if ($result === true) {
             update_post_meta($order_id, '_wcwp_followup_sent', current_time('mysql'));
         }

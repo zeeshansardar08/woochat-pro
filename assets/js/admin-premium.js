@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const previewIcon = document.querySelector('.wcwp-chatbot-preview-icon');
     const welcomeInput = document.getElementById('wcwp-chatbot-welcome');
     const previewWelcome = document.getElementById('wcwp-chatbot-preview-welcome');
+    const iconHidden = document.getElementById('wcwp-chatbot-icon-value');
 
     function updatePreview() {
         if (previewBubble && bgColor && textColor) {
@@ -53,8 +54,12 @@ document.addEventListener('DOMContentLoaded', function () {
             iconOptions.forEach(o => o.classList.remove('selected'));
             opt.classList.add('selected');
             if (previewIcon) previewIcon.innerHTML = opt.innerHTML;
+            if (iconHidden) iconHidden.value = opt.textContent;
         });
     });
+
+    // Initialize preview with saved values
+    updatePreview();
 });
 
 // Upgrade Modal Logic

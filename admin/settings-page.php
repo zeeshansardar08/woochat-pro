@@ -41,6 +41,11 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_gpt_api_endpoint');
     register_setting('wcwp_settings_group', 'wcwp_gpt_api_key');
     register_setting('wcwp_settings_group', 'wcwp_gpt_model');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_bg');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_text');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon_color');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon');
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_welcome');
 }
 
 function wcwp_render_settings_page() {
@@ -180,20 +185,22 @@ function wcwp_render_settings_page() {
                 <div class="wcwp-chatbot-customizer">
                     <div class="wcwp-chatbot-customizer-controls">
                         <label for="wcwp-chatbot-bg">Chatbot Bubble Color</label>
-                        <input type="color" id="wcwp-chatbot-bg" value="#1c7c54">
+                        <input type="color" id="wcwp-chatbot-bg" name="wcwp_chatbot_bg" value="<?php echo esc_attr(get_option('wcwp_chatbot_bg', '#1c7c54')); ?>">
                         <label for="wcwp-chatbot-color">Text Color</label>
-                        <input type="color" id="wcwp-chatbot-color" value="#ffffff">
+                        <input type="color" id="wcwp-chatbot-color" name="wcwp_chatbot_text" value="<?php echo esc_attr(get_option('wcwp_chatbot_text', '#ffffff')); ?>">
                         <label for="wcwp-chatbot-icon">Icon Color</label>
-                        <input type="color" id="wcwp-chatbot-icon" value="#2ec4b6">
+                        <input type="color" id="wcwp-chatbot-icon" name="wcwp_chatbot_icon_color" value="<?php echo esc_attr(get_option('wcwp_chatbot_icon_color', '#2ec4b6')); ?>">
                         <label>Choose Icon</label>
                         <div class="wcwp-icon-select">
-                            <span class="wcwp-icon-option selected">💬</span>
-                            <span class="wcwp-icon-option">🤖</span>
-                            <span class="wcwp-icon-option">🟢</span>
-                            <span class="wcwp-icon-option">📞</span>
+                            <?php $icon_option = get_option('wcwp_chatbot_icon', '💬'); ?>
+                            <span class="wcwp-icon-option <?php echo $icon_option === '💬' ? 'selected' : ''; ?>">💬</span>
+                            <span class="wcwp-icon-option <?php echo $icon_option === '🤖' ? 'selected' : ''; ?>">🤖</span>
+                            <span class="wcwp-icon-option <?php echo $icon_option === '🟢' ? 'selected' : ''; ?>">🟢</span>
+                            <span class="wcwp-icon-option <?php echo $icon_option === '📞' ? 'selected' : ''; ?>">📞</span>
                         </div>
+                        <input type="hidden" id="wcwp-chatbot-icon-value" name="wcwp_chatbot_icon" value="<?php echo esc_attr($icon_option); ?>" />
                         <label for="wcwp-chatbot-welcome">Welcome Message</label>
-                        <input type="text" id="wcwp-chatbot-welcome" value="Hi! How can I help you?">
+                        <input type="text" id="wcwp-chatbot-welcome" name="wcwp_chatbot_welcome" value="<?php echo esc_attr(get_option('wcwp_chatbot_welcome', 'Hi! How can I help you?')); ?>">
                     </div>
                     <div class="wcwp-chatbot-customizer-preview">
                         <div class="wcwp-chatbot-preview-icon">💬</div>
@@ -281,11 +288,49 @@ function wcwp_render_settings_page() {
                 ?>
             </div>
             <div id="wcwp-tab-content-analytics" class="wcwp-tab-content" style="display:none;">
-                <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong>Analytics Dashboard</strong> is available in <b>WooChat Pro</b>. <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;">Upgrade</button></div>
-                <div class="wcwp-pro-locked">
-                    <div class="wcwp-pro-locked-message">Upgrade to Pro to unlock analytics!</div>
-                    <div class="wcwp-empty-illustration"><span>📊</span>No analytics data yet.<br>Upgrade to Pro to see your message stats!</div>
+                <?php $is_pro = function_exists('wcwp_is_pro_active') && wcwp_is_pro_active(); ?>
+                <?php $totals = function_exists('wcwp_analytics_get_totals') ? wcwp_analytics_get_totals() : ['sent' => 0, 'delivered' => 0, 'clicked' => 0]; ?>
+                <?php $events = function_exists('wcwp_analytics_get_events') ? wcwp_analytics_get_events(25) : []; ?>
+                <?php if (!$is_pro) : ?>
+                    <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong>Analytics Dashboard</strong> is a Pro feature. <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;">Upgrade</button></div>
+                <?php endif; ?>
+                <div class="wcwp-analytics-cards" style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
+                        <div class="wcwp-analytics-label">Sent</div>
+                        <div class="wcwp-analytics-value"><?php echo esc_html($totals['sent']); ?></div>
+                    </div>
+                    <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
+                        <div class="wcwp-analytics-label">Delivered</div>
+                        <div class="wcwp-analytics-value"><?php echo esc_html($totals['delivered']); ?></div>
+                    </div>
+                    <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
+                        <div class="wcwp-analytics-label">Clicked</div>
+                        <div class="wcwp-analytics-value"><?php echo esc_html($totals['clicked']); ?></div>
+                    </div>
                 </div>
+                <h3 style="margin-top:20px;">Recent Events</h3>
+                <table class="widefat striped" style="margin-top:10px;">
+                    <thead>
+                        <tr><th>Time</th><th>Type</th><th>Status</th><th>Phone</th><th>Provider</th><th>Message ID</th><th>Preview</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($events)) : ?>
+                            <?php foreach ($events as $evt) : ?>
+                                <tr>
+                                    <td><?php echo esc_html($evt['time'] ?? ''); ?></td>
+                                    <td><?php echo esc_html($evt['type'] ?? ''); ?></td>
+                                    <td><?php echo esc_html($evt['status'] ?? ''); ?></td>
+                                    <td><?php echo esc_html($evt['phone'] ?? ''); ?></td>
+                                    <td><?php echo esc_html($evt['provider'] ?? ''); ?></td>
+                                    <td><?php echo esc_html($evt['message_id'] ?? ''); ?></td>
+                                    <td><pre style="white-space:pre-line;font-size:0.95em;max-width:320px;overflow-x:auto;"><?php echo esc_html($evt['message_preview'] ?? ''); ?></pre></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <tr><td colspan="7">No analytics events logged yet.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
             <div id="wcwp-tab-content-scheduler" class="wcwp-tab-content" style="display:none;">
                 <?php $is_pro = function_exists('wcwp_is_pro_active') && wcwp_is_pro_active(); ?>
