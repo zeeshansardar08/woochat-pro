@@ -68,15 +68,24 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = [
     $log_file = is_writable(dirname($plugin_log_file)) ? $plugin_log_file : $fallback_log_file;
     $log_prefix = $manual ? '[WooChat Pro - MANUAL]' : '[WooChat Pro]';
     $log_failed = false;
+    $safe_to = function_exists('wcwp_mask_phone') ? wcwp_mask_phone($to) : $to;
+    $safe_msg = function_exists('wcwp_redact_message') ? wcwp_redact_message($message) : $message;
+
+    if (function_exists('wcwp_is_opted_out') && wcwp_is_opted_out($to)) {
+        $log_msg = "$log_prefix Opt-out: Message blocked for $safe_to\n";
+        @error_log($log_msg, 3, $log_file);
+        return false;
+    }
 
     $event_id = $context['event_id'] ?? null;
+    $preview = function_exists('wcwp_redact_message') ? wcwp_redact_message($message) : $message;
     if (function_exists('wcwp_analytics_log_event')) {
         if (!$event_id) {
             $event_id = wcwp_analytics_log_event('sent', [
                 'status' => 'pending',
                 'phone' => $to,
                 'order_id' => isset($context['order_id']) ? intval($context['order_id']) : 0,
-                'message_preview' => $message,
+                'message_preview' => $preview,
                 'provider' => $provider,
                 'meta' => ['source' => $context['type'] ?? 'order', 'manual' => $manual ? 'yes' : 'no'],
             ]);
@@ -84,7 +93,7 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = [
             wcwp_analytics_update_event($event_id, [
                 'status' => 'pending',
                 'provider' => $provider,
-                'message_preview' => $message,
+                'message_preview' => $preview,
             ]);
         }
     }
@@ -96,7 +105,7 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = [
     };
 
     if ($test_mode === 'yes') {
-        $log_msg = "$log_prefix TEST MODE: Order message to $to: $message\n";
+        $log_msg = "$log_prefix TEST MODE: Order message to $safe_to: $safe_msg\n";
         $log_write($log_msg);
         wcwp_maybe_log_notice($log_failed);
         if (function_exists('wcwp_analytics_update_event') && $event_id) {
@@ -149,7 +158,7 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = [
                 return false;
             }
             $msg_id = isset($data['messages'][0]['id']) ? sanitize_text_field($data['messages'][0]['id']) : '';
-            $log_msg = "$log_prefix WhatsApp Cloud message sent to $to_number\n";
+            $log_msg = "$log_prefix WhatsApp Cloud message sent to $safe_to\n";
             $log_write($log_msg);
             wcwp_maybe_log_notice($log_failed);
             if (function_exists('wcwp_analytics_update_event') && $event_id) {
@@ -205,7 +214,7 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = [
             return false;
         }
         $msg_id = isset($data['sid']) ? sanitize_text_field($data['sid']) : '';
-        $log_msg = "$log_prefix WhatsApp message sent to $to_number\n";
+        $log_msg = "$log_prefix WhatsApp message sent to $safe_to\n";
         $log_write($log_msg);
         wcwp_maybe_log_notice($log_failed);
         if (function_exists('wcwp_analytics_update_event') && $event_id) wcwp_analytics_update_event($event_id, ['status' => 'sent', 'message_id' => $msg_id]);

@@ -1,6 +1,6 @@
 jQuery(document).ready(function ($) {
     const phoneInputSelector = 'input[name=billing_phone]'; // Woo default
-    const delayMinutes = typeof wcwp_cart_recovery_delay !== 'undefined' ? parseInt(wcwp_cart_recovery_delay, 10) : 20;
+    const debounceMs = 5000;
 
     function getCartData() {
         let items = [];
@@ -28,9 +28,8 @@ jQuery(document).ready(function ($) {
 
     let timer;
 
-    function startRecoveryTimer() {
+    function scheduleSave() {
         clearTimeout(timer);
-
         timer = setTimeout(function () {
             const cart = getCartData();
             const phone = $(phoneInputSelector).val();
@@ -44,17 +43,17 @@ jQuery(document).ready(function ($) {
                     consent: hasConsent() ? 'yes' : 'no'
                 });
             }
-        }, delayMinutes * 60 * 1000);
+        }, debounceMs);
     }
 
     $(document).on('change input', '.cart_item input.qty, input[name=billing_phone]', function () {
-        startRecoveryTimer();
+        scheduleSave();
     });
 
     $(document.body).on('updated_wc_div updated_checkout', function () {
-        startRecoveryTimer();
+        scheduleSave();
     });
 
     // Kick off timer on load if data already present
-    startRecoveryTimer();
+    scheduleSave();
 });

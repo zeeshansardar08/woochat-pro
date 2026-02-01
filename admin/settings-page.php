@@ -18,34 +18,39 @@ function wcwp_register_settings_page() {
 // Register settings
 add_action('admin_init', 'wcwp_register_settings');
 function wcwp_register_settings() {
-    register_setting('wcwp_settings_group', 'wcwp_twilio_sid');
-    register_setting('wcwp_settings_group', 'wcwp_twilio_auth_token');
-    register_setting('wcwp_settings_group', 'wcwp_twilio_from');
-    register_setting('wcwp_settings_group', 'wcwp_order_message_template');
-    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_enabled');
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_enabled');
-    register_setting('wcwp_settings_group', 'wcwp_faq_pairs');
-    register_setting('wcwp_settings_group', 'wcwp_license_key');
-    register_setting('wcwp_settings_group', 'wcwp_test_mode_enabled');
-    register_setting('wcwp_settings_group', 'wcwp_api_provider');
-    register_setting('wcwp_settings_group', 'wcwp_cloud_token');
-    register_setting('wcwp_settings_group', 'wcwp_cloud_phone_id');
-    register_setting('wcwp_settings_group', 'wcwp_cloud_from');
-    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_delay');
-    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_message');
-    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_require_consent');
-    register_setting('wcwp_settings_group', 'wcwp_followup_enabled');
-    register_setting('wcwp_settings_group', 'wcwp_followup_delay_minutes');
-    register_setting('wcwp_settings_group', 'wcwp_followup_template');
-    register_setting('wcwp_settings_group', 'wcwp_followup_use_gpt');
-    register_setting('wcwp_settings_group', 'wcwp_gpt_api_endpoint');
-    register_setting('wcwp_settings_group', 'wcwp_gpt_api_key');
-    register_setting('wcwp_settings_group', 'wcwp_gpt_model');
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_bg');
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_text');
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon_color');
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon');
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_welcome');
+    register_setting('wcwp_settings_group', 'wcwp_twilio_sid', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_twilio_auth_token', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_twilio_from', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_order_message_template', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_faq_pairs', ['sanitize_callback' => 'wcwp_sanitize_json_faq']);
+    register_setting('wcwp_settings_group', 'wcwp_license_key', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_test_mode_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_api_provider', ['sanitize_callback' => 'wcwp_sanitize_provider']);
+    register_setting('wcwp_settings_group', 'wcwp_cloud_token', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_cloud_phone_id', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_cloud_from', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_delay', ['sanitize_callback' => 'wcwp_sanitize_int']);
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_message', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_require_consent', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_followup_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_followup_delay_minutes', ['sanitize_callback' => 'wcwp_sanitize_int']);
+    register_setting('wcwp_settings_group', 'wcwp_followup_template', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
+    register_setting('wcwp_settings_group', 'wcwp_followup_use_gpt', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_gpt_api_endpoint', ['sanitize_callback' => 'wcwp_sanitize_url']);
+    register_setting('wcwp_settings_group', 'wcwp_gpt_api_key', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_gpt_model', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_bg', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_text', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon_color', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_welcome', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_data_retention_days', ['sanitize_callback' => 'wcwp_sanitize_int']);
+    register_setting('wcwp_settings_group', 'wcwp_delete_data_on_uninstall', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_optout_keywords', ['sanitize_callback' => 'wcwp_sanitize_optout_keywords']);
+    register_setting('wcwp_settings_group', 'wcwp_optout_list', ['sanitize_callback' => 'wcwp_parse_optout_list']);
+    register_setting('wcwp_settings_group', 'wcwp_optout_webhook_token', ['sanitize_callback' => 'wcwp_sanitize_text']);
 }
 
 function wcwp_render_settings_page() {
@@ -166,6 +171,45 @@ function wcwp_render_settings_page() {
                                     <div style="font-size: 0.98rem; margin-top: 4px;">Enable this for safe testing. <b>Messages will be logged, not sent.</b> Don't forget to turn it off in production!</div>
                                 </div>
                             </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_data_retention_days">Data Retention (days)</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Automatically delete analytics events older than this. Set to 0 to keep indefinitely.</span></span></th>
+                        <td>
+                            <input type="number" min="0" name="wcwp_data_retention_days" id="wcwp_data_retention_days" value="<?php echo esc_attr(get_option('wcwp_data_retention_days', 0)); ?>" class="small-text" />
+                            <p class="description">Recommended: 30–180 days.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_delete_data_on_uninstall">Delete Data on Uninstall</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">If enabled, all plugin data will be removed when the plugin is deleted.</span></span></th>
+                        <td>
+                            <select name="wcwp_delete_data_on_uninstall" id="wcwp_delete_data_on_uninstall">
+                                <option value="no" <?php selected(get_option('wcwp_delete_data_on_uninstall', 'no'), 'no'); ?>>No</option>
+                                <option value="yes" <?php selected(get_option('wcwp_delete_data_on_uninstall', 'no'), 'yes'); ?>>Yes</option>
+                            </select>
+                            <p class="description">Use for strict compliance requirements.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_optout_keywords">Opt-out Keywords</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Incoming messages containing these words will add the number to the suppression list.</span></span></th>
+                        <td>
+                            <input type="text" name="wcwp_optout_keywords" id="wcwp_optout_keywords" value="<?php echo esc_attr(get_option('wcwp_optout_keywords', 'stop, unsubscribe')); ?>" class="regular-text" />
+                            <p class="description">Comma-separated. Default: stop, unsubscribe.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_optout_webhook_token">Opt-out Webhook Token</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Use this token to secure the opt-out webhook endpoint.</span></span></th>
+                        <td>
+                            <input type="text" name="wcwp_optout_webhook_token" id="wcwp_optout_webhook_token" value="<?php echo esc_attr(get_option('wcwp_optout_webhook_token', '')); ?>" class="regular-text" />
+                            <p class="description">Webhook: <code><?php echo esc_html(rest_url('wcwp/v1/optout')); ?></code></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="wcwp_optout_list">Suppression List (opted-out numbers)</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Numbers in this list will never receive messages.</span></span></th>
+                        <td>
+                            <?php $optout_list = function_exists('wcwp_get_optout_list') ? wcwp_get_optout_list() : []; ?>
+                            <textarea name="wcwp_optout_list" id="wcwp_optout_list" rows="4" class="large-text"><?php echo esc_textarea(implode("\n", $optout_list)); ?></textarea>
+                            <p class="description">One phone number per line.</p>
                         </td>
                     </tr>
                 </table>
@@ -290,10 +334,46 @@ function wcwp_render_settings_page() {
             <div id="wcwp-tab-content-analytics" class="wcwp-tab-content" style="display:none;">
                 <?php $is_pro = function_exists('wcwp_is_pro_active') && wcwp_is_pro_active(); ?>
                 <?php $totals = function_exists('wcwp_analytics_get_totals') ? wcwp_analytics_get_totals() : ['sent' => 0, 'delivered' => 0, 'clicked' => 0]; ?>
-                <?php $events = function_exists('wcwp_analytics_get_events') ? wcwp_analytics_get_events(25) : []; ?>
+                <?php
+                $filters = [
+                    'type' => isset($_GET['wcwp_type']) ? sanitize_text_field($_GET['wcwp_type']) : '',
+                    'status' => isset($_GET['wcwp_status']) ? sanitize_text_field($_GET['wcwp_status']) : '',
+                    'phone' => isset($_GET['wcwp_phone']) ? sanitize_text_field($_GET['wcwp_phone']) : '',
+                    'date_from' => isset($_GET['wcwp_date_from']) ? sanitize_text_field($_GET['wcwp_date_from']) : '',
+                    'date_to' => isset($_GET['wcwp_date_to']) ? sanitize_text_field($_GET['wcwp_date_to']) : '',
+                ];
+                $events = function_exists('wcwp_analytics_get_events') ? wcwp_analytics_get_events(25, $filters) : [];
+                ?>
                 <?php if (!$is_pro) : ?>
                     <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong>Analytics Dashboard</strong> is a Pro feature. <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;">Upgrade</button></div>
                 <?php endif; ?>
+                <form method="get" style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
+                    <input type="hidden" name="page" value="wcwp-settings" />
+                    <input type="hidden" name="tab" value="analytics" />
+                    <div>
+                        <label for="wcwp_type">Type</label><br>
+                        <input type="text" id="wcwp_type" name="wcwp_type" value="<?php echo esc_attr($filters['type']); ?>" placeholder="order, cart_recovery" />
+                    </div>
+                    <div>
+                        <label for="wcwp_status">Status</label><br>
+                        <input type="text" id="wcwp_status" name="wcwp_status" value="<?php echo esc_attr($filters['status']); ?>" placeholder="sent, failed" />
+                    </div>
+                    <div>
+                        <label for="wcwp_phone">Phone</label><br>
+                        <input type="text" id="wcwp_phone" name="wcwp_phone" value="<?php echo esc_attr($filters['phone']); ?>" placeholder="last 4 digits" />
+                    </div>
+                    <div>
+                        <label for="wcwp_date_from">From</label><br>
+                        <input type="date" id="wcwp_date_from" name="wcwp_date_from" value="<?php echo esc_attr($filters['date_from']); ?>" />
+                    </div>
+                    <div>
+                        <label for="wcwp_date_to">To</label><br>
+                        <input type="date" id="wcwp_date_to" name="wcwp_date_to" value="<?php echo esc_attr($filters['date_to']); ?>" />
+                    </div>
+                    <div>
+                        <button type="submit" class="button">Filter</button>
+                    </div>
+                </form>
                 <div class="wcwp-analytics-cards" style="display:flex;gap:12px;flex-wrap:wrap;">
                     <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
                         <div class="wcwp-analytics-label">Sent</div>
