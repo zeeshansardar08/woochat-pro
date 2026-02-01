@@ -58,6 +58,9 @@ global $wpdb;
 $table = $wpdb->prefix . 'wcwp_abandoned_carts';
 $wpdb->query("DROP TABLE IF EXISTS {$table}");
 
+$analytics_table = $wpdb->prefix . 'wcwp_analytics_events';
+$wpdb->query("DROP TABLE IF EXISTS {$analytics_table}");
+
 $plugin_log = WP_PLUGIN_DIR . '/woochat-pro/woochat-pro.log';
 $fallback_log = WP_CONTENT_DIR . '/woochat-pro.log';
 if (file_exists($plugin_log)) @unlink($plugin_log);

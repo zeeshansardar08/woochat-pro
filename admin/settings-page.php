@@ -334,10 +334,46 @@ function wcwp_render_settings_page() {
             <div id="wcwp-tab-content-analytics" class="wcwp-tab-content" style="display:none;">
                 <?php $is_pro = function_exists('wcwp_is_pro_active') && wcwp_is_pro_active(); ?>
                 <?php $totals = function_exists('wcwp_analytics_get_totals') ? wcwp_analytics_get_totals() : ['sent' => 0, 'delivered' => 0, 'clicked' => 0]; ?>
-                <?php $events = function_exists('wcwp_analytics_get_events') ? wcwp_analytics_get_events(25) : []; ?>
+                <?php
+                $filters = [
+                    'type' => isset($_GET['wcwp_type']) ? sanitize_text_field($_GET['wcwp_type']) : '',
+                    'status' => isset($_GET['wcwp_status']) ? sanitize_text_field($_GET['wcwp_status']) : '',
+                    'phone' => isset($_GET['wcwp_phone']) ? sanitize_text_field($_GET['wcwp_phone']) : '',
+                    'date_from' => isset($_GET['wcwp_date_from']) ? sanitize_text_field($_GET['wcwp_date_from']) : '',
+                    'date_to' => isset($_GET['wcwp_date_to']) ? sanitize_text_field($_GET['wcwp_date_to']) : '',
+                ];
+                $events = function_exists('wcwp_analytics_get_events') ? wcwp_analytics_get_events(25, $filters) : [];
+                ?>
                 <?php if (!$is_pro) : ?>
                     <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong>Analytics Dashboard</strong> is a Pro feature. <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;">Upgrade</button></div>
                 <?php endif; ?>
+                <form method="get" style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
+                    <input type="hidden" name="page" value="wcwp-settings" />
+                    <input type="hidden" name="tab" value="analytics" />
+                    <div>
+                        <label for="wcwp_type">Type</label><br>
+                        <input type="text" id="wcwp_type" name="wcwp_type" value="<?php echo esc_attr($filters['type']); ?>" placeholder="order, cart_recovery" />
+                    </div>
+                    <div>
+                        <label for="wcwp_status">Status</label><br>
+                        <input type="text" id="wcwp_status" name="wcwp_status" value="<?php echo esc_attr($filters['status']); ?>" placeholder="sent, failed" />
+                    </div>
+                    <div>
+                        <label for="wcwp_phone">Phone</label><br>
+                        <input type="text" id="wcwp_phone" name="wcwp_phone" value="<?php echo esc_attr($filters['phone']); ?>" placeholder="last 4 digits" />
+                    </div>
+                    <div>
+                        <label for="wcwp_date_from">From</label><br>
+                        <input type="date" id="wcwp_date_from" name="wcwp_date_from" value="<?php echo esc_attr($filters['date_from']); ?>" />
+                    </div>
+                    <div>
+                        <label for="wcwp_date_to">To</label><br>
+                        <input type="date" id="wcwp_date_to" name="wcwp_date_to" value="<?php echo esc_attr($filters['date_to']); ?>" />
+                    </div>
+                    <div>
+                        <button type="submit" class="button">Filter</button>
+                    </div>
+                </form>
                 <div class="wcwp-analytics-cards" style="display:flex;gap:12px;flex-wrap:wrap;">
                     <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
                         <div class="wcwp-analytics-label">Sent</div>

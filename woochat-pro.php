@@ -30,6 +30,9 @@ function wcwp_activate_plugin() {
 	if (function_exists('wcwp_create_cart_recovery_table')) {
 		wcwp_create_cart_recovery_table();
 	}
+	if (function_exists('wcwp_create_analytics_table')) {
+		wcwp_create_analytics_table();
+	}
 	if (function_exists('wcwp_schedule_cart_recovery_cron')) {
 		wcwp_schedule_cart_recovery_cron();
 	}
