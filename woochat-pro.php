@@ -2,26 +2,37 @@
 /**
  * Plugin Name: WooChat Pro – WhatsApp for WooCommerce
  * Description: Sends WhatsApp messages when a WooCommerce order is placed.
- * Version: 1.0
+ * Version: 1.0.1
  * Author: ZeeCreatives
  * License: GPL2
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+define( 'WCWP_VERSION', '1.0.1' );
 define( 'WCWP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WCWP_URL', plugin_dir_url( __FILE__ ) );
+define( 'WCWP_PLUGIN_FILE', __FILE__ );
 
 // Load core modules
 require_once WCWP_PATH . 'includes/helpers.php';
 require_once WCWP_PATH . 'includes/analytics.php';
-require_once WCWP_PATH . 'includes/order-hooks.php';
 require_once WCWP_PATH . 'admin/settings-page.php';
-require_once WCWP_PATH . 'includes/cart-recovery.php';
 require_once WCWP_PATH . 'includes/chatbot-engine.php';
 require_once WCWP_PATH . 'includes/license-manager.php';
-require_once WCWP_PATH . 'includes/scheduler.php';
 require_once WCWP_PATH . 'includes/optout.php';
+require_once WCWP_PATH . 'includes/update-checker.php';
+
+if (function_exists('wcwp_is_woocommerce_active') && wcwp_is_woocommerce_active()) {
+	require_once WCWP_PATH . 'includes/order-hooks.php';
+	require_once WCWP_PATH . 'includes/cart-recovery.php';
+	require_once WCWP_PATH . 'includes/scheduler.php';
+} else {
+	add_action('admin_notices', function() {
+		if (!current_user_can('activate_plugins')) return;
+		echo '<div class="notice notice-error"><p><b>WooChat Pro:</b> WooCommerce is required. Please install and activate WooCommerce to use order messaging and cart recovery.</p></div>';
+	});
+}
 
 register_activation_hook(__FILE__, 'wcwp_activate_plugin');
 register_deactivation_hook(__FILE__, 'wcwp_deactivate_plugin');
@@ -77,3 +88,4 @@ add_action('wp_head', function() {
 	</script>
 	<?php
 }, 1);
+

@@ -229,7 +229,7 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', 
     $cart_url = wc_get_cart_url();
     if (function_exists('wcwp_analytics_log_event')) {
         if (!$event_id) {
-            $event_id = wcwp_analytics_log_event('sent', [
+            $event_id = wcwp_analytics_log_event('cart_recovery', [
                 'status' => 'pending',
                 'phone' => $phone,
                 'message_preview' => '',
