@@ -231,3 +231,34 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleCloudFields();
     }
 }); 
+
+document.addEventListener('DOMContentLoaded', function () {
+    const filterBtn = document.getElementById('wcwp-analytics-filter-button');
+    if (!filterBtn) return;
+
+    filterBtn.addEventListener('click', function () {
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', 'wcwp-settings');
+        params.set('tab', 'analytics');
+
+        const fields = [
+            { id: 'wcwp_type', key: 'wcwp_type' },
+            { id: 'wcwp_status', key: 'wcwp_status' },
+            { id: 'wcwp_phone', key: 'wcwp_phone' },
+            { id: 'wcwp_date_from', key: 'wcwp_date_from' },
+            { id: 'wcwp_date_to', key: 'wcwp_date_to' }
+        ];
+
+        fields.forEach(field => {
+            const el = document.getElementById(field.id);
+            const value = el ? el.value.trim() : '';
+            if (value) {
+                params.set(field.key, value);
+            } else {
+                params.delete(field.key);
+            }
+        });
+
+        window.location.search = params.toString();
+    });
+});
