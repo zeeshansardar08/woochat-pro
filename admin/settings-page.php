@@ -347,9 +347,7 @@ function wcwp_render_settings_page() {
                 <?php if (!$is_pro) : ?>
                     <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong>Analytics Dashboard</strong> is a Pro feature. <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;">Upgrade</button></div>
                 <?php endif; ?>
-                <form method="get" style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
-                    <input type="hidden" name="page" value="wcwp-settings" />
-                    <input type="hidden" name="tab" value="analytics" />
+                <div class="wcwp-analytics-filters" style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
                     <div>
                         <label for="wcwp_type">Type</label><br>
                         <input type="text" id="wcwp_type" name="wcwp_type" value="<?php echo esc_attr($filters['type']); ?>" placeholder="order, cart_recovery" />
@@ -371,9 +369,9 @@ function wcwp_render_settings_page() {
                         <input type="date" id="wcwp_date_to" name="wcwp_date_to" value="<?php echo esc_attr($filters['date_to']); ?>" />
                     </div>
                     <div>
-                        <button type="submit" class="button">Filter</button>
+                        <button type="button" class="button" id="wcwp-analytics-filter-button">Filter</button>
                     </div>
-                </form>
+                </div>
                 <div class="wcwp-analytics-cards" style="display:flex;gap:12px;flex-wrap:wrap;">
                     <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
                         <div class="wcwp-analytics-label">Sent</div>
