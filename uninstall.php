@@ -1,6 +1,17 @@
 <?php
 if (!defined('WP_UNINSTALL_PLUGIN')) exit;
 
+if (!function_exists('wcwp_is_woocommerce_active')) {
+    $helpers = WP_PLUGIN_DIR . '/woochat-pro/includes/helpers.php';
+    if (file_exists($helpers)) {
+        include_once $helpers;
+    }
+}
+
+if (function_exists('wcwp_is_woocommerce_active') && !wcwp_is_woocommerce_active()) {
+    return;
+}
+
 $delete = get_option('wcwp_delete_data_on_uninstall', 'no');
 if ($delete !== 'yes') {
     return;
