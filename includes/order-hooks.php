@@ -9,6 +9,10 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
     $order = wc_get_order($order_id);
     if (!$order) return;
 
+    if (get_post_meta($order_id, '_wcwp_order_msg_sent', true)) {
+        return;
+    }
+
     $to = sanitize_text_field($order->get_billing_phone());
     $name = $order->get_billing_first_name();
     $total = $order->get_total();
@@ -20,7 +24,10 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
         $template
     );
 
-    wcwp_send_whatsapp_message($to, $message, false, ['type' => 'order', 'order_id' => $order_id]);
+    $result = wcwp_send_whatsapp_message($to, $message, false, ['type' => 'order', 'order_id' => $order_id]);
+    if ($result === true) {
+        update_post_meta($order_id, '_wcwp_order_msg_sent', current_time('mysql'));
+    }
 }
 
 // Add manual WhatsApp message button to order admin screen
@@ -79,9 +86,11 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = [
 
     $event_id = $context['event_id'] ?? null;
     $preview = function_exists('wcwp_redact_message') ? wcwp_redact_message($message) : $message;
+    $event_type = isset($context['type']) && $context['type'] ? $context['type'] : 'order';
+
     if (function_exists('wcwp_analytics_log_event')) {
         if (!$event_id) {
-            $event_id = wcwp_analytics_log_event('sent', [
+            $event_id = wcwp_analytics_log_event($event_type, [
                 'status' => 'pending',
                 'phone' => $to,
                 'order_id' => isset($context['order_id']) ? intval($context['order_id']) : 0,

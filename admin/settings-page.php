@@ -167,6 +167,7 @@ function wcwp_render_settings_page() {
                                 <span style="font-size: 2rem;">⚠️</span>
                                 <div>
                                     <label style="font-weight: 600; font-size: 1.1rem;" for="wcwp_test_mode_enabled">Test Mode</label>
+                                    <input type="hidden" name="wcwp_test_mode_enabled" value="no" />
                                     <input type="checkbox" name="wcwp_test_mode_enabled" value="yes" id="wcwp_test_mode_enabled" <?php checked(get_option('wcwp_test_mode_enabled'), 'yes'); ?> style="margin-left: 10px;" />
                                     <div style="font-size: 0.98rem; margin-top: 4px;">Enable this for safe testing. <b>Messages will be logged, not sent.</b> Don't forget to turn it off in production!</div>
                                 </div>

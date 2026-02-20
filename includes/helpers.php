@@ -25,6 +25,20 @@ function wcwp_sanitize_provider($value) {
     return in_array($value, ['twilio', 'cloud'], true) ? $value : 'twilio';
 }
 
+function wcwp_is_woocommerce_active() {
+    if (class_exists('WooCommerce')) return true;
+    if (!function_exists('is_plugin_active')) {
+        include_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+    if (function_exists('is_plugin_active') && is_plugin_active('woocommerce/woocommerce.php')) {
+        return true;
+    }
+    if (function_exists('is_plugin_active_for_network') && is_multisite() && is_plugin_active_for_network('woocommerce/woocommerce.php')) {
+        return true;
+    }
+    return false;
+}
+
 function wcwp_sanitize_json_faq($value) {
     $decoded = json_decode($value, true);
     if (!is_array($decoded)) {
