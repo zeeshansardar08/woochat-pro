@@ -233,6 +233,21 @@ document.addEventListener('DOMContentLoaded', function () {
 }); 
 
 document.addEventListener('DOMContentLoaded', function () {
+    const testMode = document.getElementById('wcwp_test_mode_enabled');
+    const hint = document.getElementById('wcwp-test-log-hint');
+    const badge = document.getElementById('wcwp-test-mode-badge');
+    if (!testMode || !hint) return;
+
+    function toggleHint() {
+        hint.style.display = testMode.checked ? '' : 'none';
+        if (badge) badge.style.display = testMode.checked ? 'inline-block' : 'none';
+    }
+
+    testMode.addEventListener('change', toggleHint);
+    toggleHint();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
     const filterBtn = document.getElementById('wcwp-analytics-filter-button');
     if (!filterBtn) return;
 
@@ -260,5 +275,53 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         window.location.search = params.toString();
+    });
+});
+
+// Send test WhatsApp message
+document.addEventListener('DOMContentLoaded', function () {
+    const sendBtn = document.getElementById('wcwp-send-test-message');
+    const phoneField = document.getElementById('wcwp_test_phone');
+    const messageField = document.getElementById('wcwp_test_message');
+    const statusEl = document.getElementById('wcwp-test-status');
+    if (!sendBtn || !phoneField || !messageField) return;
+
+    function setStatus(text, ok) {
+        if (!statusEl) return;
+        statusEl.textContent = text;
+        statusEl.style.color = ok ? '#1c7c54' : '#b32d2e';
+    }
+
+    sendBtn.addEventListener('click', function () {
+        const phone = phoneField.value.trim();
+        const message = messageField.value.trim();
+        if (!phone || !message) {
+            setStatus('Phone and message required.', false);
+            return;
+        }
+
+        setStatus('Sending...', true);
+        sendBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append('action', 'wcwp_send_test_whatsapp');
+        formData.append('nonce', (window.wcwpAdminData && wcwpAdminData.testNonce) ? wcwpAdminData.testNonce : '');
+        formData.append('phone', phone);
+        formData.append('message', message);
+
+        fetch((window.wcwpAdminData && wcwpAdminData.ajaxUrl) ? wcwpAdminData.ajaxUrl : '', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData
+        }).then(res => res.json())
+          .then(data => {
+            if (data && data.success) {
+                setStatus('Test message sent.', true);
+            } else {
+                setStatus((data && data.data && data.data.message) ? data.data.message : 'Send failed.', false);
+            }
+          })
+          .catch(() => setStatus('Send failed.', false))
+          .finally(() => { sendBtn.disabled = false; });
     });
 });
