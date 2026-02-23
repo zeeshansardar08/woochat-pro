@@ -51,6 +51,8 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_optout_keywords', ['sanitize_callback' => 'wcwp_sanitize_optout_keywords']);
     register_setting('wcwp_settings_group', 'wcwp_optout_list', ['sanitize_callback' => 'wcwp_parse_optout_list']);
     register_setting('wcwp_settings_group', 'wcwp_optout_webhook_token', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_test_phone', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_test_message', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
 }
 
 function wcwp_render_settings_page() {
@@ -62,6 +64,7 @@ function wcwp_render_settings_page() {
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'resendNonce' => wp_create_nonce('wcwp_resend_cart'),
         'licenseNonce' => wp_create_nonce('wcwp_license_nonce'),
+        'testNonce' => wp_create_nonce('wcwp_test_message'),
     ]);
     // Enqueue onboarding CSS/JS
     wp_enqueue_style('wcwp-onboarding-css', WCWP_URL . 'assets/css/onboarding.css', [], null);
@@ -217,6 +220,20 @@ function wcwp_render_settings_page() {
             </div>
             <div id="wcwp-tab-content-messaging" class="wcwp-tab-content" style="display:none;">
                 <table class="form-table">
+                    <tr>
+                        <th scope="row"><label for="wcwp_test_phone">Send Test Message</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Send a one-off message to verify your setup. Test mode logs instead of sending.</span></span></th>
+                        <td>
+                            <input type="text" id="wcwp_test_phone" class="regular-text" placeholder="e.g. +14155238886" value="<?php echo esc_attr(get_option('wcwp_test_phone', '')); ?>" />
+                            <p class="description">Phone number to receive the test message.</p>
+                            <textarea id="wcwp_test_message" rows="4" class="large-text" placeholder="Type your test message here..."><?php echo esc_textarea(get_option('wcwp_test_message', 'Hello! This is a test message from WooChat Pro.')); ?></textarea>
+                            <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+                                <button type="button" class="button button-primary" id="wcwp-send-test-message">Send Test Message</button>
+                                <span id="wcwp-test-mode-badge" style="display:none;background:#fff3cd;color:#856404;border:1px solid #ffe066;border-radius:12px;padding:2px 8px;font-size:12px;font-weight:600;">Test Mode ON</span>
+                                <span id="wcwp-test-status" style="font-weight:600;"></span>
+                            </div>
+                            <p id="wcwp-test-log-hint" class="description" style="margin-top:6px;<?php echo get_option('wcwp_test_mode_enabled', 'no') === 'yes' ? '' : 'display:none;'; ?>">Test Mode is enabled. Messages are logged to wp-content/plugins/woochat-pro/woochat-pro.log (or wp-content/woochat-pro.log if plugin path is not writable).</p>
+                        </td>
+                    </tr>
                     <tr>
                         <th scope="row"><label for="wcwp_order_message_template">Order Message Template</label><span class="wcwp-help-icon">?<span class="wcwp-tooltip">Customize the WhatsApp message sent for new orders. Use placeholders: {name}, {order_id}, {total}</span></span></th>
                         <td>

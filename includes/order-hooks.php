@@ -56,6 +56,37 @@ add_action('wp_ajax_wcwp_send_manual_whatsapp', function() {
     exit;
 });
 
+// Admin test message sender
+add_action('wp_ajax_wcwp_send_test_whatsapp', function() {
+    if (!current_user_can('manage_woocommerce')) {
+        wp_send_json_error(['message' => 'Unauthorized'], 403);
+    }
+    if (!check_ajax_referer('wcwp_test_message', 'nonce', false)) {
+        wp_send_json_error(['message' => 'Bad nonce'], 400);
+    }
+
+    $phone = sanitize_text_field($_POST['phone'] ?? '');
+    $message = sanitize_textarea_field($_POST['message'] ?? '');
+
+    if (!$phone || !$message) {
+        wp_send_json_error(['message' => 'Phone and message required'], 400);
+    }
+
+    update_option('wcwp_test_phone', $phone, false);
+    update_option('wcwp_test_message', $message, false);
+
+    if (!function_exists('wcwp_send_whatsapp_message')) {
+        wp_send_json_error(['message' => 'Messaging unavailable'], 500);
+    }
+
+    $result = wcwp_send_whatsapp_message($phone, $message, true, ['type' => 'test']);
+    if ($result === true) {
+        wp_send_json_success(['message' => 'Sent']);
+    }
+
+    wp_send_json_error(['message' => 'Send failed'], 500);
+});
+
 // Show admin notice for manual send result
 add_action('admin_notices', function() {
     if (!isset($_GET['wcwp_msg'])) return;
