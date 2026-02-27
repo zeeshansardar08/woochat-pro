@@ -18,7 +18,7 @@ jQuery(document).ready(function ($) {
                 }
             }
 
-            $('#wcwp-chat-response').html(reply);
+            $('#wcwp-chat-response').text(reply);
 
             const encoded = encodeURIComponent(reply);
             $('#wcwp-send-wa').attr('href', `https://wa.me/?text=${encoded}`).show();

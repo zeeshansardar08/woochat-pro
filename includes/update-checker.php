@@ -5,7 +5,7 @@ add_filter('pre_set_site_transient_update_plugins', 'wcwp_update_check');
 add_filter('plugins_api', 'wcwp_update_plugin_info', 10, 3);
 
 function wcwp_update_api_url() {
-    $default = 'https://yourdomain.com/woochat-pro-update.json';
+    $default = '';
     $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
     $site_url = home_url();
     $is_local = ($env === 'local') || (strpos($site_url, '.local') !== false);

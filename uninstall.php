@@ -72,7 +72,13 @@ $wpdb->query("DROP TABLE IF EXISTS {$table}");
 $analytics_table = $wpdb->prefix . 'wcwp_analytics_events';
 $wpdb->query("DROP TABLE IF EXISTS {$analytics_table}");
 
-$plugin_log = WP_PLUGIN_DIR . '/woochat-pro/woochat-pro.log';
-$fallback_log = WP_CONTENT_DIR . '/woochat-pro.log';
+$upload_dir = wp_upload_dir();
+$plugin_log = $upload_dir['basedir'] . '/woochat-pro/woochat-pro.log';
+$plugin_log_dir = $upload_dir['basedir'] . '/woochat-pro';
 if (file_exists($plugin_log)) @unlink($plugin_log);
-if (file_exists($fallback_log)) @unlink($fallback_log);
+// Clean up auxiliary files created by the log helper.
+$htaccess = $plugin_log_dir . '/.htaccess';
+$index    = $plugin_log_dir . '/index.php';
+if (file_exists($htaccess)) @unlink($htaccess);
+if (file_exists($index))    @unlink($index);
+if (is_dir($plugin_log_dir)) @rmdir($plugin_log_dir);

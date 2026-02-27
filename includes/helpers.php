@@ -58,6 +58,21 @@ function wcwp_sanitize_json_faq($value) {
     return wp_json_encode($sanitized, JSON_UNESCAPED_UNICODE);
 }
 
+/**
+ * Return the path to the plugin log file (inside uploads, not plugin dir).
+ */
+function wcwp_get_log_file() {
+    $upload_dir = wp_upload_dir();
+    $log_dir    = $upload_dir['basedir'] . '/woochat-pro';
+    if ( ! file_exists( $log_dir ) ) {
+        wp_mkdir_p( $log_dir );
+        // Protect against direct browsing.
+        @file_put_contents( $log_dir . '/.htaccess', 'deny from all' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+        @file_put_contents( $log_dir . '/index.php', '<?php // Silence is golden.' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+    }
+    return $log_dir . '/woochat-pro.log';
+}
+
 function wcwp_normalize_phone($phone) {
     $phone = preg_replace('/[^0-9]/', '', (string) $phone);
     return $phone ? $phone : '';

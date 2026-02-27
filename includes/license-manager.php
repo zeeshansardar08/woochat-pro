@@ -9,14 +9,14 @@ add_action('wp_ajax_wcwp_deactivate_license', 'wcwp_deactivate_license_ajax');
 
 // Endpoint helper (filterable)
 function wcwp_license_api_endpoint() {
-    $default = 'https://yourdomain.com/license-api.php';
+    $default = '';
     return apply_filters('wcwp_license_api_endpoint', $default);
 }
 
 function wcwp_license_request($action, $license_key) {
     $endpoint = wcwp_license_api_endpoint();
     if (!$endpoint || !$license_key) {
-        return new WP_Error('missing_data', 'Missing endpoint or license key');
+        return new WP_Error('missing_data', __('Missing endpoint or license key', 'woochat-pro'));
     }
 
     $payload = [
@@ -39,7 +39,7 @@ function wcwp_license_request($action, $license_key) {
     $body = json_decode(wp_remote_retrieve_body($response), true);
 
     if ($code !== 200 || !is_array($body)) {
-        return new WP_Error('bad_response', 'Unexpected response from license server');
+        return new WP_Error('bad_response', __('Unexpected response from license server', 'woochat-pro'));
     }
 
     return $body;
@@ -76,22 +76,22 @@ function wcwp_check_license_status() {
 }
 
 function wcwp_activate_license_ajax() {
-    if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Unauthorized'], 403);
+    if (!current_user_can('manage_options')) wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
     check_ajax_referer('wcwp_license_nonce', 'nonce');
 
     $license_key = sanitize_text_field($_POST['license_key'] ?? '');
-    if (!$license_key) wp_send_json_error(['message' => 'License key required'], 400);
+    if (!$license_key) wp_send_json_error(['message' => __('License key required', 'woochat-pro')], 400);
 
     $result = wcwp_license_request('activate', $license_key);
     if (is_wp_error($result)) wp_send_json_error(['message' => $result->get_error_message()], 400);
 
     wcwp_update_license_state($result);
     update_option('wcwp_license_key', $license_key);
-    wp_send_json_success(['status' => $result['status'] ?? 'unknown', 'message' => $result['message'] ?? 'Activated']);
+    wp_send_json_success(['status' => $result['status'] ?? 'unknown', 'message' => $result['message'] ?? __('Activated', 'woochat-pro')]);
 }
 
 function wcwp_deactivate_license_ajax() {
-    if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Unauthorized'], 403);
+    if (!current_user_can('manage_options')) wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
     check_ajax_referer('wcwp_license_nonce', 'nonce');
 
     $license_key = sanitize_text_field(get_option('wcwp_license_key', ''));
@@ -101,8 +101,8 @@ function wcwp_deactivate_license_ajax() {
     }
 
     update_option('wcwp_license_status', 'inactive');
-    update_option('wcwp_license_message', 'License deactivated');
-    wp_send_json_success(['status' => 'inactive', 'message' => 'Deactivated']);
+    update_option('wcwp_license_message', __('License deactivated', 'woochat-pro'));
+    wp_send_json_success(['status' => 'inactive', 'message' => __('Deactivated', 'woochat-pro')]);
 }
 
 // Helper function to use in feature gates

@@ -23,7 +23,7 @@ function wcwp_render_chatbot_widget() {
         define('WCWP_CHATBOT_RENDERED', true);
     }
 
-    wp_enqueue_script('wcwp-chatbot-js', WCWP_URL . 'assets/js/chatbot.js', ['jquery'], null, true);
+    wp_enqueue_script('wcwp-chatbot-js', WCWP_URL . 'assets/js/chatbot.js', ['jquery'], WCWP_VERSION, true);
 
     $faq_pairs = json_decode(get_option('wcwp_faq_pairs', '[]'), true);
     if (!is_array($faq_pairs)) $faq_pairs = [];
@@ -41,7 +41,7 @@ function wcwp_chatbot_shortcode() {
     ob_start();
     $settings = wcwp_get_chatbot_settings();
     include WCWP_PATH . 'templates/chatbot-widget.php';
-    wp_enqueue_script('wcwp-chatbot-js', WCWP_URL . 'assets/js/chatbot.js', ['jquery'], null, true);
+    wp_enqueue_script('wcwp-chatbot-js', WCWP_URL . 'assets/js/chatbot.js', ['jquery'], WCWP_VERSION, true);
     $faq_pairs = json_decode(get_option('wcwp_faq_pairs', '[]'), true);
     if (!is_array($faq_pairs)) $faq_pairs = [];
     wp_localize_script('wcwp-chatbot-js', 'wcwp_chatbot_obj', [
