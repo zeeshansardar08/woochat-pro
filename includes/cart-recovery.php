@@ -12,7 +12,7 @@ function wcwp_cart_recovery_script() {
     $enabled = get_option('wcwp_cart_recovery_enabled', 'yes');
     if ($enabled !== 'yes') return;
 
-    wp_enqueue_script('wcwp-cart-tracker', plugin_dir_url(__FILE__) . '../assets/js/cart-tracker.js', ['jquery'], null, true);
+    wp_enqueue_script('wcwp-cart-tracker', plugin_dir_url(__FILE__) . '../assets/js/cart-tracker.js', ['jquery'], WCWP_VERSION, true);
 
     wp_localize_script('wcwp-cart-tracker', 'wcwp_ajax_obj', [
         'ajax_url' => admin_url('admin-ajax.php'),
@@ -29,7 +29,7 @@ function wcwp_cart_recovery_consent_field() {
     echo '<div class="wcwp-cart-consent" style="margin-top:12px;">';
     echo '<label style="display:flex;align-items:center;gap:8px;">';
     echo '<input type="checkbox" id="wcwp-cart-consent" name="wcwp-cart-consent" value="yes" />';
-    echo '<span>Send me WhatsApp cart reminders</span>';
+    echo '<span>' . esc_html__('Send me WhatsApp cart reminders', 'woochat-pro') . '</span>';
     echo '</label>';
     echo '</div>';
 }
@@ -101,12 +101,12 @@ function wcwp_unschedule_cart_recovery_cron() {
 
 function wcwp_save_cart_ajax() {
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wcwp_cart_nonce')) {
-        wp_send_json_error(['message' => 'Unauthorized']);
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')]);
         return;
     }
 
     if (get_option('wcwp_cart_recovery_enabled', 'yes') !== 'yes') {
-        wp_send_json_error(['message' => 'Disabled'], 403);
+        wp_send_json_error(['message' => __('Disabled', 'woochat-pro')], 403);
         return;
     }
 
@@ -117,31 +117,31 @@ function wcwp_save_cart_ajax() {
     $consent_time = current_time('mysql');
 
     if (!wcwp_cart_rate_limit_ok($phone)) {
-        wp_send_json_error(['message' => 'Rate limited'], 429);
+        wp_send_json_error(['message' => __('Rate limited', 'woochat-pro')], 429);
         return;
     }
 
     if (get_option('wcwp_cart_recovery_require_consent', 'no') === 'yes' && $consent !== 'yes') {
-        wp_send_json_error(['message' => 'Consent missing']);
+        wp_send_json_error(['message' => __('Consent missing', 'woochat-pro')]);
         return;
     }
 
     if (!$phone || empty($cart_items)) {
-        wp_send_json_error(['message' => 'Missing data']);
+        wp_send_json_error(['message' => __('Missing data', 'woochat-pro')]);
         return;
     }
 
     if (function_exists('wcwp_is_opted_out') && wcwp_is_opted_out($phone)) {
-        wp_send_json_error(['message' => 'Opted out'], 403);
+        wp_send_json_error(['message' => __('Opted out', 'woochat-pro')], 403);
         return;
     }
 
     $scheduled = wcwp_queue_cart_recovery($phone, $cart_items, $consent === 'yes' ? 'yes' : 'no', $consent_time);
     if (!$scheduled) {
-        wp_send_json_error(['message' => 'Failed to schedule'], 500);
+        wp_send_json_error(['message' => __('Failed to schedule', 'woochat-pro')], 500);
         return;
     }
-    wp_send_json_success(['message' => 'Reminder scheduled']);
+    wp_send_json_success(['message' => __('Reminder scheduled', 'woochat-pro')]);
 }
 
 function wcwp_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent_time = '') {
@@ -150,18 +150,23 @@ function wcwp_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent
     $delay = absint(get_option('wcwp_cart_recovery_delay', 20));
     if ($delay < 1) $delay = 20;
 
-    $cart_json = wp_json_encode($cart_items);
-    $cart_hash = md5($cart_json);
-    $next_send_at = date('Y-m-d H:i:s', time() + ($delay * MINUTE_IN_SECONDS));
-
+    // Sanitize individual cart item fields (H7).
+    $sanitized_items = [];
     $total = 0;
     $items_count = 0;
     foreach ($cart_items as $item) {
-        $price = floatval($item['price'] ?? 0);
-        $qty = intval($item['qty'] ?? 0);
-        $total += $price * $qty;
-        $items_count += $qty;
+        $s_item = [
+            'name'  => sanitize_text_field( $item['name'] ?? '' ),
+            'price' => floatval( $item['price'] ?? 0 ),
+            'qty'   => absint( $item['qty'] ?? 0 ),
+        ];
+        $total += $s_item['price'] * $s_item['qty'];
+        $items_count += $s_item['qty'];
+        $sanitized_items[] = $s_item;
     }
+    $cart_json = wp_json_encode( $sanitized_items );
+    $cart_hash = md5($cart_json);
+    $next_send_at = date('Y-m-d H:i:s', time() + ($delay * MINUTE_IN_SECONDS));
 
     $existing = $wpdb->get_row($wpdb->prepare(
         "SELECT id, cart_hash FROM {$table} WHERE phone = %s AND status IN ('pending','retry') ORDER BY updated_at DESC LIMIT 1",
@@ -247,7 +252,7 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', 
     $preview = function_exists('wcwp_redact_message') ? wcwp_redact_message($message) : $message;
 
     // Log all attempts
-    $log_file = WCWP_PATH . 'woochat-pro.log';
+    $log_file = function_exists('wcwp_get_log_file') ? wcwp_get_log_file() : WP_CONTENT_DIR . '/woochat-pro.log';
     $safe_to = function_exists('wcwp_mask_phone') ? wcwp_mask_phone($phone) : $phone;
     $safe_msg = function_exists('wcwp_redact_message') ? wcwp_redact_message($message) : $message;
     $log_msg = "[WooChat Pro - Cart Recovery] Attempt {$attempt_id} to $safe_to: $safe_msg\n";
@@ -390,10 +395,15 @@ function wcwp_cart_rate_limit_ok($phone) {
     return true;
 }
 
-add_action('woocommerce_checkout_update_order_meta', function($order_id) {
+add_action('woocommerce_checkout_order_processed', function($order_id) {
     $consent = isset($_POST['wcwp-cart-consent']) && $_POST['wcwp-cart-consent'] === 'yes' ? 'yes' : 'no';
-    update_post_meta($order_id, '_wcwp_cart_consent', $consent);
-    update_post_meta($order_id, '_wcwp_cart_consent_time', current_time('mysql'));
+    $order = wc_get_order( $order_id );
+    if ( ! $order ) {
+        return;
+    }
+    $order->update_meta_data( '_wcwp_cart_consent', $consent );
+    $order->update_meta_data( '_wcwp_cart_consent_time', current_time( 'mysql' ) );
+    $order->save();
 });
 
 // Helper to fetch attempts
@@ -404,11 +414,11 @@ function wcwp_get_cart_recovery_attempts() {
 
 // Admin resend handler
 add_action('wp_ajax_wcwp_resend_cart_recovery', function() {
-    if (!current_user_can('manage_woocommerce')) wp_send_json_error(['message' => 'Unauthorized'], 403);
-    if (!check_ajax_referer('wcwp_resend_cart', 'nonce', false)) wp_send_json_error(['message' => 'Bad nonce'], 400);
+    if (!current_user_can('manage_woocommerce')) wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+    if (!check_ajax_referer('wcwp_resend_cart', 'nonce', false)) wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
 
     $attempt_id = sanitize_text_field($_POST['attempt_id'] ?? '');
-    if (!$attempt_id) wp_send_json_error(['message' => 'Missing attempt id'], 400);
+    if (!$attempt_id) wp_send_json_error(['message' => __('Missing attempt id', 'woochat-pro')], 400);
 
     $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];
     $found = null;
@@ -419,15 +429,15 @@ add_action('wp_ajax_wcwp_resend_cart_recovery', function() {
         }
     }
 
-    if (!$found) wp_send_json_error(['message' => 'Attempt not found'], 404);
+    if (!$found) wp_send_json_error(['message' => __('Attempt not found', 'woochat-pro')], 404);
 
     if (function_exists('wcwp_send_whatsapp_message')) {
         $result = wcwp_send_whatsapp_message($found['phone'], $found['message'], true);
         if ($result === true) {
-            wp_send_json_success(['message' => 'Resent']);
+            wp_send_json_success(['message' => __('Resent', 'woochat-pro')]);
         }
-        wp_send_json_error(['message' => 'Send failed']);
+        wp_send_json_error(['message' => __('Send failed', 'woochat-pro')]);
     }
 
-    wp_send_json_error(['message' => 'Messaging unavailable'], 500);
+    wp_send_json_error(['message' => __('Messaging unavailable', 'woochat-pro')], 500);
 });

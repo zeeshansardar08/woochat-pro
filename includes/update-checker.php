@@ -5,7 +5,7 @@ add_filter('pre_set_site_transient_update_plugins', 'wcwp_update_check');
 add_filter('plugins_api', 'wcwp_update_plugin_info', 10, 3);
 
 function wcwp_update_api_url() {
-    $default = 'https://yourdomain.com/woochat-pro-update.json';
+    $default = '';
     $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
     $site_url = home_url();
     $is_local = ($env === 'local') || (strpos($site_url, '.local') !== false);
@@ -79,7 +79,7 @@ function wcwp_update_plugin_info($result, $action, $args) {
     $data->name = isset($info['name']) ? $info['name'] : 'WooChat Pro';
     $data->slug = 'woochat-pro';
     $data->version = (string) $info['version'];
-    $data->author = isset($info['author']) ? $info['author'] : 'ZeeCreatives';
+    $data->author = isset($info['author']) ? $info['author'] : 'Zignite';
     $data->homepage = isset($info['homepage']) ? $info['homepage'] : '';
     $data->requires = isset($info['requires']) ? $info['requires'] : '';
     $data->tested = isset($info['tested']) ? $info['tested'] : '';

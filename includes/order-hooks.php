@@ -9,7 +9,7 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
     $order = wc_get_order($order_id);
     if (!$order) return;
 
-    if (get_post_meta($order_id, '_wcwp_order_msg_sent', true)) {
+    if ($order->get_meta('_wcwp_order_msg_sent')) {
         return;
     }
 
@@ -26,7 +26,8 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
 
     $result = wcwp_send_whatsapp_message($to, $message, false, ['type' => 'order', 'order_id' => $order_id]);
     if ($result === true) {
-        update_post_meta($order_id, '_wcwp_order_msg_sent', current_time('mysql'));
+        $order->update_meta_data('_wcwp_order_msg_sent', current_time('mysql'));
+        $order->save();
     }
 }
 
@@ -37,11 +38,11 @@ add_action('woocommerce_admin_order_actions_end', function($order) {
 });
 
 add_action('wp_ajax_wcwp_send_manual_whatsapp', function() {
-    if (!current_user_can('manage_woocommerce')) wp_die('Unauthorized');
+    if (!current_user_can('manage_woocommerce')) wp_die(esc_html__('Unauthorized', 'woochat-pro'));
     $order_id = intval($_GET['order_id'] ?? 0);
-    if (!$order_id || !wp_verify_nonce($_GET['_wpnonce'] ?? '', 'wcwp_send_manual_whatsapp_' . $order_id)) wp_die('Invalid nonce');
+    if (!$order_id || !wp_verify_nonce($_GET['_wpnonce'] ?? '', 'wcwp_send_manual_whatsapp_' . $order_id)) wp_die(esc_html__('Invalid nonce', 'woochat-pro'));
     $order = wc_get_order($order_id);
-    if (!$order) wp_die('Order not found');
+    if (!$order) wp_die(esc_html__('Order not found', 'woochat-pro'));
     $to = sanitize_text_field($order->get_billing_phone());
     $name = $order->get_billing_first_name();
     $total = $order->get_total();
@@ -59,41 +60,41 @@ add_action('wp_ajax_wcwp_send_manual_whatsapp', function() {
 // Admin test message sender
 add_action('wp_ajax_wcwp_send_test_whatsapp', function() {
     if (!current_user_can('manage_woocommerce')) {
-        wp_send_json_error(['message' => 'Unauthorized'], 403);
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
     }
     if (!check_ajax_referer('wcwp_test_message', 'nonce', false)) {
-        wp_send_json_error(['message' => 'Bad nonce'], 400);
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
     }
 
     $phone = sanitize_text_field($_POST['phone'] ?? '');
     $message = sanitize_textarea_field($_POST['message'] ?? '');
 
     if (!$phone || !$message) {
-        wp_send_json_error(['message' => 'Phone and message required'], 400);
+        wp_send_json_error(['message' => __('Phone and message required', 'woochat-pro')], 400);
     }
 
     update_option('wcwp_test_phone', $phone, false);
     update_option('wcwp_test_message', $message, false);
 
     if (!function_exists('wcwp_send_whatsapp_message')) {
-        wp_send_json_error(['message' => 'Messaging unavailable'], 500);
+        wp_send_json_error(['message' => __('Messaging unavailable', 'woochat-pro')], 500);
     }
 
     $result = wcwp_send_whatsapp_message($phone, $message, true, ['type' => 'test']);
     if ($result === true) {
-        wp_send_json_success(['message' => 'Sent']);
+        wp_send_json_success(['message' => __('Sent', 'woochat-pro')]);
     }
 
-    wp_send_json_error(['message' => 'Send failed'], 500);
+    wp_send_json_error(['message' => __('Send failed', 'woochat-pro')], 500);
 });
 
 // Show admin notice for manual send result
 add_action('admin_notices', function() {
     if (!isset($_GET['wcwp_msg'])) return;
     if ($_GET['wcwp_msg'] === 'success') {
-        echo '<div class="notice notice-success is-dismissible"><p>WhatsApp message sent successfully.</p></div>';
+        echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('WhatsApp message sent successfully.', 'woochat-pro') . '</p></div>';
     } elseif ($_GET['wcwp_msg'] === 'fail') {
-        echo '<div class="notice notice-error is-dismissible"><p>Failed to send WhatsApp message. Check logs for details.</p></div>';
+        echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__('Failed to send WhatsApp message. Check logs for details.', 'woochat-pro') . '</p></div>';
     }
 });
 
@@ -101,9 +102,7 @@ add_action('admin_notices', function() {
 function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = []) {
     $test_mode = get_option('wcwp_test_mode_enabled', 'no');
     $provider = get_option('wcwp_api_provider', 'twilio');
-    $plugin_log_file = WCWP_PATH . 'woochat-pro.log';
-    $fallback_log_file = WP_CONTENT_DIR . '/woochat-pro.log';
-    $log_file = is_writable(dirname($plugin_log_file)) ? $plugin_log_file : $fallback_log_file;
+    $log_file = function_exists('wcwp_get_log_file') ? wcwp_get_log_file() : WP_CONTENT_DIR . '/woochat-pro.log';
     $log_prefix = $manual ? '[WooChat Pro - MANUAL]' : '[WooChat Pro]';
     $log_failed = false;
     $safe_to = function_exists('wcwp_mask_phone') ? wcwp_mask_phone($to) : $to;
@@ -269,7 +268,7 @@ function wcwp_send_whatsapp_message($to, $message, $manual = false, $context = [
 function wcwp_maybe_log_notice($log_failed) {
     if ($log_failed) {
         add_action('admin_notices', function() {
-            echo '<div class="notice notice-error is-dismissible"><p><b>WooChat Pro:</b> Unable to write to plugin log file. Please check file permissions for wp-content/plugins/woochat-pro/woochat-pro.log or wp-content/woochat-pro.log.</p></div>';
+            echo '<div class="notice notice-error is-dismissible"><p><b>' . esc_html__('WooChat Pro:', 'woochat-pro') . '</b> ' . esc_html__('Unable to write to log file. Please check file permissions for wp-content/uploads/woochat-pro/.', 'woochat-pro') . '</p></div>';
         });
     }
 }

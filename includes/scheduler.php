@@ -15,12 +15,16 @@ function wcwp_maybe_schedule_followup($order_id) {
     $delay_minutes = absint(get_option('wcwp_followup_delay_minutes', 120));
     if ($delay_minutes < 1) $delay_minutes = 60;
 
+    $order = wc_get_order( $order_id );
+    if ( ! $order ) return;
+
     // Avoid duplicate scheduling
-    if (get_post_meta($order_id, '_wcwp_followup_scheduled', true)) return;
+    if ($order->get_meta('_wcwp_followup_scheduled')) return;
 
     $timestamp = time() + ($delay_minutes * MINUTE_IN_SECONDS);
     wp_schedule_single_event($timestamp, 'wcwp_send_followup_message', [$order_id]);
-    update_post_meta($order_id, '_wcwp_followup_scheduled', $timestamp);
+    $order->update_meta_data('_wcwp_followup_scheduled', $timestamp);
+    $order->save();
 }
 
 function wcwp_send_followup_message_handler($order_id) {
@@ -30,7 +34,7 @@ function wcwp_send_followup_message_handler($order_id) {
     if (!$order) return;
 
     // Prevent repeat sends
-    if (get_post_meta($order_id, '_wcwp_followup_sent', true)) return;
+    if ($order->get_meta('_wcwp_followup_sent')) return;
 
     $to = sanitize_text_field($order->get_billing_phone());
     if (!$to) return;
@@ -48,7 +52,8 @@ function wcwp_send_followup_message_handler($order_id) {
     if (function_exists('wcwp_send_whatsapp_message')) {
         $result = wcwp_send_whatsapp_message($to, $message, false, ['type' => 'followup', 'order_id' => $order_id]);
         if ($result === true) {
-            update_post_meta($order_id, '_wcwp_followup_sent', current_time('mysql'));
+            $order->update_meta_data('_wcwp_followup_sent', current_time('mysql'));
+            $order->save();
         }
     }
 }

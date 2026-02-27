@@ -304,10 +304,13 @@ function wcwp_handle_tracking_request() {
 }
 
 function wcwp_track_event_ajax() {
+    if ( ! check_ajax_referer( 'wcwp_track_event', 'nonce', false ) ) {
+        wp_send_json_error( [ 'message' => __( 'Invalid nonce', 'woochat-pro' ) ], 403 );
+    }
     $type = sanitize_text_field($_REQUEST['type'] ?? '');
     $event_id = sanitize_text_field($_REQUEST['event_id'] ?? '');
     if (!$type || !$event_id) {
-        wp_send_json_error(['message' => 'Missing data'], 400);
+        wp_send_json_error(['message' => __('Missing data', 'woochat-pro')], 400);
     }
     if ($type === 'delivered') {
         wcwp_analytics_increment_total('delivered');
