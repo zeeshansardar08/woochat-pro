@@ -79,10 +79,10 @@ function wcwp_render_settings_page() {
             <div class="wcwp-onboarding-step"> <h2><?php esc_html_e('Enable Features', 'woochat-pro'); ?></h2> <p><?php esc_html_e('Choose which features to enable: order messages, cart recovery, chatbot, and more.', 'woochat-pro'); ?></p> </div>
             <div class="wcwp-onboarding-step"> <h2><?php esc_html_e('All Set!', 'woochat-pro'); ?></h2> <p><?php esc_html_e('You\'re ready to start using WooChat Pro. Enjoy!', 'woochat-pro'); ?></p> </div>
             <div class="wcwp-onboarding-buttons">
-                <button type="button" class="wcwp-onboarding-prev">Back</button>
-                <button type="button" class="wcwp-onboarding-next">Next</button>
-                <button type="button" class="wcwp-onboarding-finish">Finish</button>
-                <button type="button" class="wcwp-onboarding-skip">Skip</button>
+                <button type="button" class="wcwp-onboarding-prev"><?php esc_html_e('Back', 'woochat-pro'); ?></button>
+                <button type="button" class="wcwp-onboarding-next"><?php esc_html_e('Next', 'woochat-pro'); ?></button>
+                <button type="button" class="wcwp-onboarding-finish"><?php esc_html_e('Finish', 'woochat-pro'); ?></button>
+                <button type="button" class="wcwp-onboarding-skip"><?php esc_html_e('Skip', 'woochat-pro'); ?></button>
             </div>
         </div>
     </div>
@@ -209,7 +209,7 @@ function wcwp_render_settings_page() {
                         <th scope="row"><label for="wcwp_optout_webhook_token"><?php esc_html_e('Opt-out Webhook Token', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Use this token to secure the opt-out webhook endpoint.', 'woochat-pro'); ?></span></span></th>
                         <td>
                             <input type="text" name="wcwp_optout_webhook_token" id="wcwp_optout_webhook_token" value="<?php echo esc_attr(get_option('wcwp_optout_webhook_token', '')); ?>" class="regular-text" />
-                            <p class="description">Webhook: <code><?php echo esc_html(rest_url('wcwp/v1/optout')); ?></code></p>
+                            <p class="description"><?php esc_html_e('Webhook:', 'woochat-pro'); ?> <code><?php echo esc_html(rest_url('wcwp/v1/optout')); ?></code></p>
                         </td>
                     </tr>
                     <tr>
@@ -232,7 +232,7 @@ function wcwp_render_settings_page() {
                             <textarea id="wcwp_test_message" rows="4" class="large-text" placeholder="Type your test message here..."><?php echo esc_textarea(get_option('wcwp_test_message', 'Hello! This is a test message from WooChat Pro.')); ?></textarea>
                             <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
                                 <button type="button" class="button button-primary" id="wcwp-send-test-message"><?php esc_html_e('Send Test Message', 'woochat-pro'); ?></button>
-                                <span id="wcwp-test-mode-badge" style="display:none;background:#fff3cd;color:#856404;border:1px solid #ffe066;border-radius:12px;padding:2px 8px;font-size:12px;font-weight:600;">Test Mode ON</span>
+                                <span id="wcwp-test-mode-badge" style="display:none;background:#fff3cd;color:#856404;border:1px solid #ffe066;border-radius:12px;padding:2px 8px;font-size:12px;font-weight:600;"><?php esc_html_e('Test Mode ON', 'woochat-pro'); ?></span>
                                 <span id="wcwp-test-status" style="font-weight:600;"></span>
                             </div>
                             <p id="wcwp-test-log-hint" class="description" style="margin-top:6px;<?php echo get_option('wcwp_test_mode_enabled', 'no') === 'yes' ? '' : 'display:none;'; ?>"><?php esc_html_e('Test Mode is enabled. Messages are logged to wp-content/uploads/woochat-pro/woochat-pro.log.', 'woochat-pro'); ?></p>
@@ -242,7 +242,10 @@ function wcwp_render_settings_page() {
                         <th scope="row"><label for="wcwp_order_message_template"><?php esc_html_e('Order Message Template', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Customize the WhatsApp message sent for new orders. Use placeholders: {name}, {order_id}, {total}', 'woochat-pro'); ?></span></span></th>
                         <td>
                             <textarea name="wcwp_order_message_template" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} PKR.')); ?></textarea>
-                            <p class="description">Use placeholders: {name}, {order_id}, {total}</p>
+                            <p class="description"><?php
+                                /* translators: do not translate placeholders inside curly braces */
+                                esc_html_e('Use placeholders: {name}, {order_id}, {total}', 'woochat-pro');
+                            ?></p>
                         </td>
                     </tr>
                 </table>
@@ -324,7 +327,10 @@ function wcwp_render_settings_page() {
                         <th scope="row"><label for="wcwp_cart_recovery_message"><?php esc_html_e('Cart Recovery Message', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Customize the WhatsApp message sent for cart recovery. Use placeholders: {items}, {total}, {cart_url}', 'woochat-pro'); ?></span></span></th>
                         <td>
                             <textarea name="wcwp_cart_recovery_message" id="wcwp_cart_recovery_message" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}")); ?></textarea>
-                            <p class="description">Use placeholders: {items}, {total}, {cart_url}</p>
+                            <p class="description"><?php
+                                /* translators: do not translate placeholders inside curly braces */
+                                esc_html_e('Use placeholders: {items}, {total}, {cart_url}', 'woochat-pro');
+                            ?></p>
                         </td>
                     </tr>
                 </table>
@@ -343,9 +349,9 @@ function wcwp_render_settings_page() {
                         echo '<td>' . esc_html($a['total']) . '</td>';
                         echo '<td><pre style="white-space:pre-line;font-size:0.97em;max-width:320px;overflow-x:auto;">' . esc_html($a['message']) . '</pre></td>';
                         if (!empty($a['id'])) {
-                            echo '<td><button type="button" class="button wcwp-resend-cart" data-attempt="' . esc_attr($a['id']) . '">Resend</button></td>';
+                            echo '<td><button type="button" class="button wcwp-resend-cart" data-attempt="' . esc_attr($a['id']) . '">' . esc_html__('Resend', 'woochat-pro') . '</button></td>';
                         } else {
-                            echo '<td><em>N/A</em></td>';
+                            echo '<td><em>' . esc_html__('N/A', 'woochat-pro') . '</em></td>';
                         }
                         echo '</tr>';
                     }
@@ -371,27 +377,27 @@ function wcwp_render_settings_page() {
                 <?php endif; ?>
                 <div class="wcwp-analytics-filters" style="margin:16px 0 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
                     <div>
-                        <label for="wcwp_type">Type</label><br>
+                        <label for="wcwp_type"><?php esc_html_e('Type', 'woochat-pro'); ?></label><br>
                         <input type="text" id="wcwp_type" name="wcwp_type" value="<?php echo esc_attr($filters['type']); ?>" placeholder="order, cart_recovery" />
                     </div>
                     <div>
-                        <label for="wcwp_status">Status</label><br>
+                        <label for="wcwp_status"><?php esc_html_e('Status', 'woochat-pro'); ?></label><br>
                         <input type="text" id="wcwp_status" name="wcwp_status" value="<?php echo esc_attr($filters['status']); ?>" placeholder="sent, failed" />
                     </div>
                     <div>
-                        <label for="wcwp_phone">Phone</label><br>
+                        <label for="wcwp_phone"><?php esc_html_e('Phone', 'woochat-pro'); ?></label><br>
                         <input type="text" id="wcwp_phone" name="wcwp_phone" value="<?php echo esc_attr($filters['phone']); ?>" placeholder="last 4 digits" />
                     </div>
                     <div>
-                        <label for="wcwp_date_from">From</label><br>
+                        <label for="wcwp_date_from"><?php esc_html_e('From', 'woochat-pro'); ?></label><br>
                         <input type="date" id="wcwp_date_from" name="wcwp_date_from" value="<?php echo esc_attr($filters['date_from']); ?>" />
                     </div>
                     <div>
-                        <label for="wcwp_date_to">To</label><br>
+                        <label for="wcwp_date_to"><?php esc_html_e('To', 'woochat-pro'); ?></label><br>
                         <input type="date" id="wcwp_date_to" name="wcwp_date_to" value="<?php echo esc_attr($filters['date_to']); ?>" />
                     </div>
                     <div>
-                        <button type="button" class="button" id="wcwp-analytics-filter-button">Filter</button>
+                        <button type="button" class="button" id="wcwp-analytics-filter-button"><?php esc_html_e('Filter', 'woochat-pro'); ?></button>
                     </div>
                 </div>
                 <div class="wcwp-analytics-cards" style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -544,7 +550,7 @@ function wcwp_render_settings_page() {
                 <tr><td><?php esc_html_e('Widget Shortcodes', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
                 <tr><td><?php esc_html_e('Premium Support', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
             </table>
-            <a href="https://zeecreatives.com/woochat-pro" target="_blank"><button class="wcwp-upgrade-btn"><?php esc_html_e('Upgrade Now', 'woochat-pro'); ?></button></a>
+            <a href="https://zignites.com/woochat-pro" target="_blank"><button class="wcwp-upgrade-btn"><?php esc_html_e('Upgrade Now', 'woochat-pro'); ?></button></a>
             <p style="margin-top:10px;font-size:0.97rem;color:#888;"><?php esc_html_e('Already have a license? Enter it in the License tab.', 'woochat-pro'); ?></p>
         </div>
     </div>
@@ -561,8 +567,8 @@ function wcwp_render_settings_page() {
             <div class="wcwp-support-success" id="wcwp-support-success" style="display:none;"><?php esc_html_e('Thank you! Your message has been sent. Our team will get back to you soon.', 'woochat-pro'); ?></div>
         </form>
         <div style="margin-top:12px;font-size:0.97rem;color:#888;">
-            Or email us at <a href="mailto:support@woochatpro.com"><?php esc_html_e('support@woochatpro.com', 'woochat-pro'); ?></a><br>
-            <a href="https://zeecreatives.com/feature-request" target="_blank"><?php esc_html_e('Suggest a Feature', 'woochat-pro'); ?></a> &nbsp;|&nbsp; <a href="https://zeecreatives.com/bug-report" target="_blank"><?php esc_html_e('Report a Bug', 'woochat-pro'); ?></a>
+            Or email us at <a href="mailto:support@zignites.com"><?php esc_html_e('support@zignites.com', 'woochat-pro'); ?></a><br>
+            <a href="https://zignites.com/feature-request" target="_blank"><?php esc_html_e('Suggest a Feature', 'woochat-pro'); ?></a> &nbsp;|&nbsp; <a href="https://zignites.com/bug-report" target="_blank"><?php esc_html_e('Report a Bug', 'woochat-pro'); ?></a>
         </div>
     </div>
     <?php

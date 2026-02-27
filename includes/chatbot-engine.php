@@ -29,7 +29,8 @@ function wcwp_render_chatbot_widget() {
     if (!is_array($faq_pairs)) $faq_pairs = [];
 
     wp_localize_script('wcwp-chatbot-js', 'wcwp_chatbot_obj', [
-        'faq_pairs' => $faq_pairs
+        'faq_pairs'    => $faq_pairs,
+        'noAnswerText' => __( "Sorry, I don't have an answer for that.", 'woochat-pro' ),
     ]);
 }
 
@@ -45,7 +46,8 @@ function wcwp_chatbot_shortcode() {
     $faq_pairs = json_decode(get_option('wcwp_faq_pairs', '[]'), true);
     if (!is_array($faq_pairs)) $faq_pairs = [];
     wp_localize_script('wcwp-chatbot-js', 'wcwp_chatbot_obj', [
-        'faq_pairs' => $faq_pairs
+        'faq_pairs'    => $faq_pairs,
+        'noAnswerText' => __( "Sorry, I don't have an answer for that.", 'woochat-pro' ),
     ]);
     if (!defined('WCWP_CHATBOT_RENDERED')) {
         define('WCWP_CHATBOT_RENDERED', true);

@@ -1,5 +1,5 @@
 === WooChat Pro – WhatsApp for WooCommerce ===
-Contributors: zeecreatives
+Contributors: zignite
 Tags: woocommerce, whatsapp, cart recovery, chatbot, order notification
 Requires at least: 6.0
 Tested up to: 6.7

@@ -8,7 +8,7 @@ jQuery(document).ready(function ($) {
     $('#wcwp-user-input').on('keypress', function (e) {
         if (e.which === 13) {
             const question = $(this).val().toLowerCase();
-            let reply = "Sorry, I don't have an answer for that.";
+            let reply = (wcwp_chatbot_obj.noAnswerText || "Sorry, I don't have an answer for that.");
             let pairs = wcwp_chatbot_obj.faq_pairs;
 
             for (let i = 0; i < pairs.length; i++) {

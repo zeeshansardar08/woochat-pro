@@ -79,7 +79,7 @@ function wcwp_update_plugin_info($result, $action, $args) {
     $data->name = isset($info['name']) ? $info['name'] : 'WooChat Pro';
     $data->slug = 'woochat-pro';
     $data->version = (string) $info['version'];
-    $data->author = isset($info['author']) ? $info['author'] : 'ZeeCreatives';
+    $data->author = isset($info['author']) ? $info['author'] : 'Zignite';
     $data->homepage = isset($info['homepage']) ? $info['homepage'] : '';
     $data->requires = isset($info['requires']) ? $info['requires'] : '';
     $data->tested = isset($info['tested']) ? $info['tested'] : '';

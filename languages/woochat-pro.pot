@@ -1,0 +1,929 @@
+# Copyright (C) 2026 Zignite
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: WooChat Pro – WhatsApp for WooCommerce 1.0.1\n"
+"Report-Msgid-Bugs-To: https://zignites.com/support\n"
+"Last-Translator: Zignite <support@zignites.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-02-27T04:25:44+01:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: woochat-pro\n"
+
+#. Plugin Name of the plugin
+#: woochat-pro.php
+msgid "WooChat Pro – WhatsApp for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: woochat-pro.php
+msgid "https://zignites.com/woochat-pro"
+msgstr ""
+
+#. Description of the plugin
+#: woochat-pro.php
+msgid "Sends WhatsApp messages when a WooCommerce order is placed."
+msgstr ""
+
+#. Author of the plugin
+#: woochat-pro.php
+msgid "Zignite"
+msgstr ""
+
+#. Author URI of the plugin
+#: woochat-pro.php
+msgid "https://zignites.com"
+msgstr ""
+
+#: admin/settings-page.php:8
+msgid "WooChat Settings"
+msgstr ""
+
+#: admin/settings-page.php:9
+msgid "WooChat"
+msgstr ""
+
+#: admin/settings-page.php:76
+msgid "Welcome to WooChat Pro!"
+msgstr ""
+
+#: admin/settings-page.php:76
+msgid "Let's get you set up in a few easy steps."
+msgstr ""
+
+#: admin/settings-page.php:77
+msgid "Connect WhatsApp API"
+msgstr ""
+
+#: admin/settings-page.php:77
+msgid "Enter your Twilio/Cloud API credentials in the settings."
+msgstr ""
+
+#: admin/settings-page.php:78
+msgid "Set Your WhatsApp Number"
+msgstr ""
+
+#: admin/settings-page.php:78
+msgid "Configure your business WhatsApp number for sending messages."
+msgstr ""
+
+#: admin/settings-page.php:79
+msgid "Enable Features"
+msgstr ""
+
+#: admin/settings-page.php:79
+msgid "Choose which features to enable: order messages, cart recovery, chatbot, and more."
+msgstr ""
+
+#: admin/settings-page.php:80
+msgid "All Set!"
+msgstr ""
+
+#: admin/settings-page.php:80
+msgid "You're ready to start using WooChat Pro. Enjoy!"
+msgstr ""
+
+#: admin/settings-page.php:82
+msgid "Back"
+msgstr ""
+
+#: admin/settings-page.php:83
+msgid "Next"
+msgstr ""
+
+#: admin/settings-page.php:84
+msgid "Finish"
+msgstr ""
+
+#: admin/settings-page.php:85
+msgid "Skip"
+msgstr ""
+
+#: admin/settings-page.php:90
+msgid "WooChat – WhatsApp Settings"
+msgstr ""
+
+#: admin/settings-page.php:101
+msgid "Messages Sent"
+msgstr ""
+
+#: admin/settings-page.php:106
+msgid "Open Rate"
+msgstr ""
+
+#: admin/settings-page.php:111
+msgid "License Status"
+msgstr ""
+
+#: admin/settings-page.php:115
+#: admin/settings-page.php:228
+#: admin/settings-page.php:234
+msgid "Send Test Message"
+msgstr ""
+
+#: admin/settings-page.php:116
+msgid "Manage License"
+msgstr ""
+
+#: admin/settings-page.php:120
+msgid "General"
+msgstr ""
+
+#: admin/settings-page.php:121
+msgid "Messaging"
+msgstr ""
+
+#: admin/settings-page.php:122
+msgid "Chatbot"
+msgstr ""
+
+#: admin/settings-page.php:123
+#: admin/settings-page.php:544
+msgid "Cart Recovery"
+msgstr ""
+
+#: admin/settings-page.php:124
+#: admin/settings-page.php:444
+msgid "Scheduler"
+msgstr ""
+
+#: admin/settings-page.php:125
+msgid "Analytics"
+msgstr ""
+
+#: admin/settings-page.php:126
+msgid "License"
+msgstr ""
+
+#: admin/settings-page.php:138
+msgid "Twilio SID"
+msgstr ""
+
+#: admin/settings-page.php:138
+msgid "Your Twilio Account SID. Find it in your Twilio dashboard."
+msgstr ""
+
+#: admin/settings-page.php:142
+msgid "Twilio Auth Token"
+msgstr ""
+
+#: admin/settings-page.php:142
+msgid "Your Twilio Auth Token. Keep this secret!"
+msgstr ""
+
+#: admin/settings-page.php:146
+msgid "WhatsApp From Number"
+msgstr ""
+
+#: admin/settings-page.php:146
+msgid "The WhatsApp-enabled number from your Twilio or Cloud API account. Format: whatsapp:+1234567890"
+msgstr ""
+
+#: admin/settings-page.php:150
+msgid "API Provider"
+msgstr ""
+
+#: admin/settings-page.php:150
+msgid "Choose which WhatsApp API to use: Twilio or WhatsApp Cloud (Meta)."
+msgstr ""
+
+#: admin/settings-page.php:153
+msgid "Twilio"
+msgstr ""
+
+#: admin/settings-page.php:154
+msgid "WhatsApp Cloud"
+msgstr ""
+
+#: admin/settings-page.php:156
+msgid "Select your WhatsApp API provider."
+msgstr ""
+
+#: admin/settings-page.php:160
+msgid "Cloud API Token"
+msgstr ""
+
+#: admin/settings-page.php:160
+msgid "Your WhatsApp Cloud API access token from Meta."
+msgstr ""
+
+#: admin/settings-page.php:164
+msgid "Phone Number ID"
+msgstr ""
+
+#: admin/settings-page.php:164
+msgid "Your WhatsApp Cloud API phone number ID."
+msgstr ""
+
+#: admin/settings-page.php:168
+msgid "From Number"
+msgstr ""
+
+#: admin/settings-page.php:168
+msgid "The WhatsApp-enabled number from your Cloud API account. Format: +1234567890"
+msgstr ""
+
+#: admin/settings-page.php:176
+msgid "Test Mode"
+msgstr ""
+
+#: admin/settings-page.php:179
+msgid "Enable this for safe testing."
+msgstr ""
+
+#: admin/settings-page.php:179
+msgid "Messages will be logged, not sent."
+msgstr ""
+
+#: admin/settings-page.php:179
+msgid "Don't forget to turn it off in production!"
+msgstr ""
+
+#: admin/settings-page.php:185
+msgid "Data Retention (days)"
+msgstr ""
+
+#: admin/settings-page.php:185
+msgid "Automatically delete analytics events older than this. Set to 0 to keep indefinitely."
+msgstr ""
+
+#: admin/settings-page.php:188
+msgid "Recommended: 30–180 days."
+msgstr ""
+
+#: admin/settings-page.php:192
+msgid "Delete Data on Uninstall"
+msgstr ""
+
+#: admin/settings-page.php:192
+msgid "If enabled, all plugin data will be removed when the plugin is deleted."
+msgstr ""
+
+#: admin/settings-page.php:195
+#: admin/settings-page.php:285
+#: admin/settings-page.php:306
+#: admin/settings-page.php:320
+#: admin/settings-page.php:452
+#: admin/settings-page.php:475
+msgid "No"
+msgstr ""
+
+#: admin/settings-page.php:196
+#: admin/settings-page.php:284
+#: admin/settings-page.php:305
+#: admin/settings-page.php:321
+#: admin/settings-page.php:451
+#: admin/settings-page.php:476
+msgid "Yes"
+msgstr ""
+
+#: admin/settings-page.php:198
+msgid "Use for strict compliance requirements."
+msgstr ""
+
+#: admin/settings-page.php:202
+msgid "Opt-out Keywords"
+msgstr ""
+
+#: admin/settings-page.php:202
+msgid "Incoming messages containing these words will add the number to the suppression list."
+msgstr ""
+
+#: admin/settings-page.php:205
+msgid "Comma-separated. Default: stop, unsubscribe."
+msgstr ""
+
+#: admin/settings-page.php:209
+msgid "Opt-out Webhook Token"
+msgstr ""
+
+#: admin/settings-page.php:209
+msgid "Use this token to secure the opt-out webhook endpoint."
+msgstr ""
+
+#: admin/settings-page.php:212
+msgid "Webhook:"
+msgstr ""
+
+#: admin/settings-page.php:216
+msgid "Suppression List (opted-out numbers)"
+msgstr ""
+
+#: admin/settings-page.php:216
+msgid "Numbers in this list will never receive messages."
+msgstr ""
+
+#: admin/settings-page.php:220
+msgid "One phone number per line."
+msgstr ""
+
+#: admin/settings-page.php:228
+msgid "Send a one-off message to verify your setup. Test mode logs instead of sending."
+msgstr ""
+
+#: admin/settings-page.php:231
+msgid "Phone number to receive the test message."
+msgstr ""
+
+#: admin/settings-page.php:235
+msgid "Test Mode ON"
+msgstr ""
+
+#: admin/settings-page.php:238
+msgid "Test Mode is enabled. Messages are logged to wp-content/uploads/woochat-pro/woochat-pro.log."
+msgstr ""
+
+#: admin/settings-page.php:242
+msgid "Order Message Template"
+msgstr ""
+
+#: admin/settings-page.php:242
+msgid "Customize the WhatsApp message sent for new orders. Use placeholders: {name}, {order_id}, {total}"
+msgstr ""
+
+#. translators: do not translate placeholders inside curly braces
+#: admin/settings-page.php:247
+msgid "Use placeholders: {name}, {order_id}, {total}"
+msgstr ""
+
+#: admin/settings-page.php:256
+msgid "Chatbot Bubble Color"
+msgstr ""
+
+#: admin/settings-page.php:258
+msgid "Text Color"
+msgstr ""
+
+#: admin/settings-page.php:260
+msgid "Icon Color"
+msgstr ""
+
+#: admin/settings-page.php:262
+msgid "Choose Icon"
+msgstr ""
+
+#: admin/settings-page.php:271
+msgid "Welcome Message"
+msgstr ""
+
+#: admin/settings-page.php:281
+msgid "Enable Chatbot"
+msgstr ""
+
+#: admin/settings-page.php:281
+msgid "Toggle the floating WhatsApp chatbot widget on your site."
+msgstr ""
+
+#: admin/settings-page.php:287
+msgid "Toggle the floating WhatsApp chatbot on your site."
+msgstr ""
+
+#: admin/settings-page.php:291
+msgid "FAQ Rules (JSON)"
+msgstr ""
+
+#: admin/settings-page.php:291
+msgid "Add question/answer pairs for the chatbot. Format: JSON array."
+msgstr ""
+
+#: admin/settings-page.php:294
+msgid "Enter question/answer pairs as JSON array."
+msgstr ""
+
+#: admin/settings-page.php:302
+msgid "Enable Cart Recovery"
+msgstr ""
+
+#: admin/settings-page.php:302
+msgid "Automatically remind users via WhatsApp if they abandon their cart."
+msgstr ""
+
+#: admin/settings-page.php:308
+msgid "Automatically remind users via WhatsApp if they abandon the cart."
+msgstr ""
+
+#: admin/settings-page.php:312
+msgid "Reminder Delay (minutes)"
+msgstr ""
+
+#: admin/settings-page.php:312
+msgid "How many minutes after cart abandonment should the WhatsApp reminder be sent?"
+msgstr ""
+
+#: admin/settings-page.php:314
+msgid "Default: 20 minutes"
+msgstr ""
+
+#: admin/settings-page.php:317
+msgid "Require Consent (checkout)"
+msgstr ""
+
+#: admin/settings-page.php:317
+msgid "Show a consent checkbox on checkout and only send reminders when checked."
+msgstr ""
+
+#: admin/settings-page.php:323
+msgid "Recommended for compliance; captures user opt-in on checkout."
+msgstr ""
+
+#: admin/settings-page.php:327
+msgid "Cart Recovery Message"
+msgstr ""
+
+#: admin/settings-page.php:327
+msgid "Customize the WhatsApp message sent for cart recovery. Use placeholders: {items}, {total}, {cart_url}"
+msgstr ""
+
+#. translators: do not translate placeholders inside curly braces
+#: admin/settings-page.php:332
+msgid "Use placeholders: {items}, {total}, {cart_url}"
+msgstr ""
+
+#: admin/settings-page.php:341
+msgid "Recent Cart Recovery Attempts"
+msgstr ""
+
+#: admin/settings-page.php:343
+#: admin/settings-page.php:420
+msgid "Time"
+msgstr ""
+
+#: admin/settings-page.php:343
+#: admin/settings-page.php:388
+#: admin/settings-page.php:420
+msgid "Phone"
+msgstr ""
+
+#: admin/settings-page.php:343
+msgid "Items"
+msgstr ""
+
+#: admin/settings-page.php:343
+msgid "Total"
+msgstr ""
+
+#: admin/settings-page.php:343
+#: admin/settings-page.php:564
+msgid "Message"
+msgstr ""
+
+#: admin/settings-page.php:343
+msgid "Actions"
+msgstr ""
+
+#: admin/settings-page.php:352
+msgid "Resend"
+msgstr ""
+
+#: admin/settings-page.php:354
+msgid "N/A"
+msgstr ""
+
+#: admin/settings-page.php:376
+msgid "Analytics Dashboard"
+msgstr ""
+
+#: admin/settings-page.php:376
+#: admin/settings-page.php:444
+msgid "is a Pro feature."
+msgstr ""
+
+#: admin/settings-page.php:376
+#: admin/settings-page.php:444
+msgid "Upgrade"
+msgstr ""
+
+#: admin/settings-page.php:380
+#: admin/settings-page.php:420
+msgid "Type"
+msgstr ""
+
+#: admin/settings-page.php:384
+#: admin/settings-page.php:420
+msgid "Status"
+msgstr ""
+
+#: admin/settings-page.php:392
+msgid "From"
+msgstr ""
+
+#: admin/settings-page.php:396
+msgid "To"
+msgstr ""
+
+#: admin/settings-page.php:400
+msgid "Filter"
+msgstr ""
+
+#: admin/settings-page.php:405
+#: includes/order-hooks.php:85
+msgid "Sent"
+msgstr ""
+
+#: admin/settings-page.php:409
+msgid "Delivered"
+msgstr ""
+
+#: admin/settings-page.php:413
+msgid "Clicked"
+msgstr ""
+
+#: admin/settings-page.php:417
+msgid "Recent Events"
+msgstr ""
+
+#: admin/settings-page.php:420
+msgid "Provider"
+msgstr ""
+
+#: admin/settings-page.php:420
+msgid "Message ID"
+msgstr ""
+
+#: admin/settings-page.php:420
+msgid "Preview"
+msgstr ""
+
+#: admin/settings-page.php:436
+msgid "No analytics events logged yet."
+msgstr ""
+
+#: admin/settings-page.php:448
+msgid "Enable Follow-up"
+msgstr ""
+
+#: admin/settings-page.php:448
+msgid "Schedule a WhatsApp follow-up message after an order is placed."
+msgstr ""
+
+#: admin/settings-page.php:454
+msgid "Requires valid license. Sends one follow-up per order."
+msgstr ""
+
+#: admin/settings-page.php:458
+msgid "Delay (minutes)"
+msgstr ""
+
+#: admin/settings-page.php:458
+msgid "How long after order completion/processing should the follow-up be sent?"
+msgstr ""
+
+#: admin/settings-page.php:461
+msgid "Default: 120 minutes."
+msgstr ""
+
+#: admin/settings-page.php:465
+msgid "Follow-up Template"
+msgstr ""
+
+#: admin/settings-page.php:465
+msgid "Placeholders: {name}, {order_id}, {total}, {status}, {date}"
+msgstr ""
+
+#: admin/settings-page.php:468
+msgid "Sent once per order after the delay."
+msgstr ""
+
+#: admin/settings-page.php:472
+msgid "Use GPT (optional)"
+msgstr ""
+
+#: admin/settings-page.php:472
+msgid "Generate the follow-up copy with your GPT endpoint; falls back to the template if the call fails."
+msgstr ""
+
+#: admin/settings-page.php:478
+msgid "Supports free/alt GPT endpoints by configuring the URL and key below."
+msgstr ""
+
+#: admin/settings-page.php:482
+msgid "GPT API Endpoint"
+msgstr ""
+
+#: admin/settings-page.php:485
+msgid "Set to your free/alt GPT API endpoint."
+msgstr ""
+
+#: admin/settings-page.php:489
+msgid "GPT API Key"
+msgstr ""
+
+#: admin/settings-page.php:492
+msgid "Stored in WordPress options; use a non-production key if possible."
+msgstr ""
+
+#: admin/settings-page.php:496
+msgid "GPT Model"
+msgstr ""
+
+#: admin/settings-page.php:499
+msgid "Adjust for your provider (e.g., gpt-3.5-turbo, gpt-4o-mini, or a free-tier model)."
+msgstr ""
+
+#: admin/settings-page.php:507
+msgid "License Key"
+msgstr ""
+
+#: admin/settings-page.php:507
+msgid "Enter your Pro license key to unlock premium features."
+msgstr ""
+
+#: admin/settings-page.php:515
+msgid "Activate"
+msgstr ""
+
+#: admin/settings-page.php:516
+msgid "Deactivate"
+msgstr ""
+
+#: admin/settings-page.php:538
+msgid "Upgrade to WooChat Pro"
+msgstr ""
+
+#: admin/settings-page.php:539
+msgid "Unlock all premium features and maximize your store's potential!"
+msgstr ""
+
+#: admin/settings-page.php:541
+msgid "Feature"
+msgstr ""
+
+#: admin/settings-page.php:541
+msgid "Free"
+msgstr ""
+
+#: admin/settings-page.php:541
+msgid "Pro"
+msgstr ""
+
+#: admin/settings-page.php:542
+msgid "Order Confirmation via WhatsApp"
+msgstr ""
+
+#: admin/settings-page.php:543
+msgid "Manual Message Button"
+msgstr ""
+
+#: admin/settings-page.php:545
+msgid "Smart Chatbot Widget"
+msgstr ""
+
+#: admin/settings-page.php:546
+msgid "Chatbot Customizer"
+msgstr ""
+
+#: admin/settings-page.php:547
+msgid "Scheduled Messages"
+msgstr ""
+
+#: admin/settings-page.php:548
+msgid "GPT/AI Auto Replies"
+msgstr ""
+
+#: admin/settings-page.php:549
+msgid "Usage Analytics"
+msgstr ""
+
+#: admin/settings-page.php:550
+msgid "Widget Shortcodes"
+msgstr ""
+
+#: admin/settings-page.php:551
+msgid "Premium Support"
+msgstr ""
+
+#: admin/settings-page.php:553
+msgid "Upgrade Now"
+msgstr ""
+
+#: admin/settings-page.php:554
+msgid "Already have a license? Enter it in the License tab."
+msgstr ""
+
+#: admin/settings-page.php:558
+msgid "Contact Support"
+msgstr ""
+
+#: admin/settings-page.php:560
+msgid "Your Name"
+msgstr ""
+
+#: admin/settings-page.php:562
+msgid "Your Email"
+msgstr ""
+
+#: admin/settings-page.php:566
+msgid "Send Message"
+msgstr ""
+
+#: admin/settings-page.php:567
+msgid "Thank you! Your message has been sent. Our team will get back to you soon."
+msgstr ""
+
+#: admin/settings-page.php:570
+msgid "support@zignites.com"
+msgstr ""
+
+#: admin/settings-page.php:571
+msgid "Suggest a Feature"
+msgstr ""
+
+#: admin/settings-page.php:571
+msgid "Report a Bug"
+msgstr ""
+
+#: includes/analytics.php:308
+#: includes/order-hooks.php:43
+msgid "Invalid nonce"
+msgstr ""
+
+#: includes/analytics.php:313
+#: includes/cart-recovery.php:130
+#: includes/optout.php:48
+msgid "Missing data"
+msgstr ""
+
+#: includes/cart-recovery.php:32
+msgid "Send me WhatsApp cart reminders"
+msgstr ""
+
+#: includes/cart-recovery.php:104
+#: includes/cart-recovery.php:417
+#: includes/license-manager.php:79
+#: includes/license-manager.php:94
+#: includes/optout.php:22
+#: includes/order-hooks.php:41
+#: includes/order-hooks.php:63
+msgid "Unauthorized"
+msgstr ""
+
+#: includes/cart-recovery.php:109
+msgid "Disabled"
+msgstr ""
+
+#: includes/cart-recovery.php:120
+msgid "Rate limited"
+msgstr ""
+
+#: includes/cart-recovery.php:125
+msgid "Consent missing"
+msgstr ""
+
+#: includes/cart-recovery.php:135
+#: includes/optout.php:57
+msgid "Opted out"
+msgstr ""
+
+#: includes/cart-recovery.php:141
+msgid "Failed to schedule"
+msgstr ""
+
+#: includes/cart-recovery.php:144
+msgid "Reminder scheduled"
+msgstr ""
+
+#: includes/cart-recovery.php:418
+#: includes/order-hooks.php:66
+msgid "Bad nonce"
+msgstr ""
+
+#: includes/cart-recovery.php:421
+msgid "Missing attempt id"
+msgstr ""
+
+#: includes/cart-recovery.php:432
+msgid "Attempt not found"
+msgstr ""
+
+#: includes/cart-recovery.php:437
+msgid "Resent"
+msgstr ""
+
+#: includes/cart-recovery.php:439
+#: includes/order-hooks.php:88
+msgid "Send failed"
+msgstr ""
+
+#: includes/cart-recovery.php:442
+#: includes/order-hooks.php:80
+msgid "Messaging unavailable"
+msgstr ""
+
+#: includes/chatbot-engine.php:33
+#: includes/chatbot-engine.php:50
+msgid "Sorry, I don't have an answer for that."
+msgstr ""
+
+#: includes/license-manager.php:19
+msgid "Missing endpoint or license key"
+msgstr ""
+
+#: includes/license-manager.php:42
+msgid "Unexpected response from license server"
+msgstr ""
+
+#: includes/license-manager.php:83
+msgid "License key required"
+msgstr ""
+
+#: includes/license-manager.php:90
+msgid "Activated"
+msgstr ""
+
+#: includes/license-manager.php:104
+msgid "License deactivated"
+msgstr ""
+
+#: includes/license-manager.php:105
+msgid "Deactivated"
+msgstr ""
+
+#: includes/optout.php:52
+msgid "No opt-out keyword detected"
+msgstr ""
+
+#: includes/optout.php:57
+msgid "Invalid phone"
+msgstr ""
+
+#: includes/order-hooks.php:45
+msgid "Order not found"
+msgstr ""
+
+#: includes/order-hooks.php:73
+msgid "Phone and message required"
+msgstr ""
+
+#: includes/order-hooks.php:95
+msgid "WhatsApp message sent successfully."
+msgstr ""
+
+#: includes/order-hooks.php:97
+msgid "Failed to send WhatsApp message. Check logs for details."
+msgstr ""
+
+#: includes/order-hooks.php:271
+msgid "WooChat Pro:"
+msgstr ""
+
+#: includes/order-hooks.php:271
+msgid "Unable to write to log file. Please check file permissions for wp-content/uploads/woochat-pro/."
+msgstr ""
+
+#: templates/chatbot-widget.php:20
+msgid "Chat with us"
+msgstr ""
+
+#: templates/chatbot-widget.php:21
+msgid "Ask a question..."
+msgstr ""
+
+#: templates/chatbot-widget.php:23
+msgid "Send via WhatsApp"
+msgstr ""
+
+#: templates/chatbot-widget.php:27
+msgid "Chat"
+msgstr ""
+
+#: woochat-pro.php:48
+msgid "Activate WooCommerce"
+msgstr ""
+
+#: woochat-pro.php:55
+msgid "Install WooCommerce"
+msgstr ""
+
+#: woochat-pro.php:64
+#: woochat-pro.php:110
+#: woochat-pro.php:111
+#: woochat-pro.php:119
+#: woochat-pro.php:120
+#: woochat-pro.php:149
+msgid "WooChat Pro"
+msgstr ""
+
+#: woochat-pro.php:64
+msgid "requires WooCommerce. Please install and activate WooCommerce."
+msgstr ""
+
+#: woochat-pro.php:110
+msgid "requires WooCommerce to be network-activated."
+msgstr ""
+
+#: woochat-pro.php:110
+#: woochat-pro.php:119
+msgid "Return to Plugins"
+msgstr ""
+
+#: woochat-pro.php:119
+msgid "requires WooCommerce to be installed and active."
+msgstr ""
+
+#: woochat-pro.php:149
+msgid "was deactivated because WooCommerce is not active."
+msgstr ""

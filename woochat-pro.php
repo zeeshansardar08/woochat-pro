@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: WooChat Pro – WhatsApp for WooCommerce
- * Plugin URI:  https://zeecreatives.com/woochat-pro
+ * Plugin URI:  https://zignites.com/woochat-pro
  * Description: Sends WhatsApp messages when a WooCommerce order is placed.
  * Version:     1.0.1
- * Author:      ZeeCreatives
- * Author URI:  https://zeecreatives.com
+ * Author:      Zignite
+ * Author URI:  https://zignites.com
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: woochat-pro
