@@ -130,7 +130,20 @@ function wcwp_activate_plugin($network_wide) {
 	if (function_exists('wcwp_schedule_cart_recovery_cron')) {
 		wcwp_schedule_cart_recovery_cron();
 	}
+	if (function_exists('wcwp_run_migrations')) {
+		wcwp_run_migrations();
+	}
 }
+
+// Run versioned migrations on admin pages too — covers WP auto-updates
+// where the activation hook does not fire. The runner short-circuits on
+// the wcwp_db_version flag so this is effectively free after the first
+// successful pass.
+add_action('admin_init', function() {
+	if (function_exists('wcwp_run_migrations')) {
+		wcwp_run_migrations();
+	}
+}, 5);
 
 function wcwp_deactivate_plugin() {
 	if (function_exists('wcwp_unschedule_cart_recovery_cron')) {

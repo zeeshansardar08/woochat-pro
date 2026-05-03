@@ -26,6 +26,86 @@ function wcwp_sanitize_provider($value) {
 }
 
 /**
+ * List of option keys that hold credentials / integration config.
+ *
+ * These are only read when sending a message, on the admin settings
+ * page, or by the opt-out / license webhooks — never on every frontend
+ * page load. Keeping them OUT of the autoload set means fewer bytes
+ * pulled into wp-cache 'alloptions' on every WordPress request, and
+ * avoids unnecessarily exposing secret material in process memory.
+ *
+ * @return string[]
+ */
+function wcwp_get_secret_option_keys() {
+    return [
+        'wcwp_twilio_sid',
+        'wcwp_twilio_auth_token',
+        'wcwp_twilio_from',
+        'wcwp_cloud_token',
+        'wcwp_cloud_phone_id',
+        'wcwp_cloud_from',
+        'wcwp_cloud_app_secret',
+        'wcwp_gpt_api_key',
+        'wcwp_gpt_api_endpoint',
+        'wcwp_gpt_model',
+        'wcwp_optout_webhook_token',
+        'wcwp_license_key',
+    ];
+}
+
+/**
+ * Flip autoload to 'no' for any existing rows in the secret-keys list.
+ *
+ * Idempotent. Uses wp_set_option_autoload_values() on WP 6.4+ for a
+ * batch update; falls back to direct $wpdb on older versions.
+ */
+function wcwp_set_secrets_autoload_no() {
+    $keys = wcwp_get_secret_option_keys();
+
+    if (function_exists('wp_set_option_autoload_values')) {
+        wp_set_option_autoload_values(array_fill_keys($keys, 'no'));
+        return;
+    }
+
+    global $wpdb;
+    $placeholders = implode(',', array_fill(0, count($keys), '%s'));
+    $sql = "UPDATE {$wpdb->options} SET autoload = 'no' WHERE autoload != 'no' AND option_name IN ($placeholders)";
+    $wpdb->query($wpdb->prepare($sql, $keys));
+    wp_cache_delete('alloptions', 'options');
+}
+
+/**
+ * Ensure fresh installs create secret option rows with autoload=no
+ * before WordPress's settings.php save flow ever sees them. add_option
+ * is a no-op when the option already exists, so this is safe to call
+ * repeatedly.
+ */
+function wcwp_ensure_secret_option_rows() {
+    foreach (wcwp_get_secret_option_keys() as $key) {
+        // Fourth arg: autoload. add_option(name, value, deprecated, autoload).
+        add_option($key, '', '', 'no');
+    }
+}
+
+/**
+ * Versioned, run-once migration runner. Safe to invoke on every admin
+ * request — the version flag short-circuits after the migration has
+ * been applied.
+ */
+function wcwp_run_migrations() {
+    $stored = (int) get_option('wcwp_db_version', 0);
+
+    if ($stored < 1) {
+        wcwp_ensure_secret_option_rows();
+        wcwp_set_secrets_autoload_no();
+    }
+
+    if ($stored < 1) {
+        update_option('wcwp_db_version', 1, false);
+    }
+}
+
+/**
  * Validate a value as a 3- or 6-digit hex color (with leading #).
  *
  * Used both as a register_setting() sanitize_callback (write-time, single
