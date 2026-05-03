@@ -35,6 +35,7 @@ $option_keys = [
     'wcwp_cloud_token',
     'wcwp_cloud_phone_id',
     'wcwp_cloud_from',
+    'wcwp_cloud_app_secret',
     'wcwp_cart_recovery_delay',
     'wcwp_cart_recovery_message',
     'wcwp_cart_recovery_require_consent',
