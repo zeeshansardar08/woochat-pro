@@ -364,11 +364,11 @@ function wcwp_render_settings_page() {
                 <?php $totals = function_exists('wcwp_analytics_get_totals') ? wcwp_analytics_get_totals() : ['sent' => 0, 'delivered' => 0, 'clicked' => 0]; ?>
                 <?php
                 $filters = [
-                    'type' => isset($_GET['wcwp_type']) ? sanitize_text_field($_GET['wcwp_type']) : '',
-                    'status' => isset($_GET['wcwp_status']) ? sanitize_text_field($_GET['wcwp_status']) : '',
-                    'phone' => isset($_GET['wcwp_phone']) ? sanitize_text_field($_GET['wcwp_phone']) : '',
-                    'date_from' => isset($_GET['wcwp_date_from']) ? sanitize_text_field($_GET['wcwp_date_from']) : '',
-                    'date_to' => isset($_GET['wcwp_date_to']) ? sanitize_text_field($_GET['wcwp_date_to']) : '',
+                    'type' => isset($_GET['wcwp_type']) ? sanitize_text_field(wp_unslash($_GET['wcwp_type'])) : '',
+                    'status' => isset($_GET['wcwp_status']) ? sanitize_text_field(wp_unslash($_GET['wcwp_status'])) : '',
+                    'phone' => isset($_GET['wcwp_phone']) ? sanitize_text_field(wp_unslash($_GET['wcwp_phone'])) : '',
+                    'date_from' => isset($_GET['wcwp_date_from']) ? sanitize_text_field(wp_unslash($_GET['wcwp_date_from'])) : '',
+                    'date_to' => isset($_GET['wcwp_date_to']) ? sanitize_text_field(wp_unslash($_GET['wcwp_date_to'])) : '',
                 ];
                 $events = function_exists('wcwp_analytics_get_events') ? wcwp_analytics_get_events(25, $filters) : [];
                 ?>

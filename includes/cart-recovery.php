@@ -100,7 +100,7 @@ function wcwp_unschedule_cart_recovery_cron() {
 }
 
 function wcwp_save_cart_ajax() {
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wcwp_cart_nonce')) {
+    if (!check_ajax_referer('wcwp_cart_nonce', 'nonce', false)) {
         wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')]);
         return;
     }
@@ -110,10 +110,11 @@ function wcwp_save_cart_ajax() {
         return;
     }
 
-    $phone = sanitize_text_field($_POST['phone'] ?? '');
+    $phone = isset($_POST['phone']) ? sanitize_text_field(wp_unslash($_POST['phone'])) : '';
     $phone = function_exists('wcwp_normalize_phone') ? wcwp_normalize_phone($phone) : $phone;
-    $cart_items = json_decode(stripslashes($_POST['cart'] ?? ''), true);
-    $consent = sanitize_text_field($_POST['consent'] ?? 'no');
+    $cart_raw = isset($_POST['cart']) ? wp_unslash($_POST['cart']) : '';
+    $cart_items = json_decode(is_string($cart_raw) ? $cart_raw : '', true);
+    $consent = isset($_POST['consent']) ? sanitize_text_field(wp_unslash($_POST['consent'])) : 'no';
     $consent_time = current_time('mysql');
 
     if (!wcwp_cart_rate_limit_ok($phone)) {
@@ -365,7 +366,7 @@ function wcwp_process_cart_recovery_queue() {
 }
 
 function wcwp_cart_rate_limit_ok($phone) {
-    $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '';
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
     $key = 'wcwp_rate_' . md5($ip . '|' . $phone);
     $data = get_transient($key);
     $limit = 5;
@@ -396,7 +397,8 @@ function wcwp_cart_rate_limit_ok($phone) {
 }
 
 add_action('woocommerce_checkout_order_processed', function($order_id) {
-    $consent = isset($_POST['wcwp-cart-consent']) && $_POST['wcwp-cart-consent'] === 'yes' ? 'yes' : 'no';
+    $consent_raw = isset($_POST['wcwp-cart-consent']) ? sanitize_text_field(wp_unslash($_POST['wcwp-cart-consent'])) : '';
+    $consent = $consent_raw === 'yes' ? 'yes' : 'no';
     $order = wc_get_order( $order_id );
     if ( ! $order ) {
         return;
@@ -417,7 +419,7 @@ add_action('wp_ajax_wcwp_resend_cart_recovery', function() {
     if (!current_user_can('manage_woocommerce')) wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
     if (!check_ajax_referer('wcwp_resend_cart', 'nonce', false)) wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
 
-    $attempt_id = sanitize_text_field($_POST['attempt_id'] ?? '');
+    $attempt_id = isset($_POST['attempt_id']) ? sanitize_text_field(wp_unslash($_POST['attempt_id'])) : '';
     if (!$attempt_id) wp_send_json_error(['message' => __('Missing attempt id', 'woochat-pro')], 400);
 
     $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];

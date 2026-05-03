@@ -107,8 +107,8 @@ add_action('wp_ajax_wcwp_send_test_whatsapp', function() {
         wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
     }
 
-    $phone = sanitize_text_field($_POST['phone'] ?? '');
-    $message = sanitize_textarea_field($_POST['message'] ?? '');
+    $phone = isset($_POST['phone']) ? sanitize_text_field(wp_unslash($_POST['phone'])) : '';
+    $message = isset($_POST['message']) ? sanitize_textarea_field(wp_unslash($_POST['message'])) : '';
 
     if (!$phone || !$message) {
         wp_send_json_error(['message' => __('Phone and message required', 'woochat-pro')], 400);
@@ -132,9 +132,10 @@ add_action('wp_ajax_wcwp_send_test_whatsapp', function() {
 // Show admin notice for manual send result
 add_action('admin_notices', function() {
     if (!isset($_GET['wcwp_msg'])) return;
-    if ($_GET['wcwp_msg'] === 'success') {
+    $msg = sanitize_text_field(wp_unslash($_GET['wcwp_msg']));
+    if ($msg === 'success') {
         echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('WhatsApp message sent successfully.', 'woochat-pro') . '</p></div>';
-    } elseif ($_GET['wcwp_msg'] === 'fail') {
+    } elseif ($msg === 'fail') {
         echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__('Failed to send WhatsApp message. Check logs for details.', 'woochat-pro') . '</p></div>';
     }
 });
