@@ -56,11 +56,15 @@ function wcwp_chatbot_shortcode() {
 }
 
 function wcwp_get_chatbot_settings() {
+    // Hex colors are also validated at write-time via the register_setting
+    // sanitize_callback; this is the read-time defense-in-depth that
+    // guarantees the chatbot template never sees an invalid color, even
+    // for values saved before the validator existed.
     return [
-        'bubble_color' => get_option('wcwp_chatbot_bg', '#1c7c54'),
-        'text_color' => get_option('wcwp_chatbot_text', '#ffffff'),
-        'icon_color' => get_option('wcwp_chatbot_icon_color', '#2ec4b6'),
-        'icon' => get_option('wcwp_chatbot_icon', '💬'),
-        'welcome' => get_option('wcwp_chatbot_welcome', 'Hi! How can I help you?'),
+        'bubble_color' => wcwp_sanitize_hex_color(get_option('wcwp_chatbot_bg', '#1c7c54'), '#1c7c54'),
+        'text_color'   => wcwp_sanitize_hex_color(get_option('wcwp_chatbot_text', '#ffffff'), '#ffffff'),
+        'icon_color'   => wcwp_sanitize_hex_color(get_option('wcwp_chatbot_icon_color', '#2ec4b6'), '#2ec4b6'),
+        'icon'         => get_option('wcwp_chatbot_icon', '💬'),
+        'welcome'      => get_option('wcwp_chatbot_welcome', 'Hi! How can I help you?'),
     ];
 }
