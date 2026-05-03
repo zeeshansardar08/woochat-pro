@@ -31,6 +31,7 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_cloud_token', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_cloud_phone_id', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_cloud_from', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_cloud_app_secret', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_cart_recovery_delay', ['sanitize_callback' => 'wcwp_sanitize_int']);
     register_setting('wcwp_settings_group', 'wcwp_cart_recovery_message', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
     register_setting('wcwp_settings_group', 'wcwp_cart_recovery_require_consent', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
@@ -167,6 +168,11 @@ function wcwp_render_settings_page() {
                     <tr class="wcwp-cloud-fields" style="display:none;">
                         <th scope="row"><label for="wcwp_cloud_from"><?php esc_html_e('From Number', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('The WhatsApp-enabled number from your Cloud API account. Format: +1234567890', 'woochat-pro'); ?></span></span></th>
                         <td><input type="text" name="wcwp_cloud_from" id="wcwp_cloud_from" value="<?php echo esc_attr(get_option('wcwp_cloud_from')); ?>" class="regular-text" placeholder="e.g. +14155238886" /></td>
+                    </tr>
+                    <tr class="wcwp-cloud-fields" style="display:none;">
+                        <th scope="row"><label for="wcwp_cloud_app_secret"><?php esc_html_e('Cloud App Secret', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Optional. Meta App Secret used to verify X-Hub-Signature-256 on incoming opt-out webhooks. Different from the access token.', 'woochat-pro'); ?></span></span></th>
+                        <td><input type="password" name="wcwp_cloud_app_secret" id="wcwp_cloud_app_secret" value="<?php echo esc_attr(get_option('wcwp_cloud_app_secret')); ?>" class="regular-text" autocomplete="off" />
+                            <p class="description"><?php esc_html_e('Leave blank to skip Meta webhook signature verification (token check still applies).', 'woochat-pro'); ?></p></td>
                     </tr>
                     <tr>
                         <td colspan="2">
