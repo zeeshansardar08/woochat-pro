@@ -287,15 +287,15 @@ function wcwp_analytics_tracking_url($event_id, $redirect_url) {
 
 function wcwp_handle_tracking_request() {
     if (!isset($_GET['wcwp_track'])) return;
-    $type = sanitize_text_field($_GET['wcwp_track']);
-    $event_id = sanitize_text_field($_GET['event_id'] ?? '');
+    $type = sanitize_text_field(wp_unslash($_GET['wcwp_track']));
+    $event_id = isset($_GET['event_id']) ? sanitize_text_field(wp_unslash($_GET['event_id'])) : '';
 
     if ($type === 'click' && $event_id) {
         wcwp_analytics_increment_total('clicked');
         wcwp_analytics_update_event($event_id, ['status' => 'clicked']);
     }
 
-    $redirect = isset($_GET['redirect']) ? esc_url_raw($_GET['redirect']) : home_url('/');
+    $redirect = isset($_GET['redirect']) ? esc_url_raw(wp_unslash($_GET['redirect'])) : home_url('/');
     if (!$redirect || strpos($redirect, 'http') !== 0) {
         $redirect = home_url('/');
     }
@@ -307,8 +307,8 @@ function wcwp_track_event_ajax() {
     if ( ! check_ajax_referer( 'wcwp_track_event', 'nonce', false ) ) {
         wp_send_json_error( [ 'message' => __( 'Invalid nonce', 'woochat-pro' ) ], 403 );
     }
-    $type = sanitize_text_field($_REQUEST['type'] ?? '');
-    $event_id = sanitize_text_field($_REQUEST['event_id'] ?? '');
+    $type = isset($_REQUEST['type']) ? sanitize_text_field(wp_unslash($_REQUEST['type'])) : '';
+    $event_id = isset($_REQUEST['event_id']) ? sanitize_text_field(wp_unslash($_REQUEST['event_id'])) : '';
     if (!$type || !$event_id) {
         wp_send_json_error(['message' => __('Missing data', 'woochat-pro')], 400);
     }

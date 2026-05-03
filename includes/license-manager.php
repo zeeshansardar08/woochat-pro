@@ -79,7 +79,7 @@ function wcwp_activate_license_ajax() {
     if (!current_user_can('manage_options')) wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
     check_ajax_referer('wcwp_license_nonce', 'nonce');
 
-    $license_key = sanitize_text_field($_POST['license_key'] ?? '');
+    $license_key = isset($_POST['license_key']) ? sanitize_text_field(wp_unslash($_POST['license_key'])) : '';
     if (!$license_key) wp_send_json_error(['message' => __('License key required', 'woochat-pro')], 400);
 
     $result = wcwp_license_request('activate', $license_key);
