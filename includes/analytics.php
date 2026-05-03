@@ -291,6 +291,55 @@ function wcwp_analytics_tracking_url($event_id, $redirect_url) {
     ], home_url('/'));
 }
 
+/**
+ * Validate a click-tracking redirect target against this site's hosts.
+ *
+ * Tracking URLs are always generated against home_url('/') with the
+ * destination as a query arg, so a legitimate redirect target must
+ * resolve to the same host as home_url() / site_url(). Anything else is
+ * either a misconfiguration or an open-redirect attempt.
+ *
+ * @param string $url Raw URL from the request.
+ * @return string Safe URL — original if it passes, home_url('/') otherwise.
+ */
+function wcwp_validate_tracking_redirect($url) {
+    $fallback = home_url('/');
+    if (!is_string($url) || $url === '') {
+        return $fallback;
+    }
+
+    $parts = wp_parse_url($url);
+    if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+        return $fallback;
+    }
+
+    if (!in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+        return $fallback;
+    }
+
+    $allowed_hosts = array_filter([
+        wp_parse_url(home_url(), PHP_URL_HOST),
+        wp_parse_url(site_url(), PHP_URL_HOST),
+    ]);
+
+    /**
+     * Filter the host allowlist for click-tracking redirects.
+     *
+     * Useful for multisite, CDN-fronted setups, or stores that legitimately
+     * redirect to a sister domain. Hosts are compared case-insensitively.
+     *
+     * @param string[] $allowed_hosts Default: home_url and site_url hosts.
+     */
+    $allowed_hosts = (array) apply_filters('wcwp_tracking_allowed_hosts', $allowed_hosts);
+    $allowed_hosts = array_map('strtolower', array_filter($allowed_hosts));
+
+    if (!in_array(strtolower($parts['host']), $allowed_hosts, true)) {
+        return $fallback;
+    }
+
+    return $url;
+}
+
 function wcwp_handle_tracking_request() {
     if (!isset($_GET['wcwp_track'])) return;
     $type = sanitize_text_field(wp_unslash($_GET['wcwp_track']));
@@ -301,10 +350,8 @@ function wcwp_handle_tracking_request() {
         wcwp_analytics_update_event($event_id, ['status' => 'clicked']);
     }
 
-    $redirect = isset($_GET['redirect']) ? esc_url_raw(wp_unslash($_GET['redirect'])) : home_url('/');
-    if (!$redirect || strpos($redirect, 'http') !== 0) {
-        $redirect = home_url('/');
-    }
+    $redirect_raw = isset($_GET['redirect']) ? esc_url_raw(wp_unslash($_GET['redirect'])) : '';
+    $redirect = wcwp_validate_tracking_redirect($redirect_raw);
     wp_safe_redirect($redirect);
     exit;
 }
