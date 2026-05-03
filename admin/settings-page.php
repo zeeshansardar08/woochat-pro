@@ -41,9 +41,9 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_gpt_api_endpoint', ['sanitize_callback' => 'wcwp_sanitize_url']);
     register_setting('wcwp_settings_group', 'wcwp_gpt_api_key', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_gpt_model', ['sanitize_callback' => 'wcwp_sanitize_text']);
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_bg', ['sanitize_callback' => 'wcwp_sanitize_text']);
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_text', ['sanitize_callback' => 'wcwp_sanitize_text']);
-    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon_color', ['sanitize_callback' => 'wcwp_sanitize_text']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_bg', ['sanitize_callback' => 'wcwp_sanitize_hex_color']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_text', ['sanitize_callback' => 'wcwp_sanitize_hex_color']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_icon_color', ['sanitize_callback' => 'wcwp_sanitize_hex_color']);
     register_setting('wcwp_settings_group', 'wcwp_chatbot_icon', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_chatbot_welcome', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_data_retention_days', ['sanitize_callback' => 'wcwp_sanitize_int']);

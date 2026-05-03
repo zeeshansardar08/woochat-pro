@@ -25,6 +25,24 @@ function wcwp_sanitize_provider($value) {
     return in_array($value, ['twilio', 'cloud'], true) ? $value : 'twilio';
 }
 
+/**
+ * Validate a value as a 3- or 6-digit hex color (with leading #).
+ *
+ * Used both as a register_setting() sanitize_callback (write-time, single
+ * argument) and at render-time with an explicit default (read-time defense
+ * for any legacy values that were saved before this validator existed).
+ *
+ * @param mixed  $value   Incoming value.
+ * @param string $default Fallback when the value is not a valid hex color.
+ * @return string Valid hex color (e.g. '#1c7c54') or the supplied default.
+ */
+function wcwp_sanitize_hex_color($value, $default = '') {
+    if (is_string($value) && preg_match('/^#([A-Fa-f0-9]{3}){1,2}$/', $value)) {
+        return $value;
+    }
+    return $default;
+}
+
 function wcwp_is_woocommerce_active() {
     if (class_exists('WooCommerce')) return true;
     if (!function_exists('is_plugin_active')) {
