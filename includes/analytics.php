@@ -4,7 +4,13 @@ if (!defined('ABSPATH')) exit;
 // Simple in-option analytics store with capped events
 const WCWP_ANALYTICS_MAX_EVENTS = 200;
 
-add_action('init', 'wcwp_handle_tracking_request');
+// Click-tracking redirect handler — only attach when the parameter is
+// actually present, and only on frontend requests. Tracking URLs are
+// always built against home_url('/'), so template_redirect is the right
+// hook (admin / AJAX / REST / cron paths never need this callback).
+if (!empty($_GET['wcwp_track'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- presence-only switch; nonce-free public click tracker, validated inside the handler.
+    add_action('template_redirect', 'wcwp_handle_tracking_request', 1);
+}
 add_action('wp_ajax_wcwp_track_event', 'wcwp_track_event_ajax');
 add_action('wp_ajax_nopriv_wcwp_track_event', 'wcwp_track_event_ajax');
 
