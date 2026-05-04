@@ -98,11 +98,52 @@ function wcwp_run_migrations() {
     if ($stored < 1) {
         wcwp_ensure_secret_option_rows();
         wcwp_set_secrets_autoload_no();
+        update_option('wcwp_db_version', 1, false);
+        $stored = 1;
     }
 
-    if ($stored < 1) {
-        update_option('wcwp_db_version', 1, false);
+    if ($stored < 2) {
+        wcwp_migrate_analytics_options_to_table();
+        update_option('wcwp_db_version', 2, false);
+        $stored = 2;
     }
+}
+
+/**
+ * Move any legacy option-store analytics rows into the events table, then
+ * drop the option keys. The option-store fallback was retired in favor of
+ * a single source of truth (the {prefix}wcwp_analytics_events table); this
+ * runs once per install to carry forward any data that accumulated while
+ * the table-creation activation hook had not yet fired (e.g. very early
+ * installs that activated before the table existed).
+ */
+function wcwp_migrate_analytics_options_to_table() {
+    if (function_exists('wcwp_create_analytics_table')) {
+        wcwp_create_analytics_table();
+    }
+
+    $events = get_option('wcwp_analytics_events', []);
+    if (is_array($events) && !empty($events) && function_exists('wcwp_analytics_insert_event')) {
+        foreach ($events as $event) {
+            if (!is_array($event) || empty($event['id']) || empty($event['type'])) continue;
+            $event = wp_parse_args($event, [
+                'id' => '',
+                'type' => '',
+                'time' => current_time('mysql'),
+                'status' => 'pending',
+                'phone' => '',
+                'order_id' => 0,
+                'message_preview' => '',
+                'provider' => '',
+                'message_id' => '',
+                'meta' => [],
+            ]);
+            wcwp_analytics_insert_event($event);
+        }
+    }
+
+    delete_option('wcwp_analytics_events');
+    delete_option('wcwp_analytics_totals');
 }
 
 /**
