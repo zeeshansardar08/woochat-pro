@@ -65,8 +65,6 @@ foreach ($option_keys as $key) {
     delete_option($key);
 }
 
-delete_transient('wcwp_cart_recovery_attempts');
-
 global $wpdb;
 $table = $wpdb->prefix . 'wcwp_abandoned_carts';
 $wpdb->query("DROP TABLE IF EXISTS {$table}");
