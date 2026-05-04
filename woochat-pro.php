@@ -170,42 +170,23 @@ add_action('after_plugin_row_' . plugin_basename(__FILE__), function($plugin_fil
 	echo '<tr class="plugin-update-tr"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>' . wcwp_wc_dependency_notice_message() . '</p></div></td></tr>';
 }, 10, 3);
 
-// Browser polyfills – only when chatbot or cart recovery is active.
-add_action('wp_head', function() {
+// Browser polyfill — only when chatbot or cart recovery is active.
+// Enqueued at wp_enqueue_scripts priority 1 with in_footer=false so it
+// renders in <head> before any consumer scripts. Loading as a real asset
+// (rather than an inline <script>) keeps the page CSP-friendly and avoids
+// shipping bytes to visitors when both features are off.
+add_action('wp_enqueue_scripts', function() {
 	$chatbot_on = get_option( 'wcwp_chatbot_enabled', 'no' ) === 'yes';
 	$cart_on    = get_option( 'wcwp_cart_recovery_enabled', 'no' ) === 'yes';
 	if ( ! $chatbot_on && ! $cart_on ) {
 		return;
 	}
-	?>
-	<script>
-	if (typeof window !== 'undefined') {
-		if (typeof window.crypto === 'undefined') {
-			window.crypto = {};
-		}
-		if (typeof window.crypto.randomUUID !== 'function') {
-			window.crypto.randomUUID = function () {
-				const bytes = new Uint8Array(16);
-				const getRandomValues = (window.crypto && window.crypto.getRandomValues) ? window.crypto.getRandomValues.bind(window.crypto) : null;
-				if (getRandomValues) {
-					getRandomValues(bytes);
-					// Set version (4) and variant bits per RFC4122
-					bytes[6] = (bytes[6] & 0x0f) | 0x40;
-					bytes[8] = (bytes[8] & 0x3f) | 0x80;
-					const toHex = Array.from(bytes, b => b.toString(16).padStart(2, '0'));
-					return `${toHex[0]}${toHex[1]}${toHex[2]}${toHex[3]}-${toHex[4]}${toHex[5]}-${toHex[6]}${toHex[7]}-${toHex[8]}${toHex[9]}-${toHex[10]}${toHex[11]}${toHex[12]}${toHex[13]}${toHex[14]}${toHex[15]}`;
-				}
-				// Fallback: non-cryptographic
-				let template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-				return template.replace(/[xy]/g, function(c) {
-					const r = Math.random() * 16 | 0;
-					const v = c === 'x' ? r : (r & 0x3 | 0x8);
-					return v.toString(16);
-				});
-			};
-		}
-	}
-	</script>
-	<?php
+	wp_enqueue_script(
+		'wcwp-uuid-polyfill',
+		WCWP_URL . 'assets/js/uuid-polyfill.js',
+		[],
+		WCWP_VERSION,
+		false // load in <head>, ahead of any consumer.
+	);
 }, 1);
 
