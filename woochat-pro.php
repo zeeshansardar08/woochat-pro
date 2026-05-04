@@ -65,6 +65,13 @@ function wcwp_wc_dependency_notice_message() {
 }
 
 function wcwp_bootstrap() {
+	// Provider classes — load before messaging.php / order-hooks.php so
+	// the dispatcher can resolve them via wcwp_get_provider().
+	require_once WCWP_PATH . 'includes/providers/abstract-class-wcwp-provider.php';
+	require_once WCWP_PATH . 'includes/providers/class-wcwp-provider-twilio.php';
+	require_once WCWP_PATH . 'includes/providers/class-wcwp-provider-cloud.php';
+	require_once WCWP_PATH . 'includes/messaging.php';
+
 	require_once WCWP_PATH . 'includes/analytics.php';
 	require_once WCWP_PATH . 'admin/settings-page.php';
 	require_once WCWP_PATH . 'includes/chatbot-engine.php';
