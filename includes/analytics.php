@@ -1,9 +1,6 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-// Simple in-option analytics store with capped events
-const WCWP_ANALYTICS_MAX_EVENTS = 200;
-
 // Click-tracking redirect handler — only attach when the parameter is
 // actually present, and only on frontend requests. Tracking URLs are
 // always built against home_url('/'), so template_redirect is the right
@@ -19,13 +16,6 @@ add_action('wcwp_cleanup_analytics', 'wcwp_cleanup_analytics');
 function wcwp_get_analytics_table_name() {
     global $wpdb;
     return $wpdb->prefix . 'wcwp_analytics_events';
-}
-
-function wcwp_analytics_table_exists() {
-    global $wpdb;
-    $table = wcwp_get_analytics_table_name();
-    $exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table));
-    return $exists === $table;
 }
 
 function wcwp_create_analytics_table() {
@@ -64,7 +54,6 @@ function wcwp_create_analytics_table() {
 function wcwp_cleanup_analytics() {
     $days = absint(get_option('wcwp_data_retention_days', 0));
     if ($days < 1) return;
-    if (!wcwp_analytics_table_exists()) return;
 
     global $wpdb;
     $table = wcwp_get_analytics_table_name();
@@ -88,115 +77,11 @@ function wcwp_analytics_log_event($type, $data = []) {
         'meta' => isset($data['meta']) && is_array($data['meta']) ? $data['meta'] : [],
     ];
 
-    if (wcwp_analytics_table_exists()) {
-        wcwp_analytics_insert_event($event);
-        return $id;
-    }
-
-    $events = get_option('wcwp_analytics_events', []);
-    array_unshift($events, $event);
-    $events = wcwp_analytics_apply_retention($events);
-    if (count($events) > WCWP_ANALYTICS_MAX_EVENTS) {
-        $events = array_slice($events, 0, WCWP_ANALYTICS_MAX_EVENTS);
-    }
-
-    update_option('wcwp_analytics_events', $events, false);
+    wcwp_analytics_insert_event($event);
     return $id;
 }
 
 function wcwp_analytics_update_event($event_id, $fields = []) {
-    if (wcwp_analytics_table_exists()) {
-        wcwp_analytics_update_event_row($event_id, $fields);
-        return;
-    }
-
-    $events = get_option('wcwp_analytics_events', []);
-    $updated = false;
-    foreach ($events as &$evt) {
-        if (!isset($evt['id']) || $evt['id'] !== $event_id) continue;
-        foreach ($fields as $key => $val) {
-            if ($key === 'meta' && is_array($val)) {
-                $evt['meta'] = array_merge(isset($evt['meta']) && is_array($evt['meta']) ? $evt['meta'] : [], $val);
-            } else {
-                $evt[$key] = $val;
-            }
-        }
-        $updated = true;
-        break;
-    }
-    if ($updated) {
-        update_option('wcwp_analytics_events', $events, false);
-    }
-}
-
-function wcwp_analytics_increment_total($bucket, $amount = 1) {
-    $totals = get_option('wcwp_analytics_totals', [
-        'sent' => 0,
-        'delivered' => 0,
-        'clicked' => 0,
-    ]);
-    if (!isset($totals[$bucket])) {
-        $totals[$bucket] = 0;
-    }
-    $totals[$bucket] += $amount;
-    update_option('wcwp_analytics_totals', $totals, false);
-}
-
-function wcwp_analytics_get_totals() {
-    if (wcwp_analytics_table_exists()) {
-        global $wpdb;
-        $table = wcwp_get_analytics_table_name();
-        $rows = $wpdb->get_results("SELECT status, COUNT(*) AS total FROM {$table} GROUP BY status");
-        $totals = [ 'sent' => 0, 'delivered' => 0, 'clicked' => 0 ];
-        if ($rows) {
-            foreach ($rows as $row) {
-                if (isset($totals[$row->status])) {
-                    $totals[$row->status] = intval($row->total);
-                }
-            }
-        }
-        return $totals;
-    }
-
-    $defaults = [ 'sent' => 0, 'delivered' => 0, 'clicked' => 0 ];
-    $totals = get_option('wcwp_analytics_totals', $defaults);
-    return wp_parse_args($totals, $defaults);
-}
-
-function wcwp_analytics_get_events($limit = 50, $filters = []) {
-    if (wcwp_analytics_table_exists()) {
-        return wcwp_analytics_get_events_db($limit, $filters);
-    }
-
-    $events = get_option('wcwp_analytics_events', []);
-    $events = wcwp_analytics_apply_retention($events);
-    update_option('wcwp_analytics_events', $events, false);
-    return array_slice($events, 0, absint($limit));
-}
-
-function wcwp_analytics_insert_event($event) {
-    global $wpdb;
-    $table = wcwp_get_analytics_table_name();
-    $wpdb->insert(
-        $table,
-        [
-            'event_id' => $event['id'],
-            'type' => $event['type'],
-            'status' => $event['status'],
-            'phone' => $event['phone'],
-            'order_id' => $event['order_id'],
-            'message_preview' => $event['message_preview'],
-            'provider' => $event['provider'],
-            'message_id' => $event['message_id'],
-            'meta' => wp_json_encode($event['meta']),
-            'created_at' => $event['time'],
-            'updated_at' => $event['time'],
-        ],
-        ['%s','%s','%s','%s','%d','%s','%s','%s','%s','%s','%s']
-    );
-}
-
-function wcwp_analytics_update_event_row($event_id, $fields = []) {
     global $wpdb;
     $table = wcwp_get_analytics_table_name();
 
@@ -219,7 +104,31 @@ function wcwp_analytics_update_event_row($event_id, $fields = []) {
     }
 }
 
-function wcwp_analytics_get_events_db($limit = 50, $filters = []) {
+/**
+ * @deprecated 1.0.2 Totals are derived from the analytics events table; this
+ * is now a no-op kept only for backward compatibility with any external
+ * code that may still call it. See wcwp_analytics_get_totals().
+ */
+function wcwp_analytics_increment_total($bucket, $amount = 1) {
+    // No-op.
+}
+
+function wcwp_analytics_get_totals() {
+    global $wpdb;
+    $table = wcwp_get_analytics_table_name();
+    $rows = $wpdb->get_results("SELECT status, COUNT(*) AS total FROM {$table} GROUP BY status");
+    $totals = [ 'sent' => 0, 'delivered' => 0, 'clicked' => 0 ];
+    if ($rows) {
+        foreach ($rows as $row) {
+            if (isset($totals[$row->status])) {
+                $totals[$row->status] = intval($row->total);
+            }
+        }
+    }
+    return $totals;
+}
+
+function wcwp_analytics_get_events($limit = 50, $filters = []) {
     global $wpdb;
     $table = wcwp_get_analytics_table_name();
 
@@ -267,19 +176,26 @@ function wcwp_analytics_get_events_db($limit = 50, $filters = []) {
     return $rows;
 }
 
-function wcwp_analytics_apply_retention($events) {
-    $days = absint(get_option('wcwp_data_retention_days', 0));
-    if ($days < 1) return $events;
-    $cutoff = time() - ($days * DAY_IN_SECONDS);
-    $filtered = [];
-    foreach ($events as $evt) {
-        $time_str = isset($evt['time']) ? $evt['time'] : '';
-        $ts = $time_str ? strtotime($time_str) : 0;
-        if ($ts && $ts >= $cutoff) {
-            $filtered[] = $evt;
-        }
-    }
-    return $filtered;
+function wcwp_analytics_insert_event($event) {
+    global $wpdb;
+    $table = wcwp_get_analytics_table_name();
+    $wpdb->insert(
+        $table,
+        [
+            'event_id' => $event['id'],
+            'type' => $event['type'],
+            'status' => $event['status'],
+            'phone' => $event['phone'],
+            'order_id' => $event['order_id'],
+            'message_preview' => $event['message_preview'],
+            'provider' => $event['provider'],
+            'message_id' => $event['message_id'],
+            'meta' => wp_json_encode($event['meta']),
+            'created_at' => $event['time'],
+            'updated_at' => $event['time'],
+        ],
+        ['%s','%s','%s','%s','%d','%s','%s','%s','%s','%s','%s']
+    );
 }
 
 function wcwp_analytics_tracking_url($event_id, $redirect_url) {
@@ -346,7 +262,6 @@ function wcwp_handle_tracking_request() {
     $event_id = isset($_GET['event_id']) ? sanitize_text_field(wp_unslash($_GET['event_id'])) : '';
 
     if ($type === 'click' && $event_id) {
-        wcwp_analytics_increment_total('clicked');
         wcwp_analytics_update_event($event_id, ['status' => 'clicked']);
     }
 
@@ -366,7 +281,6 @@ function wcwp_track_event_ajax() {
         wp_send_json_error(['message' => __('Missing data', 'woochat-pro')], 400);
     }
     if ($type === 'delivered') {
-        wcwp_analytics_increment_total('delivered');
         wcwp_analytics_update_event($event_id, ['status' => 'delivered']);
     }
     wp_send_json_success();

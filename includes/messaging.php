@@ -174,9 +174,6 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
             'message_id' => $result['message_id'] ?? '',
         ] );
     }
-    if ( function_exists( 'wcwp_analytics_increment_total' ) ) {
-        wcwp_analytics_increment_total( 'sent' );
-    }
     return true;
 }
 
