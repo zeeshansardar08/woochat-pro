@@ -218,20 +218,11 @@ function wcwp_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent
 }
 
 function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', $consent_time = '', $context = []) {
-    $total = 0;
-    $items = [];
-    $attempt_id = uniqid('wcwp_cart_', true);
     $event_id = $context['event_id'] ?? null;
 
-    foreach ($cart_items as $item) {
-        $name  = sanitize_text_field($item['name']);
-        $price = floatval($item['price']);
-        $qty   = intval($item['qty']);
-        $total += $price * $qty;
-        $items[] = "- $name × $qty";
-    }
+    $items = wcwp_format_cart_items_list($cart_items);
+    $total = wcwp_sum_cart_items_total($cart_items);
 
-    $body = implode("\n", $items);
     $cart_url = wc_get_cart_url();
     if (function_exists('wcwp_analytics_log_event')) {
         if (!$event_id) {
@@ -244,40 +235,18 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', 
         }
     }
     $tracked_cart_url = ($event_id && function_exists('wcwp_analytics_tracking_url')) ? wcwp_analytics_tracking_url($event_id, $cart_url) : $cart_url;
-    $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}");
-    $message = str_replace(
-        ['{items}', '{total}', '{cart_url}'],
-        [$body, $total, $tracked_cart_url],
-        $template
-    );
+    $message = wcwp_render_cart_recovery_message($items, $total, $tracked_cart_url);
     $preview = function_exists('wcwp_redact_message') ? wcwp_redact_message($message) : $message;
 
-    // Log all attempts
     $log_file = function_exists('wcwp_get_log_file') ? wcwp_get_log_file() : WP_CONTENT_DIR . '/woochat-pro.log';
     $safe_to = function_exists('wcwp_mask_phone') ? wcwp_mask_phone($phone) : $phone;
-    $safe_msg = function_exists('wcwp_redact_message') ? wcwp_redact_message($message) : $message;
-    $log_msg = "[WooChat Pro - Cart Recovery] Attempt {$attempt_id} to $safe_to: $safe_msg\n";
-    @error_log($log_msg, 3, $log_file);
+    $safe_msg = $preview;
+    $log_tag = $event_id ?: 'no-event';
+    @error_log("[WooChat Pro - Cart Recovery] Attempt {$log_tag} to $safe_to: $safe_msg\n", 3, $log_file); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
-    // Store attempt in transient for admin UI
-    $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];
-    $attempts[] = [
-        'id' => $attempt_id,
-        'time' => current_time('mysql'),
-        'phone' => $phone,
-        'message' => $message,
-        'items' => $items,
-        'total' => $total,
-        'consent' => $consent,
-        'consent_time' => $consent_time
-    ];
-    set_transient('wcwp_cart_recovery_attempts', $attempts, DAY_IN_SECONDS);
-
-    // Check if test mode is enabled
     $test_mode = get_option('wcwp_test_mode_enabled', 'no');
     if ($test_mode === 'yes') {
-        $log_msg = "[WooChat Pro - Cart Recovery TEST MODE] {$attempt_id} to $safe_to: $safe_msg\n";
-        @error_log($log_msg, 3, $log_file);
+        @error_log("[WooChat Pro - Cart Recovery TEST MODE] {$log_tag} to $safe_to: $safe_msg\n", 3, $log_file); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
         if ($event_id && function_exists('wcwp_analytics_update_event')) {
             wcwp_analytics_update_event($event_id, ['status' => 'test', 'message_preview' => $preview]);
         }
@@ -408,10 +377,84 @@ add_action('woocommerce_checkout_order_processed', function($order_id) {
     $order->save();
 });
 
-// Helper to fetch attempts
+/**
+ * Format raw cart-item dicts into the "- name × qty" lines used both in the
+ * WhatsApp message body and the admin "recent attempts" preview.
+ */
+function wcwp_format_cart_items_list($cart_items) {
+    $items = [];
+    if (!is_array($cart_items)) return $items;
+    foreach ($cart_items as $item) {
+        $name = sanitize_text_field($item['name'] ?? '');
+        $qty  = intval($item['qty'] ?? 0);
+        $items[] = "- $name × $qty";
+    }
+    return $items;
+}
+
+function wcwp_sum_cart_items_total($cart_items) {
+    $total = 0.0;
+    if (!is_array($cart_items)) return $total;
+    foreach ($cart_items as $item) {
+        $price = floatval($item['price'] ?? 0);
+        $qty   = intval($item['qty'] ?? 0);
+        $total += $price * $qty;
+    }
+    return $total;
+}
+
+/**
+ * Render the cart-recovery WhatsApp message from cart contents using the
+ * current admin-configured template. Used by the queue processor (with a
+ * tracking-wrapped cart URL) and by the admin "recent attempts" view (with
+ * the bare cart URL).
+ */
+function wcwp_render_cart_recovery_message($items, $total, $cart_url) {
+    $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}");
+    return str_replace(
+        ['{items}', '{total}', '{cart_url}'],
+        [implode("\n", $items), $total, $cart_url],
+        $template
+    );
+}
+
+/**
+ * Fetch the latest cart-recovery rows for the admin "Recent Attempts" view.
+ *
+ * Reads the {prefix}wcwp_abandoned_carts table directly — there is one row
+ * per phone+cart, regardless of how many retry attempts were made (the row's
+ * `attempts` counter tracks that). Each rendered record uses the current
+ * template, so admins see what would actually be sent if they hit Resend now.
+ */
 function wcwp_get_cart_recovery_attempts() {
-    $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];
-    return array_slice(array_reverse($attempts), 0, 25);
+    global $wpdb;
+    $table = wcwp_get_cart_table_name();
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT id, phone, cart_json, total, consent, consent_time, status, attempts, updated_at FROM {$table} ORDER BY updated_at DESC LIMIT %d",
+        25
+    ));
+    if (!$rows) return [];
+
+    $cart_url = wc_get_cart_url();
+    $attempts = [];
+    foreach ($rows as $row) {
+        $cart_items = json_decode($row->cart_json, true);
+        $items = wcwp_format_cart_items_list($cart_items);
+        $message = wcwp_render_cart_recovery_message($items, $row->total, $cart_url);
+        $attempts[] = [
+            'id'           => (string) $row->id,
+            'time'         => $row->updated_at,
+            'phone'        => $row->phone,
+            'message'      => $message,
+            'items'        => $items,
+            'total'        => $row->total,
+            'consent'      => $row->consent,
+            'consent_time' => $row->consent_time,
+            'status'       => $row->status,
+            'attempts'     => intval($row->attempts),
+        ];
+    }
+    return $attempts;
 }
 
 // Admin resend handler
@@ -419,22 +462,22 @@ add_action('wp_ajax_wcwp_resend_cart_recovery', function() {
     if (!current_user_can('manage_woocommerce')) wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
     if (!check_ajax_referer('wcwp_resend_cart', 'nonce', false)) wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
 
-    $attempt_id = isset($_POST['attempt_id']) ? sanitize_text_field(wp_unslash($_POST['attempt_id'])) : '';
+    $attempt_id = isset($_POST['attempt_id']) ? absint(wp_unslash($_POST['attempt_id'])) : 0;
     if (!$attempt_id) wp_send_json_error(['message' => __('Missing attempt id', 'woochat-pro')], 400);
 
-    $attempts = get_transient('wcwp_cart_recovery_attempts') ?: [];
-    $found = null;
-    foreach ($attempts as $a) {
-        if (isset($a['id']) && $a['id'] === $attempt_id) {
-            $found = $a;
-            break;
-        }
-    }
+    global $wpdb;
+    $table = wcwp_get_cart_table_name();
+    $row = $wpdb->get_row($wpdb->prepare("SELECT phone, cart_json, total FROM {$table} WHERE id = %d", $attempt_id));
+    if (!$row) wp_send_json_error(['message' => __('Attempt not found', 'woochat-pro')], 404);
 
-    if (!$found) wp_send_json_error(['message' => __('Attempt not found', 'woochat-pro')], 404);
+    $cart_items = json_decode($row->cart_json, true);
+    if (!is_array($cart_items) || empty($cart_items)) wp_send_json_error(['message' => __('Invalid cart data', 'woochat-pro')], 400);
+
+    $items = wcwp_format_cart_items_list($cart_items);
+    $message = wcwp_render_cart_recovery_message($items, $row->total, wc_get_cart_url());
 
     if (function_exists('wcwp_send_whatsapp_message')) {
-        $result = wcwp_send_whatsapp_message($found['phone'], $found['message'], true);
+        $result = wcwp_send_whatsapp_message($row->phone, $message, true, ['type' => 'cart_recovery']);
         if ($result === true) {
             wp_send_json_success(['message' => __('Resent', 'woochat-pro')]);
         }
