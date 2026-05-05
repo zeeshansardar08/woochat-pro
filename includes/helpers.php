@@ -88,25 +88,62 @@ function wcwp_ensure_secret_option_rows() {
 }
 
 /**
+ * Registry of versioned migration callables keyed by target version.
+ *
+ * Each callable runs at most once per install: when wcwp_run_migrations()
+ * sees a version greater than the stored wcwp_db_version, it invokes the
+ * callable and bumps the version. Adding a new migration is a one-line
+ * addition here plus a matching wcwp_migration_v<N>_* function.
+ *
+ * Keep entries sorted by version key. The runner sorts numerically before
+ * iterating, so order in the array literal is for human readability only.
+ *
+ * @return array<int, callable> Map of target_version => callable.
+ */
+function wcwp_get_migrations() {
+    return [
+        1 => 'wcwp_migration_v1_secrets_autoload',
+        2 => 'wcwp_migration_v2_analytics_to_table',
+    ];
+}
+
+/**
  * Versioned, run-once migration runner. Safe to invoke on every admin
- * request — the version flag short-circuits after the migration has
- * been applied.
+ * request — the version flag short-circuits after each migration has
+ * been applied. The version is bumped inline after each successful
+ * step, so a partial failure (one step throws) leaves the install at
+ * the highest fully-applied version, not stranded at the original.
  */
 function wcwp_run_migrations() {
     $stored = (int) get_option('wcwp_db_version', 0);
+    $migrations = wcwp_get_migrations();
+    ksort($migrations, SORT_NUMERIC);
 
-    if ($stored < 1) {
-        wcwp_ensure_secret_option_rows();
-        wcwp_set_secrets_autoload_no();
-        update_option('wcwp_db_version', 1, false);
-        $stored = 1;
+    foreach ($migrations as $version => $callable) {
+        $version = (int) $version;
+        if ($version <= $stored) continue;
+        if (!is_callable($callable)) continue;
+        call_user_func($callable);
+        update_option('wcwp_db_version', $version, false);
+        $stored = $version;
     }
+}
 
-    if ($stored < 2) {
-        wcwp_migrate_analytics_options_to_table();
-        update_option('wcwp_db_version', 2, false);
-        $stored = 2;
-    }
+/**
+ * v1 (PR #20): create secret option rows with autoload=no on fresh
+ * installs and flip autoload to 'no' for any existing rows.
+ */
+function wcwp_migration_v1_secrets_autoload() {
+    wcwp_ensure_secret_option_rows();
+    wcwp_set_secrets_autoload_no();
+}
+
+/**
+ * v2 (PR #23): copy any legacy wcwp_analytics_events option rows into
+ * the {prefix}wcwp_analytics_events table and delete the legacy options.
+ */
+function wcwp_migration_v2_analytics_to_table() {
+    wcwp_migrate_analytics_options_to_table();
 }
 
 /**
