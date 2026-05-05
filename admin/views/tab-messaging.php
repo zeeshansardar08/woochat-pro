@@ -18,12 +18,12 @@ if (!defined('ABSPATH')) exit;
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="wcwp_order_message_template"><?php esc_html_e('Order Message Template', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Customize the WhatsApp message sent for new orders. Use placeholders: {name}, {order_id}, {total}', 'woochat-pro'); ?></span></span></th>
+            <th scope="row"><label for="wcwp_order_message_template"><?php esc_html_e('Order Message Template', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Customize the WhatsApp message sent for new orders. Use placeholders: {name}, {order_id}, {total}, {currency_symbol}', 'woochat-pro'); ?></span></span></th>
             <td>
-                <textarea name="wcwp_order_message_template" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} PKR.')); ?></textarea>
+                <textarea name="wcwp_order_message_template" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.')); ?></textarea>
                 <p class="description"><?php
                     /* translators: do not translate placeholders inside curly braces */
-                    esc_html_e('Use placeholders: {name}, {order_id}, {total}', 'woochat-pro');
+                    esc_html_e('Use placeholders: {name}, {order_id}, {total}, {currency_symbol}', 'woochat-pro');
                 ?></p>
             </td>
         </tr>

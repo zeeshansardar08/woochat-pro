@@ -17,10 +17,10 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
     $name = $order->get_billing_first_name();
     $total = $order->get_total();
 
-    $template = get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} PKR.');
+    $template = get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.');
     $message = str_replace(
-        ['{name}', '{order_id}', '{total}'],
-        [$name, $order_id, $total],
+        ['{name}', '{order_id}', '{total}', '{currency_symbol}'],
+        [$name, $order_id, $total, wcwp_currency_symbol_text()],
         $template
     );
 
@@ -83,8 +83,8 @@ add_action('wp_ajax_wcwp_send_manual_whatsapp', function() {
     $to       = sanitize_text_field($order->get_billing_phone());
     $name     = $order->get_billing_first_name();
     $total    = $order->get_total();
-    $template = get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} PKR.');
-    $message  = str_replace(['{name}', '{order_id}', '{total}'], [$name, $order_id, $total], $template);
+    $template = get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.');
+    $message  = str_replace(['{name}', '{order_id}', '{total}', '{currency_symbol}'], [$name, $order_id, $total, wcwp_currency_symbol_text()], $template);
     $result   = wcwp_send_whatsapp_message($to, $message, true, ['type' => 'order', 'order_id' => $order_id]);
 
     $redirect = add_query_arg(
