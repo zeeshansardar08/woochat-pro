@@ -117,10 +117,6 @@ add_action('wp_ajax_wcwp_send_test_whatsapp', function() {
     update_option('wcwp_test_phone', $phone, false);
     update_option('wcwp_test_message', $message, false);
 
-    if (!function_exists('wcwp_send_whatsapp_message')) {
-        wp_send_json_error(['message' => __('Messaging unavailable', 'woochat-pro')], 500);
-    }
-
     $result = wcwp_send_whatsapp_message($phone, $message, true, ['type' => 'test']);
     if ($result === true) {
         wp_send_json_success(['message' => __('Sent', 'woochat-pro')]);

@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) exit;
 ?>
 <div id="wcwp-tab-content-scheduler" class="wcwp-tab-content" style="display:none;">
-    <?php $is_pro = function_exists('wcwp_is_pro_active') && wcwp_is_pro_active(); ?>
+    <?php $is_pro = wcwp_is_pro_active(); ?>
     <?php if (!$is_pro) : ?>
         <div class="wcwp-pro-banner"><span class="dashicons dashicons-clock"></span> <strong><?php esc_html_e('Scheduler', 'woochat-pro'); ?></strong> <?php esc_html_e('is a Pro feature.', 'woochat-pro'); ?> <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;"><?php esc_html_e('Upgrade', 'woochat-pro'); ?></button></div>
     <?php endif; ?>

@@ -8,7 +8,7 @@ add_shortcode('woochat_chatbot', 'wcwp_chatbot_shortcode');
 function wcwp_render_chatbot_widget() {
     if (is_admin()) return;
 
-    if (!function_exists('wcwp_is_pro_active') || !wcwp_is_pro_active()) return;
+    if (!wcwp_is_pro_active()) return;
 
     $enabled = get_option('wcwp_chatbot_enabled', 'yes');
     if ($enabled !== 'yes') return;
@@ -35,7 +35,7 @@ function wcwp_render_chatbot_widget() {
 }
 
 function wcwp_chatbot_shortcode() {
-    if (!function_exists('wcwp_is_pro_active') || !wcwp_is_pro_active()) return '';
+    if (!wcwp_is_pro_active()) return '';
     $enabled = get_option('wcwp_chatbot_enabled', 'yes');
     if ($enabled !== 'yes') return '';
 

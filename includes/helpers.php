@@ -155,6 +155,14 @@ function wcwp_migration_v2_analytics_to_table() {
  * installs that activated before the table existed).
  */
 function wcwp_migrate_analytics_options_to_table() {
+    // Guards kept: the migration runner fires on admin_init priority 5
+    // regardless of whether WooCommerce is active, but boot_modules() —
+    // which loads analytics.php — only runs when WC is active. So when
+    // the v2 migration triggers on a WC-inactive request we may not have
+    // wcwp_create_analytics_table / wcwp_analytics_insert_event defined.
+    // The migration version is bumped after this returns either way; the
+    // table is also (re)created via the activation hook so a later
+    // re-activation rebuilds it.
     if (function_exists('wcwp_create_analytics_table')) {
         wcwp_create_analytics_table();
     }
