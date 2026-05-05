@@ -56,6 +56,18 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_test_message', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
 }
 
+add_action('wp_ajax_wcwp_dismiss_onboarding', 'wcwp_ajax_dismiss_onboarding');
+function wcwp_ajax_dismiss_onboarding() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+    }
+    if (!check_ajax_referer('wcwp_dismiss_onboarding', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+    }
+    update_option('wcwp_onboarding_completed', 'yes', false);
+    wp_send_json_success();
+}
+
 function wcwp_render_settings_page() {
     // Enqueue premium admin CSS
     wp_enqueue_style('wcwp-admin-premium-css', WCWP_URL . 'assets/css/admin-premium.css', [], WCWP_VERSION);
@@ -67,12 +79,21 @@ function wcwp_render_settings_page() {
         'licenseNonce' => wp_create_nonce('wcwp_license_nonce'),
         'testNonce' => wp_create_nonce('wcwp_test_message'),
     ]);
-    // Enqueue onboarding CSS/JS
-    wp_enqueue_style('wcwp-onboarding-css', WCWP_URL . 'assets/css/onboarding.css', [], WCWP_VERSION);
-    wp_enqueue_script('wcwp-onboarding-js', WCWP_URL . 'assets/js/onboarding.js', [], WCWP_VERSION, true);
+    // Onboarding wizard renders once per install — Skip/Finish persists the
+    // dismissal flag via admin-ajax, after which the modal stops re-mounting.
+    $onboarding_done = get_option('wcwp_onboarding_completed', 'no') === 'yes';
+    if (!$onboarding_done) {
+        wp_enqueue_style('wcwp-onboarding-css', WCWP_URL . 'assets/css/onboarding.css', [], WCWP_VERSION);
+        wp_enqueue_script('wcwp-onboarding-js', WCWP_URL . 'assets/js/onboarding.js', [], WCWP_VERSION, true);
+        wp_localize_script('wcwp-onboarding-js', 'wcwpOnboarding', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('wcwp_dismiss_onboarding'),
+        ]);
+    }
 
     $views = __DIR__ . '/views';
     ?>
+    <?php if (!$onboarding_done) : ?>
     <div id="wcwp-onboarding-modal">
         <div class="wcwp-onboarding-content">
             <div class="wcwp-onboarding-progress"><div class="wcwp-onboarding-progress-inner"></div></div>
@@ -89,6 +110,7 @@ function wcwp_render_settings_page() {
             </div>
         </div>
     </div>
+    <?php endif; ?>
     <div class="wcwp-admin-premium-wrap">
         <h1><?php esc_html_e('WooChat – WhatsApp Settings', 'woochat-pro'); ?></h1>
         <div class="wcwp-dashboard-widget">
