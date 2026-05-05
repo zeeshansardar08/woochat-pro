@@ -41,9 +41,11 @@ function wcwp_send_followup_message_handler($order_id) {
 
     $message = wcwp_build_followup_message($order);
 
-    // Optional GPT-generated content
+    // Optional GPT-generated content. Falls back to the templated $message
+    // when the helper returns '' (missing creds, network error, non-200,
+    // or empty response).
     if (get_option('wcwp_followup_use_gpt', 'no') === 'yes') {
-        $maybe_ai = wcwp_generate_gpt_followup($order, $message);
+        $maybe_ai = wcwp_generate_gpt_followup($order);
         if (!empty($maybe_ai)) {
             $message = $maybe_ai;
         }
@@ -71,7 +73,7 @@ function wcwp_build_followup_message($order) {
     );
 }
 
-function wcwp_generate_gpt_followup($order, $fallback_message) {
+function wcwp_generate_gpt_followup($order) {
     $endpoint = trim(get_option('wcwp_gpt_api_endpoint', ''));
     $api_key = trim(get_option('wcwp_gpt_api_key', ''));
     $model = trim(get_option('wcwp_gpt_model', 'gpt-3.5-turbo')) ?: 'gpt-3.5-turbo';
@@ -91,7 +93,6 @@ function wcwp_generate_gpt_followup($order, $fallback_message) {
         'messages' => [
             ['role' => 'system', 'content' => 'You craft concise WhatsApp follow-ups for customers. Keep it friendly, short, and actionable.'],
             ['role' => 'user', 'content' => $user_prompt],
-            ['role' => 'user', 'content' => 'If unsure, reply exactly with: ' . $fallback_message]
         ],
         'max_tokens' => 120,
         'temperature' => 0.7,
