@@ -1,19 +1,26 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-// Hook into WooCommerce order complete
+// Hook into WooCommerce order complete + retries via cron.
 add_action('woocommerce_order_status_completed', 'wcwp_send_whatsapp_on_order_complete');
 add_action('woocommerce_order_status_processing', 'wcwp_send_whatsapp_on_order_complete');
+add_action('wcwp_send_order_message', 'wcwp_send_whatsapp_on_order_complete');
 
 function wcwp_send_whatsapp_on_order_complete($order_id) {
     $order = wc_get_order($order_id);
     if (!$order) return;
 
-    if ($order->get_meta('_wcwp_order_msg_sent')) {
-        return;
-    }
+    // Final states — never retry once we're here.
+    if ($order->get_meta('_wcwp_order_msg_sent')) return;
+    if ($order->get_meta('_wcwp_order_msg_failed')) return;
 
     $to = sanitize_text_field($order->get_billing_phone());
+    if (!$to) return;
+
+    // Permanent skip: opt-outs never reach the provider, so retrying just
+    // burns attempts on the same `false` return.
+    if (wcwp_is_opted_out($to)) return;
+
     $name = $order->get_billing_first_name();
     $total = $order->get_total();
 
@@ -28,7 +35,29 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
     if ($result === true) {
         $order->update_meta_data('_wcwp_order_msg_sent', current_time('mysql'));
         $order->save();
+        return;
     }
+
+    // Mirrors the followup retry queue (scheduler.php): 3-attempt cap with
+    // 5/15min backoff. Reschedules onto the same `wcwp_send_order_message`
+    // action this function is hooked to — no new cron schedule, no queue table.
+    $attempts     = intval($order->get_meta('_wcwp_order_msg_attempts')) + 1;
+    $max_attempts = 3;
+    $backoffs     = [5, 15];
+
+    $order->update_meta_data('_wcwp_order_msg_attempts', $attempts);
+
+    if ($attempts >= $max_attempts) {
+        $order->update_meta_data('_wcwp_order_msg_failed', current_time('mysql'));
+        $order->save();
+        return;
+    }
+
+    $delay_minutes = isset($backoffs[$attempts - 1]) ? $backoffs[$attempts - 1] : 60;
+    $next_at       = time() + ($delay_minutes * MINUTE_IN_SECONDS);
+
+    $order->save();
+    wp_schedule_single_event($next_at, 'wcwp_send_order_message', [$order_id]);
 }
 
 // Add manual WhatsApp message button to order admin screen
@@ -93,6 +122,12 @@ add_action('wp_ajax_wcwp_send_manual_whatsapp', function() {
     );
 
     if ($result === true) {
+        // Mark the order's confirmation as sent so any pending auto-retry
+        // (queued by `wcwp_send_whatsapp_on_order_complete` after a previous
+        // transient failure) bails on its early-return check instead of
+        // double-sending to the customer.
+        $order->update_meta_data('_wcwp_order_msg_sent', current_time('mysql'));
+        $order->save();
         wp_send_json_success(['redirect' => $redirect]);
     }
     wp_send_json_error(['redirect' => $redirect, 'message' => __('Send failed', 'woochat-pro')]);
