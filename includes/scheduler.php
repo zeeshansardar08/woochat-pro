@@ -33,11 +33,16 @@ function wcwp_send_followup_message_handler($order_id) {
     $order = wc_get_order($order_id);
     if (!$order) return;
 
-    // Prevent repeat sends
+    // Final states — never retry once we're here.
     if ($order->get_meta('_wcwp_followup_sent')) return;
+    if ($order->get_meta('_wcwp_followup_failed')) return;
 
     $to = sanitize_text_field($order->get_billing_phone());
     if (!$to) return;
+
+    // Permanent skip: opt-outs never reach the provider, so retrying just
+    // burns attempts on the same `false` return.
+    if (wcwp_is_opted_out($to)) return;
 
     $message = wcwp_build_followup_message($order);
 
@@ -55,7 +60,29 @@ function wcwp_send_followup_message_handler($order_id) {
     if ($result === true) {
         $order->update_meta_data('_wcwp_followup_sent', current_time('mysql'));
         $order->save();
+        return;
     }
+
+    // 3-attempt cap mirrors the cart-recovery queue. Backoff steps are
+    // shorter (5/15 vs the cart queue's 15min) because the value of a
+    // followup decays fast — a 4h-old "thanks for your order" is awkward.
+    $attempts     = intval($order->get_meta('_wcwp_followup_attempts')) + 1;
+    $max_attempts = 3;
+    $backoffs     = [5, 15];
+
+    $order->update_meta_data('_wcwp_followup_attempts', $attempts);
+
+    if ($attempts >= $max_attempts) {
+        $order->update_meta_data('_wcwp_followup_failed', current_time('mysql'));
+        $order->save();
+        return;
+    }
+
+    $delay_minutes = isset($backoffs[$attempts - 1]) ? $backoffs[$attempts - 1] : 60;
+    $next_at       = time() + ($delay_minutes * MINUTE_IN_SECONDS);
+
+    $order->save();
+    wp_schedule_single_event($next_at, 'wcwp_send_followup_message', [$order_id]);
 }
 
 function wcwp_build_followup_message($order) {
