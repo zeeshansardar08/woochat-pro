@@ -61,13 +61,14 @@ function wcwp_send_followup_message_handler($order_id) {
 function wcwp_build_followup_message($order) {
     $template = get_option('wcwp_followup_template', "Hi {name}, thanks again for your order #{order_id}! Reply if you have any questions.");
     return str_replace(
-        ['{name}', '{order_id}', '{total}', '{status}', '{date}'],
+        ['{name}', '{order_id}', '{total}', '{status}', '{date}', '{currency_symbol}'],
         [
             $order->get_billing_first_name(),
             $order->get_id(),
             $order->get_total(),
             $order->get_status(),
-            $order->get_date_created() ? $order->get_date_created()->date_i18n(get_option('date_format')) : ''
+            $order->get_date_created() ? $order->get_date_created()->date_i18n(get_option('date_format')) : '',
+            wcwp_currency_symbol_text()
         ],
         $template
     );

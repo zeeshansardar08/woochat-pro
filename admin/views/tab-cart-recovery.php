@@ -29,12 +29,12 @@ if (!defined('ABSPATH')) exit;
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="wcwp_cart_recovery_message"><?php esc_html_e('Cart Recovery Message', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Customize the WhatsApp message sent for cart recovery. Use placeholders: {items}, {total}, {cart_url}', 'woochat-pro'); ?></span></span></th>
+            <th scope="row"><label for="wcwp_cart_recovery_message"><?php esc_html_e('Cart Recovery Message', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Customize the WhatsApp message sent for cart recovery. Use placeholders: {items}, {total}, {currency_symbol}, {cart_url}', 'woochat-pro'); ?></span></span></th>
             <td>
-                <textarea name="wcwp_cart_recovery_message" id="wcwp_cart_recovery_message" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}")); ?></textarea>
+                <textarea name="wcwp_cart_recovery_message" id="wcwp_cart_recovery_message" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} {currency_symbol}\nClick here to complete your order: {cart_url}")); ?></textarea>
                 <p class="description"><?php
                     /* translators: do not translate placeholders inside curly braces */
-                    esc_html_e('Use placeholders: {items}, {total}, {cart_url}', 'woochat-pro');
+                    esc_html_e('Use placeholders: {items}, {total}, {currency_symbol}, {cart_url}', 'woochat-pro');
                 ?></p>
             </td>
         </tr>

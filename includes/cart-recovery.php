@@ -405,10 +405,10 @@ function wcwp_sum_cart_items_total($cart_items) {
  * the bare cart URL).
  */
 function wcwp_render_cart_recovery_message($items, $total, $cart_url) {
-    $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} PKR\nClick here to complete your order: {cart_url}");
+    $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} {currency_symbol}\nClick here to complete your order: {cart_url}");
     return str_replace(
-        ['{items}', '{total}', '{cart_url}'],
-        [implode("\n", $items), $total, $cart_url],
+        ['{items}', '{total}', '{cart_url}', '{currency_symbol}'],
+        [implode("\n", $items), $total, $cart_url, wcwp_currency_symbol_text()],
         $template
     );
 }

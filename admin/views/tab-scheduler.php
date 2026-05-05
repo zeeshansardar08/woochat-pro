@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) exit;
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="wcwp_followup_template"><?php esc_html_e('Follow-up Template', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Placeholders: {name}, {order_id}, {total}, {status}, {date}', 'woochat-pro'); ?></span></span></th>
+            <th scope="row"><label for="wcwp_followup_template"><?php esc_html_e('Follow-up Template', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Placeholders: {name}, {order_id}, {total}, {currency_symbol}, {status}, {date}', 'woochat-pro'); ?></span></span></th>
             <td>
                 <textarea name="wcwp_followup_template" id="wcwp_followup_template" rows="5" class="large-text" <?php disabled(!$is_pro); ?>><?php echo esc_textarea(get_option('wcwp_followup_template', "Hi {name}, thanks again for your order #{order_id}! Reply if you have any questions.")); ?></textarea>
                 <p class="description"><?php esc_html_e('Sent once per order after the delay.', 'woochat-pro'); ?></p>

@@ -223,6 +223,14 @@ function wcwp_is_woocommerce_active() {
     return false;
 }
 
+// WC returns HTML entities (e.g. `&#36;` for USD) — decode for plain-text WhatsApp output.
+function wcwp_currency_symbol_text() {
+    if (!function_exists('get_woocommerce_currency_symbol')) {
+        return '';
+    }
+    return html_entity_decode(get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8');
+}
+
 function wcwp_sanitize_json_faq($value) {
     $decoded = json_decode($value, true);
     if (!is_array($decoded)) {
