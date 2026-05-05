@@ -479,7 +479,7 @@
   color: #b2f7ef !important;
 }
 
-/* Support/Contact Form */
+/* Support/Contact card */
 .wcwp-support-form {
   background: #f8f9fa;
   border-radius: 10px;
@@ -492,59 +492,6 @@
 .wcwp-support-form:hover {
   box-shadow: 0 4px 24px rgba(44,62,80,0.13);
   transform: translateY(-2px) scale(1.01);
-}
-.wcwp-support-form label {
-  font-weight: 500;
-  color: #1c7c54;
-  margin-bottom: 6px;
-  display: block;
-}
-.wcwp-support-form input[type="text"],
-.wcwp-support-form input[type="email"],
-.wcwp-support-form textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1e7dd;
-  border-radius: 6px;
-  font-size: 1rem;
-  background: #fff;
-  margin-bottom: 12px;
-  transition: border 0.2s;
-}
-.wcwp-support-form input[type="text"]:focus,
-.wcwp-support-form input[type="email"]:focus,
-.wcwp-support-form textarea:focus {
-  border-color: #1c7c54;
-  background: #f8f9fa;
-}
-.wcwp-support-form .button {
-  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 22px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.wcwp-support-form .button:hover {
-  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
-}
-.wcwp-support-form .wcwp-support-success {
-  color: #1c7c54;
-  background: #e5f7f6;
-  border-radius: 6px;
-  padding: 10px 14px;
-  margin-bottom: 10px;
-  font-size: 1rem;
-}
-.wcwp-support-form .wcwp-support-error {
-  color: #fff;
-  background: #e74c3c;
-  border-radius: 6px;
-  padding: 10px 14px;
-  margin-bottom: 10px;
-  font-size: 1rem;
 }
 
 /* Microinteractions & Branding */

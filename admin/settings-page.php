@@ -169,19 +169,16 @@ function wcwp_render_settings_page() {
     </div>
     <div class="wcwp-support-form" id="wcwp-support-form">
         <h2><?php esc_html_e('Contact Support', 'woochat-pro'); ?></h2>
-        <form id="wcwp-support-contact-form" method="post" action="#" onsubmit="event.preventDefault();document.getElementById('wcwp-support-success').style.display='block';">
-            <label for="wcwp-support-name"><?php esc_html_e('Your Name', 'woochat-pro'); ?></label>
-            <input type="text" id="wcwp-support-name" name="wcwp-support-name" required>
-            <label for="wcwp-support-email"><?php esc_html_e('Your Email', 'woochat-pro'); ?></label>
-            <input type="email" id="wcwp-support-email" name="wcwp-support-email" required>
-            <label for="wcwp-support-message"><?php esc_html_e('Message', 'woochat-pro'); ?></label>
-            <textarea id="wcwp-support-message" name="wcwp-support-message" rows="4" required></textarea>
-            <button type="submit" class="button"><?php esc_html_e('Send Message', 'woochat-pro'); ?></button>
-            <div class="wcwp-support-success" id="wcwp-support-success" style="display:none;"><?php esc_html_e('Thank you! Your message has been sent. Our team will get back to you soon.', 'woochat-pro'); ?></div>
-        </form>
+        <p><?php esc_html_e('Reach our team using one of the channels below.', 'woochat-pro'); ?></p>
         <div style="margin-top:12px;font-size:0.97rem;color:#888;">
-            Or email us at <a href="mailto:support@zignites.com"><?php esc_html_e('support@zignites.com', 'woochat-pro'); ?></a><br>
-            <a href="https://zignites.com/feature-request" target="_blank"><?php esc_html_e('Suggest a Feature', 'woochat-pro'); ?></a> &nbsp;|&nbsp; <a href="https://zignites.com/bug-report" target="_blank"><?php esc_html_e('Report a Bug', 'woochat-pro'); ?></a>
+            <?php
+            printf(
+                /* translators: %s: support email link */
+                esc_html__('Email us at %s', 'woochat-pro'),
+                '<a href="mailto:support@zignites.com">support@zignites.com</a>'
+            );
+            ?><br>
+            <a href="https://zignites.com/feature-request" target="_blank" rel="noopener"><?php esc_html_e('Suggest a Feature', 'woochat-pro'); ?></a> &nbsp;|&nbsp; <a href="https://zignites.com/bug-report" target="_blank" rel="noopener"><?php esc_html_e('Report a Bug', 'woochat-pro'); ?></a>
         </div>
     </div>
     <?php
