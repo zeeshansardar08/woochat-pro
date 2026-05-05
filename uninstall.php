@@ -59,6 +59,7 @@ $option_keys = [
     'wcwp_optout_list',
     'wcwp_optout_webhook_token',
     'wcwp_db_version',
+    'wcwp_onboarding_completed',
 ];
 
 foreach ($option_keys as $key) {

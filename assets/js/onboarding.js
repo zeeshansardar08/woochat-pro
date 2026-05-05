@@ -32,10 +32,24 @@ document.addEventListener('DOMContentLoaded', function () {
             showStep(step);
         }
     });
+    function persistDismissal() {
+        if (typeof wcwpOnboarding === 'undefined' || !wcwpOnboarding.ajaxUrl) return;
+        var body = new URLSearchParams();
+        body.append('action', 'wcwp_dismiss_onboarding');
+        body.append('nonce', wcwpOnboarding.nonce);
+        fetch(wcwpOnboarding.ajaxUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: body
+        }).catch(function () { /* best-effort; UI is already dismissed */ });
+    }
+
     skipBtn.addEventListener('click', function () {
         wizard.style.display = 'none';
+        persistDismissal();
     });
     finishBtn.addEventListener('click', function () {
         wizard.style.display = 'none';
+        persistDismissal();
     });
-}); 
+});
