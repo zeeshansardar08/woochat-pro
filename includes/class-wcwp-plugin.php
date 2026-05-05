@@ -35,7 +35,7 @@ final class Plugin {
         add_action('before_woocommerce_init', [$this, 'declare_hpos_compat']);
         add_action('init', [$this, 'load_textdomain']);
 
-        if (function_exists('wcwp_is_woocommerce_active') && wcwp_is_woocommerce_active()) {
+        if (wcwp_is_woocommerce_active()) {
             $this->boot_modules();
         } else {
             add_action('admin_notices', [$this, 'render_wc_admin_notice']);
@@ -92,30 +92,25 @@ final class Plugin {
     }
 
     public function run_migrations() {
-        if (function_exists('wcwp_run_migrations')) {
-            wcwp_run_migrations();
-        }
+        wcwp_run_migrations();
     }
 
     public function activate($network_wide) {
-        if (!function_exists('wcwp_is_woocommerce_active') || !wcwp_is_woocommerce_active()) {
+        if (!wcwp_is_woocommerce_active()) {
             $this->die_missing_woocommerce($network_wide);
         }
-        if (function_exists('wcwp_create_cart_recovery_table')) {
-            wcwp_create_cart_recovery_table();
-        }
-        if (function_exists('wcwp_create_analytics_table')) {
-            wcwp_create_analytics_table();
-        }
-        if (function_exists('wcwp_schedule_cart_recovery_cron')) {
-            wcwp_schedule_cart_recovery_cron();
-        }
-        if (function_exists('wcwp_run_migrations')) {
-            wcwp_run_migrations();
-        }
+        wcwp_create_cart_recovery_table();
+        wcwp_create_analytics_table();
+        wcwp_schedule_cart_recovery_cron();
+        wcwp_run_migrations();
     }
 
     public function deactivate() {
+        // Guard kept: when WC has been deactivated, Plugin::init() skips
+        // boot_modules(), so cart-recovery.php is never loaded. The
+        // self-deactivate cascade in enforce_woocommerce_dependency()
+        // then fires the deactivation hook on a request where this
+        // function does not exist.
         if (function_exists('wcwp_unschedule_cart_recovery_cron')) {
             wcwp_unschedule_cart_recovery_cron();
         }
@@ -129,10 +124,7 @@ final class Plugin {
         if (!function_exists('is_plugin_active')) {
             include_once ABSPATH . 'wp-admin/includes/plugin.php';
         }
-        if (function_exists('wcwp_is_woocommerce_active')
-            && !wcwp_is_woocommerce_active()
-            && is_plugin_active(plugin_basename(WCWP_PLUGIN_FILE))
-        ) {
+        if (!wcwp_is_woocommerce_active() && is_plugin_active(plugin_basename(WCWP_PLUGIN_FILE))) {
             deactivate_plugins(plugin_basename(WCWP_PLUGIN_FILE));
             add_action('admin_notices', function() {
                 if (!current_user_can('activate_plugins')) return;
@@ -159,7 +151,7 @@ final class Plugin {
     }
 
     public function render_plugin_row_notice($plugin_file, $plugin_data, $status) {
-        if (function_exists('wcwp_is_woocommerce_active') && wcwp_is_woocommerce_active()) return;
+        if (wcwp_is_woocommerce_active()) return;
         if (!current_user_can('activate_plugins')) return;
         echo '<tr class="plugin-update-tr"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>'
             . $this->dependency_notice_message()

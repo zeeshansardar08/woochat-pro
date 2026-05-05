@@ -93,7 +93,7 @@ function wcwp_render_settings_page() {
         <h1><?php esc_html_e('WooChat – WhatsApp Settings', 'woochat-pro'); ?></h1>
         <div class="wcwp-dashboard-widget">
             <?php
-            $dash_totals = function_exists('wcwp_analytics_get_totals') ? wcwp_analytics_get_totals() : ['sent' => 0, 'delivered' => 0, 'clicked' => 0];
+            $dash_totals = wcwp_analytics_get_totals();
             $dash_license = get_option('wcwp_license_status', 'inactive');
             $dash_open_rate = $dash_totals['sent'] > 0 ? round(($dash_totals['delivered'] / $dash_totals['sent']) * 100) . '%' : '—';
             ?>

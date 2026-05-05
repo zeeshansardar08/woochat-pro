@@ -7,7 +7,7 @@ add_action('wp_footer', 'wcwp_cart_recovery_script');
 function wcwp_cart_recovery_script() {
     if (is_admin()) return;
 
-    if (!function_exists('wcwp_is_pro_active') || !wcwp_is_pro_active()) return;
+    if (!wcwp_is_pro_active()) return;
 
     $enabled = get_option('wcwp_cart_recovery_enabled', 'yes');
     if ($enabled !== 'yes') return;
@@ -112,7 +112,7 @@ function wcwp_save_cart_ajax() {
     }
 
     $phone = isset($_POST['phone']) ? sanitize_text_field(wp_unslash($_POST['phone'])) : '';
-    $phone = function_exists('wcwp_normalize_phone') ? wcwp_normalize_phone($phone) : $phone;
+    $phone = wcwp_normalize_phone($phone);
     $cart_raw = isset($_POST['cart']) ? wp_unslash($_POST['cart']) : '';
     $cart_items = json_decode(is_string($cart_raw) ? $cart_raw : '', true);
     $consent = isset($_POST['consent']) ? sanitize_text_field(wp_unslash($_POST['consent'])) : 'no';
@@ -133,7 +133,7 @@ function wcwp_save_cart_ajax() {
         return;
     }
 
-    if (function_exists('wcwp_is_opted_out') && wcwp_is_opted_out($phone)) {
+    if (wcwp_is_opted_out($phone)) {
         wp_send_json_error(['message' => __('Opted out', 'woochat-pro')], 403);
         return;
     }
@@ -225,22 +225,20 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', 
     $total = wcwp_sum_cart_items_total($cart_items);
 
     $cart_url = wc_get_cart_url();
-    if (function_exists('wcwp_analytics_log_event')) {
-        if (!$event_id) {
-            $event_id = wcwp_analytics_log_event('cart_recovery', [
-                'status' => 'pending',
-                'phone' => $phone,
-                'message_preview' => '',
-                'meta' => ['items' => $items, 'total' => $total, 'source' => 'cart_recovery'],
-            ]);
-        }
+    if (!$event_id) {
+        $event_id = wcwp_analytics_log_event('cart_recovery', [
+            'status' => 'pending',
+            'phone' => $phone,
+            'message_preview' => '',
+            'meta' => ['items' => $items, 'total' => $total, 'source' => 'cart_recovery'],
+        ]);
     }
-    $tracked_cart_url = ($event_id && function_exists('wcwp_analytics_tracking_url')) ? wcwp_analytics_tracking_url($event_id, $cart_url) : $cart_url;
+    $tracked_cart_url = $event_id ? wcwp_analytics_tracking_url($event_id, $cart_url) : $cart_url;
     $message = wcwp_render_cart_recovery_message($items, $total, $tracked_cart_url);
-    $preview = function_exists('wcwp_redact_message') ? wcwp_redact_message($message) : $message;
+    $preview = wcwp_redact_message($message);
 
-    $log_file = function_exists('wcwp_get_log_file') ? wcwp_get_log_file() : WP_CONTENT_DIR . '/woochat-pro.log';
-    $safe_to = function_exists('wcwp_mask_phone') ? wcwp_mask_phone($phone) : $phone;
+    $log_file = wcwp_get_log_file();
+    $safe_to = wcwp_mask_phone($phone);
     $safe_msg = $preview;
     $log_tag = $event_id ?: 'no-event';
     @error_log("[WooChat Pro - Cart Recovery] Attempt {$log_tag} to $safe_to: $safe_msg\n", 3, $log_file); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -248,33 +246,29 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', 
     $test_mode = get_option('wcwp_test_mode_enabled', 'no');
     if ($test_mode === 'yes') {
         @error_log("[WooChat Pro - Cart Recovery TEST MODE] {$log_tag} to $safe_to: $safe_msg\n", 3, $log_file); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-        if ($event_id && function_exists('wcwp_analytics_update_event')) {
+        if ($event_id) {
             wcwp_analytics_update_event($event_id, ['status' => 'test', 'message_preview' => $preview]);
         }
         return 'test';
     }
 
-    if (function_exists('wcwp_is_opted_out') && wcwp_is_opted_out($phone)) {
-        if ($event_id && function_exists('wcwp_analytics_update_event')) {
+    if (wcwp_is_opted_out($phone)) {
+        if ($event_id) {
             wcwp_analytics_update_event($event_id, ['status' => 'opted_out', 'message_preview' => $message]);
         }
         return 'opted_out';
     }
 
-    if (function_exists('wcwp_send_whatsapp_message')) {
-        $result = wcwp_send_whatsapp_message($phone, $message, false, ['type' => 'cart_recovery', 'event_id' => $event_id]);
-        if ($event_id && function_exists('wcwp_analytics_update_event')) {
-            wcwp_analytics_update_event($event_id, ['status' => $result === true ? 'sent' : 'failed', 'message_preview' => $preview]);
-        }
-        return $result === true ? true : false;
+    $result = wcwp_send_whatsapp_message($phone, $message, false, ['type' => 'cart_recovery', 'event_id' => $event_id]);
+    if ($event_id) {
+        wcwp_analytics_update_event($event_id, ['status' => $result === true ? 'sent' : 'failed', 'message_preview' => $preview]);
     }
-
-    return false;
+    return $result === true ? true : false;
 }
 
 function wcwp_process_cart_recovery_queue() {
     if (get_option('wcwp_cart_recovery_enabled', 'yes') !== 'yes') return;
-    if (!function_exists('wcwp_is_pro_active') || !wcwp_is_pro_active()) return;
+    if (!wcwp_is_pro_active()) return;
 
     global $wpdb;
     $table = wcwp_get_cart_table_name();
@@ -296,7 +290,7 @@ function wcwp_process_cart_recovery_queue() {
             continue;
         }
 
-        if (function_exists('wcwp_is_opted_out') && wcwp_is_opted_out($phone)) {
+        if (wcwp_is_opted_out($phone)) {
             $wpdb->update($table, ['status' => 'opted_out', 'updated_at' => $now], ['id' => $row->id], ['%s','%s'], ['%d']);
             continue;
         }
@@ -477,13 +471,9 @@ add_action('wp_ajax_wcwp_resend_cart_recovery', function() {
     $items = wcwp_format_cart_items_list($cart_items);
     $message = wcwp_render_cart_recovery_message($items, $row->total, wc_get_cart_url());
 
-    if (function_exists('wcwp_send_whatsapp_message')) {
-        $result = wcwp_send_whatsapp_message($row->phone, $message, true, ['type' => 'cart_recovery']);
-        if ($result === true) {
-            wp_send_json_success(['message' => __('Resent', 'woochat-pro')]);
-        }
-        wp_send_json_error(['message' => __('Send failed', 'woochat-pro')]);
+    $result = wcwp_send_whatsapp_message($row->phone, $message, true, ['type' => 'cart_recovery']);
+    if ($result === true) {
+        wp_send_json_success(['message' => __('Resent', 'woochat-pro')]);
     }
-
-    wp_send_json_error(['message' => __('Messaging unavailable', 'woochat-pro')], 500);
+    wp_send_json_error(['message' => __('Send failed', 'woochat-pro')]);
 });

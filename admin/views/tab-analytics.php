@@ -2,8 +2,8 @@
 if (!defined('ABSPATH')) exit;
 ?>
 <div id="wcwp-tab-content-analytics" class="wcwp-tab-content" style="display:none;">
-    <?php $is_pro = function_exists('wcwp_is_pro_active') && wcwp_is_pro_active(); ?>
-    <?php $totals = function_exists('wcwp_analytics_get_totals') ? wcwp_analytics_get_totals() : ['sent' => 0, 'delivered' => 0, 'clicked' => 0]; ?>
+    <?php $is_pro = wcwp_is_pro_active(); ?>
+    <?php $totals = wcwp_analytics_get_totals(); ?>
     <?php
     $filters = [
         'type' => isset($_GET['wcwp_type']) ? sanitize_text_field(wp_unslash($_GET['wcwp_type'])) : '',
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) exit;
         'date_from' => isset($_GET['wcwp_date_from']) ? sanitize_text_field(wp_unslash($_GET['wcwp_date_from'])) : '',
         'date_to' => isset($_GET['wcwp_date_to']) ? sanitize_text_field(wp_unslash($_GET['wcwp_date_to'])) : '',
     ];
-    $events = function_exists('wcwp_analytics_get_events') ? wcwp_analytics_get_events(25, $filters) : [];
+    $events = wcwp_analytics_get_events(25, $filters);
     ?>
     <?php if (!$is_pro) : ?>
         <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong><?php esc_html_e('Analytics Dashboard', 'woochat-pro'); ?></strong> <?php esc_html_e('is a Pro feature.', 'woochat-pro'); ?> <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;"><?php esc_html_e('Upgrade', 'woochat-pro'); ?></button></div>

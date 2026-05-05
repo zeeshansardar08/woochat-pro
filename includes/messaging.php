@@ -75,14 +75,14 @@ function wcwp_get_provider( $id ) {
 function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = [] ) {
     $test_mode   = get_option( 'wcwp_test_mode_enabled', 'no' );
     $provider_id = get_option( 'wcwp_api_provider', 'twilio' );
-    $log_file    = function_exists( 'wcwp_get_log_file' ) ? wcwp_get_log_file() : WP_CONTENT_DIR . '/woochat-pro.log';
+    $log_file    = wcwp_get_log_file();
     $log_prefix  = $manual ? '[WooChat Pro - MANUAL]' : '[WooChat Pro]';
     $log_failed  = false;
-    $safe_to     = function_exists( 'wcwp_mask_phone' )    ? wcwp_mask_phone( $to )         : $to;
-    $safe_msg    = function_exists( 'wcwp_redact_message' ) ? wcwp_redact_message( $message ) : $message;
+    $safe_to     = wcwp_mask_phone( $to );
+    $safe_msg    = wcwp_redact_message( $message );
 
     // Opt-out: blocked numbers never reach a provider.
-    if ( function_exists( 'wcwp_is_opted_out' ) && wcwp_is_opted_out( $to ) ) {
+    if ( wcwp_is_opted_out( $to ) ) {
         @error_log( "$log_prefix Opt-out: Message blocked for $safe_to\n", 3, $log_file ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
         return false;
     }
@@ -91,26 +91,24 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
     $event_id   = $context['event_id'] ?? null;
     $event_type = isset( $context['type'] ) && $context['type'] ? $context['type'] : 'order';
 
-    if ( function_exists( 'wcwp_analytics_log_event' ) ) {
-        if ( ! $event_id ) {
-            $event_id = wcwp_analytics_log_event( $event_type, [
-                'status'          => 'pending',
-                'phone'           => $to,
-                'order_id'        => isset( $context['order_id'] ) ? intval( $context['order_id'] ) : 0,
-                'message_preview' => $safe_msg,
-                'provider'        => $provider_id,
-                'meta'            => [
-                    'source' => $context['type'] ?? 'order',
-                    'manual' => $manual ? 'yes' : 'no',
-                ],
-            ] );
-        } else {
-            wcwp_analytics_update_event( $event_id, [
-                'status'          => 'pending',
-                'provider'        => $provider_id,
-                'message_preview' => $safe_msg,
-            ] );
-        }
+    if ( ! $event_id ) {
+        $event_id = wcwp_analytics_log_event( $event_type, [
+            'status'          => 'pending',
+            'phone'           => $to,
+            'order_id'        => isset( $context['order_id'] ) ? intval( $context['order_id'] ) : 0,
+            'message_preview' => $safe_msg,
+            'provider'        => $provider_id,
+            'meta'            => [
+                'source' => $context['type'] ?? 'order',
+                'manual' => $manual ? 'yes' : 'no',
+            ],
+        ] );
+    } else {
+        wcwp_analytics_update_event( $event_id, [
+            'status'          => 'pending',
+            'provider'        => $provider_id,
+            'message_preview' => $safe_msg,
+        ] );
     }
 
     $log_write = function ( $msg ) use ( $log_file, &$log_failed ) {
@@ -123,7 +121,7 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
     if ( $test_mode === 'yes' ) {
         $log_write( "$log_prefix TEST MODE: Order message to $safe_to: $safe_msg\n" );
         wcwp_maybe_log_notice( $log_failed );
-        if ( function_exists( 'wcwp_analytics_update_event' ) && $event_id ) {
+        if ( $event_id ) {
             wcwp_analytics_update_event( $event_id, [ 'status' => 'test' ] );
         }
         return true;
@@ -133,7 +131,7 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
     if ( ! $provider ) {
         $log_write( "$log_prefix Unknown provider: $provider_id\n" );
         wcwp_maybe_log_notice( $log_failed );
-        if ( function_exists( 'wcwp_analytics_update_event' ) && $event_id ) {
+        if ( $event_id ) {
             wcwp_analytics_update_event( $event_id, [ 'status' => 'failed' ] );
         }
         return false;
@@ -146,7 +144,7 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
         // "missing credentials" path on the Cloud branch; original DID
         // for Twilio. Unifying to "failed" — strictly more informative
         // and matches what the analytics row should reflect.
-        if ( function_exists( 'wcwp_analytics_update_event' ) && $event_id ) {
+        if ( $event_id ) {
             wcwp_analytics_update_event( $event_id, [ 'status' => 'failed' ] );
         }
         return false;
@@ -157,7 +155,7 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
     if ( empty( $result['ok'] ) ) {
         $log_write( "$log_prefix " . ( $result['error'] ?? 'Unknown error' ) . "\n" );
         wcwp_maybe_log_notice( $log_failed );
-        if ( function_exists( 'wcwp_analytics_update_event' ) && $event_id ) {
+        if ( $event_id ) {
             wcwp_analytics_update_event( $event_id, [ 'status' => 'failed' ] );
         }
         return false;
@@ -168,7 +166,7 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
     $log_write( "$log_prefix $success_label sent to $safe_to\n" );
     wcwp_maybe_log_notice( $log_failed );
 
-    if ( function_exists( 'wcwp_analytics_update_event' ) && $event_id ) {
+    if ( $event_id ) {
         wcwp_analytics_update_event( $event_id, [
             'status'     => 'sent',
             'message_id' => $result['message_id'] ?? '',

@@ -89,7 +89,7 @@ if (!defined('ABSPATH')) exit;
         <tr>
             <th scope="row"><label for="wcwp_optout_list"><?php esc_html_e('Suppression List (opted-out numbers)', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Numbers in this list will never receive messages.', 'woochat-pro'); ?></span></span></th>
             <td>
-                <?php $optout_list = function_exists('wcwp_get_optout_list') ? wcwp_get_optout_list() : []; ?>
+                <?php $optout_list = wcwp_get_optout_list(); ?>
                 <textarea name="wcwp_optout_list" id="wcwp_optout_list" rows="4" class="large-text"><?php echo esc_textarea(implode("\n", $optout_list)); ?></textarea>
                 <p class="description"><?php esc_html_e('One phone number per line.', 'woochat-pro'); ?></p>
             </td>

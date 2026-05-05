@@ -7,7 +7,7 @@ add_action('woocommerce_order_status_processing', 'wcwp_maybe_schedule_followup'
 add_action('wcwp_send_followup_message', 'wcwp_send_followup_message_handler');
 
 function wcwp_maybe_schedule_followup($order_id) {
-    if (!function_exists('wcwp_is_pro_active') || !wcwp_is_pro_active()) return;
+    if (!wcwp_is_pro_active()) return;
 
     $enabled = get_option('wcwp_followup_enabled', 'no');
     if ($enabled !== 'yes') return;
@@ -28,7 +28,7 @@ function wcwp_maybe_schedule_followup($order_id) {
 }
 
 function wcwp_send_followup_message_handler($order_id) {
-    if (!function_exists('wcwp_is_pro_active') || !wcwp_is_pro_active()) return;
+    if (!wcwp_is_pro_active()) return;
 
     $order = wc_get_order($order_id);
     if (!$order) return;
@@ -49,12 +49,10 @@ function wcwp_send_followup_message_handler($order_id) {
         }
     }
 
-    if (function_exists('wcwp_send_whatsapp_message')) {
-        $result = wcwp_send_whatsapp_message($to, $message, false, ['type' => 'followup', 'order_id' => $order_id]);
-        if ($result === true) {
-            $order->update_meta_data('_wcwp_followup_sent', current_time('mysql'));
-            $order->save();
-        }
+    $result = wcwp_send_whatsapp_message($to, $message, false, ['type' => 'followup', 'order_id' => $order_id]);
+    if ($result === true) {
+        $order->update_meta_data('_wcwp_followup_sent', current_time('mysql'));
+        $order->save();
     }
 }
 
