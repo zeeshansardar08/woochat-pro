@@ -17,6 +17,7 @@ function wcwp_cart_recovery_script() {
     wp_localize_script('wcwp-cart-tracker', 'wcwp_ajax_obj', [
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce'    => wp_create_nonce('wcwp_cart_nonce'),
+        'cart_url' => rest_url('wc/store/v1/cart'),
     ]);
     wp_localize_script('wcwp-cart-tracker', 'wcwp_cart_recovery_delay', get_option('wcwp_cart_recovery_delay', 20));
     wp_localize_script('wcwp-cart-tracker', 'wcwp_cart_consent_required', get_option('wcwp_cart_recovery_require_consent', 'no'));
