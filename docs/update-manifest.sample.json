@@ -1,0 +1,14 @@
+{
+  "name": "WooChat Pro",
+  "slug": "woochat-pro",
+  "version": "1.0.2",
+  "author": "Zignite",
+  "homepage": "https://zignites.com/woochat-pro",
+  "requires": "6.0",
+  "tested": "6.7",
+  "download_url": "https://zignites.com/downloads/woochat-pro-1.0.2.zip",
+  "sections": {
+    "description": "WooChat Pro adds WhatsApp messaging, cart recovery, and a chatbot widget to WooCommerce.",
+    "changelog": "<h4>1.0.2</h4><ul><li>Example release notes go here.</li></ul>"
+  }
+}

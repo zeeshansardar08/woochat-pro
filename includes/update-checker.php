@@ -5,13 +5,17 @@ add_filter('pre_set_site_transient_update_plugins', 'wcwp_update_check');
 add_filter('plugins_api', 'wcwp_update_plugin_info', 10, 3);
 
 function wcwp_update_api_url() {
-    $default = '';
-    $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
-    $site_url = home_url();
-    $is_local = ($env === 'local') || (strpos($site_url, '.local') !== false);
+    if (defined('WCWP_UPDATE_API_URL') && is_string(WCWP_UPDATE_API_URL) && WCWP_UPDATE_API_URL !== '') {
+        $default = WCWP_UPDATE_API_URL;
+    } else {
+        $default = '';
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $site_url = home_url();
+        $is_local = ($env === 'local') || (strpos($site_url, '.local') !== false);
 
-    if ($is_local) {
-        $default = home_url('/woochat-pro-update.json');
+        if ($is_local) {
+            $default = home_url('/woochat-pro-update.json');
+        }
     }
 
     return apply_filters('wcwp_update_api_url', $default);
