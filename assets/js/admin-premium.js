@@ -149,21 +149,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }).then(res => res.json());
     }
 
+    // English fallbacks keep the UI working if the localization payload is
+    // ever missing — degrades to English instead of "undefined".
+    const labels = (window.wcwpAdminData && wcwpAdminData.licenseLabels) || {};
+    const t = (key, fallback) => labels[key] || fallback;
+
     if (activateBtn) {
         activateBtn.addEventListener('click', function () {
             if (!keyField || !keyField.value) {
-                setStatus('Key required', false);
+                setStatus(t('keyRequired', 'Key required'), false);
                 return;
             }
-            setStatus('Activating…', false);
+            setStatus(t('activating', 'Activating…'), false);
             activateBtn.disabled = true;
             postLicense('wcwp_activate_license', keyField.value).then(data => {
                 if (data && data.success) {
-                    setStatus('Active', true);
+                    setStatus(t('active', 'Active'), true);
                 } else {
-                    setStatus((data && data.data && data.data.message) ? data.data.message : 'Activation failed', false);
+                    setStatus((data && data.data && data.data.message) ? data.data.message : t('activationFailed', 'Activation failed'), false);
                 }
-            }).catch(() => setStatus('Activation failed', false)).finally(() => {
+            }).catch(() => setStatus(t('activationFailed', 'Activation failed'), false)).finally(() => {
                 activateBtn.disabled = false;
             });
         });
@@ -171,15 +176,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (deactivateBtn) {
         deactivateBtn.addEventListener('click', function () {
-            setStatus('Deactivating…', false);
+            setStatus(t('deactivating', 'Deactivating…'), false);
             deactivateBtn.disabled = true;
             postLicense('wcwp_deactivate_license').then(data => {
                 if (data && data.success) {
-                    setStatus('Inactive', false);
+                    setStatus(t('inactive', 'Inactive'), false);
                 } else {
-                    setStatus('Deactivation failed', false);
+                    setStatus(t('deactivationFailed', 'Deactivation failed'), false);
                 }
-            }).catch(() => setStatus('Deactivation failed', false)).finally(() => {
+            }).catch(() => setStatus(t('deactivationFailed', 'Deactivation failed'), false)).finally(() => {
                 deactivateBtn.disabled = false;
             });
         });

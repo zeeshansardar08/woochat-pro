@@ -78,6 +78,15 @@ function wcwp_render_settings_page() {
         'resendNonce' => wp_create_nonce('wcwp_resend_cart'),
         'licenseNonce' => wp_create_nonce('wcwp_license_nonce'),
         'testNonce' => wp_create_nonce('wcwp_test_message'),
+        'licenseLabels' => [
+            'keyRequired'        => __('Key required', 'woochat-pro'),
+            'activating'         => __('Activating…', 'woochat-pro'),
+            'active'             => __('Active', 'woochat-pro'),
+            'activationFailed'   => __('Activation failed', 'woochat-pro'),
+            'deactivating'       => __('Deactivating…', 'woochat-pro'),
+            'inactive'           => __('Inactive', 'woochat-pro'),
+            'deactivationFailed' => __('Deactivation failed', 'woochat-pro'),
+        ],
     ]);
     // Onboarding wizard renders once per install — Skip/Finish persists the
     // dismissal flag via admin-ajax, after which the modal stops re-mounting.
@@ -132,7 +141,7 @@ function wcwp_render_settings_page() {
                 </div>
                 <div class="wcwp-dashboard-widget-stat">
                     <span class="dashicons dashicons-admin-network"></span>
-                    <div class="wcwp-stat-value"><?php echo esc_html(ucfirst($dash_license)); ?></div>
+                    <div class="wcwp-stat-value"><?php echo esc_html(wcwp_license_status_label($dash_license)); ?></div>
                     <div class="wcwp-stat-label"><?php esc_html_e('License Status', 'woochat-pro'); ?></div>
                 </div>
             </div>
