@@ -109,3 +109,19 @@ function wcwp_deactivate_license_ajax() {
 function wcwp_is_pro_active() {
     return get_option('wcwp_license_status') === 'valid';
 }
+
+function wcwp_license_status_label($status) {
+    // Known statuses get translated labels. Unknown values fall back to
+    // ucfirst() so a new server-side status string still renders something
+    // human-readable (just untranslated) instead of breaking the UI.
+    $labels = [
+        'valid'    => __('Active', 'woochat-pro'),
+        'inactive' => __('Inactive', 'woochat-pro'),
+        'expired'  => __('Expired', 'woochat-pro'),
+        'invalid'  => __('Invalid', 'woochat-pro'),
+    ];
+    if (isset($labels[$status])) {
+        return $labels[$status];
+    }
+    return ucfirst((string) $status);
+}
