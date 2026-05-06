@@ -10,6 +10,12 @@ Thumbs.db
 *.swp
 *.tmp
 
+# Ignore PHP tooling
+vendor/
+composer.lock
+phpunit.xml
+.phpunit.result.cache
+
 # Ignore Node tooling — the plugin has no build step and ships hand-written
 # JS, so package.json (and its lockfile + install dir) are dev-only artifacts
 # that should never enter the repo.
