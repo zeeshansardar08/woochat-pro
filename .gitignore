@@ -9,6 +9,10 @@ Thumbs.db
 *.bak
 *.swp
 *.tmp
-*node_modules/
-*package-lock.json
-*package.json
+
+# Ignore Node tooling — the plugin has no build step and ships hand-written
+# JS, so package.json (and its lockfile + install dir) are dev-only artifacts
+# that should never enter the repo.
+node_modules/
+package.json
+package-lock.json
