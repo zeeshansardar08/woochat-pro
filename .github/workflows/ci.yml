@@ -75,6 +75,10 @@ jobs:
         run: composer install --no-progress --prefer-dist --no-interaction
 
       - name: Run PHPCS
-        # cs2pr converts checkstyle output to GitHub PR annotations so
-        # violations show up inline on the diff view.
-        run: vendor/bin/phpcs --report=checkstyle --report-full | cs2pr
+        # -q suppresses progress dots / time-memory footer that the
+        # ruleset's <arg value="ps"/> would otherwise emit. Without it
+        # cs2pr fails ("Start tag expected, '<' not found") because the
+        # leading dots break XML parsing. --report=checkstyle alone is
+        # the format cs2pr expects; --report-full would mix in the full
+        # report on stdout and produce the same error.
+        run: vendor/bin/phpcs -q --report=checkstyle | cs2pr
