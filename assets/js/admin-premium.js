@@ -62,6 +62,67 @@ document.addEventListener('DOMContentLoaded', function () {
     updatePreview();
 });
 
+// Multi-agent routing: agents table add/remove + serialize-on-change
+
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.getElementById('wcwp-agents-table');
+    const hidden = document.getElementById('wcwp_agents_input');
+    const addBtn = document.getElementById('wcwp-agent-add');
+    if (!table || !hidden) return;
+
+    const tbody = table.querySelector('tbody');
+
+    function serialize() {
+        const rows = tbody.querySelectorAll('.wcwp-agent-row');
+        const list = [];
+        rows.forEach(function (row) {
+            const name  = (row.querySelector('.wcwp-agent-name')  || {}).value || '';
+            const phone = (row.querySelector('.wcwp-agent-phone') || {}).value || '';
+            if (!name.trim() || !phone.trim()) return;
+            list.push({ name: name.trim(), phone: phone.trim() });
+        });
+        hidden.value = JSON.stringify(list);
+    }
+
+    function newRow() {
+        const tr = document.createElement('tr');
+        tr.className = 'wcwp-agent-row';
+        tr.innerHTML =
+            '<td><input type="text" class="wcwp-agent-name regular-text" /></td>' +
+            '<td><input type="text" class="wcwp-agent-phone regular-text" /></td>' +
+            '<td><button type="button" class="button-link wcwp-agent-remove" aria-label="Remove agent">&times;</button></td>';
+        tbody.appendChild(tr);
+    }
+
+    if (addBtn) {
+        addBtn.addEventListener('click', function () {
+            newRow();
+        });
+    }
+
+    // Event delegation: input change anywhere in the table re-serializes;
+    // remove-button clicks delete the row then re-serialize.
+    table.addEventListener('input', function (e) {
+        if (e.target.classList.contains('wcwp-agent-name') || e.target.classList.contains('wcwp-agent-phone')) {
+            serialize();
+        }
+    });
+    table.addEventListener('click', function (e) {
+        if (e.target.classList.contains('wcwp-agent-remove')) {
+            const row = e.target.closest('.wcwp-agent-row');
+            if (row) row.parentNode.removeChild(row);
+            // Always keep at least one empty row visible so the admin can re-add.
+            if (!tbody.querySelector('.wcwp-agent-row')) newRow();
+            serialize();
+        }
+    });
+
+    // Capture-phase form submit listener so the hidden input is current
+    // even if the admin clicks Save without first blurring an input.
+    const form = hidden.closest('form');
+    if (form) form.addEventListener('submit', serialize, true);
+});
+
 // Upgrade Modal Logic
 
 document.addEventListener('DOMContentLoaded', function () {

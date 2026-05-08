@@ -246,6 +246,50 @@ function wcwp_currency_symbol_text() {
     return html_entity_decode(get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Sanitize a JSON-encoded list of {name, phone} agents.
+ *
+ * Drops rows where either field is empty (a half-filled agent breaks
+ * the chatbot routing — better to lose the row than ship a broken
+ * wa.me link). Phone is normalized to digits only via
+ * wcwp_normalize_phone(); name is run through sanitize_text_field.
+ * Stored shape matches what the chatbot localizer reads back.
+ */
+function wcwp_sanitize_agents_json($value) {
+    $decoded = is_array($value) ? $value : json_decode((string) $value, true);
+    if (!is_array($decoded)) return '[]';
+
+    $sanitized = [];
+    foreach ($decoded as $agent) {
+        if (!is_array($agent)) continue;
+        $name  = isset($agent['name'])  ? sanitize_text_field($agent['name'])  : '';
+        $phone = isset($agent['phone']) ? wcwp_normalize_phone($agent['phone']) : '';
+        if ($name === '' || $phone === '') continue;
+        $sanitized[] = ['name' => $name, 'phone' => $phone];
+    }
+    return wp_json_encode($sanitized, JSON_UNESCAPED_UNICODE);
+}
+
+function wcwp_get_agents() {
+    $raw = get_option('wcwp_agents', '[]');
+    $list = is_array($raw) ? $raw : json_decode((string) $raw, true);
+    if (!is_array($list)) return [];
+
+    $clean = [];
+    foreach ($list as $agent) {
+        if (!is_array($agent)) continue;
+        $name  = isset($agent['name'])  ? (string) $agent['name']  : '';
+        $phone = isset($agent['phone']) ? (string) $agent['phone'] : '';
+        if ($name === '' || $phone === '') continue;
+        $clean[] = ['name' => $name, 'phone' => $phone];
+    }
+    return $clean;
+}
+
+function wcwp_sanitize_agent_routing_mode($value) {
+    return in_array($value, ['single', 'random'], true) ? $value : 'single';
+}
+
 function wcwp_sanitize_json_faq($value) {
     $decoded = json_decode($value, true);
     if (!is_array($decoded)) {

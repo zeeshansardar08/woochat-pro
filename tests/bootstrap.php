@@ -48,6 +48,11 @@ if (!function_exists('sanitize_text_field')) {
 if (!function_exists('sanitize_textarea_field')) {
     function sanitize_textarea_field($value) { return is_string($value) ? trim($value) : ''; }
 }
+if (!function_exists('wp_json_encode')) {
+    function wp_json_encode($data, $options = 0, $depth = 512) {
+        return json_encode($data, $options, $depth);
+    }
+}
 
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/cart-recovery.php';

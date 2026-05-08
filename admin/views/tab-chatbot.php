@@ -56,4 +56,52 @@ if (!defined('ABSPATH')) exit;
             </td>
         </tr>
     </table>
+
+    <h3><?php esc_html_e('Agents (multi-agent routing)', 'woochat-pro'); ?></h3>
+    <p class="description"><?php esc_html_e('Add the team members who can receive customer chats. The chatbot widget routes "Send via WhatsApp" clicks to one of these numbers using the routing mode below.', 'woochat-pro'); ?></p>
+    <table class="form-table">
+        <tr>
+            <th scope="row"><label for="wcwp_agent_routing_mode"><?php esc_html_e('Routing mode', 'woochat-pro'); ?></label></th>
+            <td>
+                <?php $wcwp_routing_mode = get_option('wcwp_agent_routing_mode', 'single'); ?>
+                <select name="wcwp_agent_routing_mode" id="wcwp_agent_routing_mode">
+                    <option value="single" <?php selected($wcwp_routing_mode, 'single'); ?>><?php esc_html_e('Single — first agent only', 'woochat-pro'); ?></option>
+                    <option value="random" <?php selected($wcwp_routing_mode, 'random'); ?>><?php esc_html_e('Random — load-balance across agents', 'woochat-pro'); ?></option>
+                </select>
+                <p class="description"><?php esc_html_e('Random is chosen client-side per page load so a full-page cache does not pin every visitor to the same agent.', 'woochat-pro'); ?></p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="widefat striped" id="wcwp-agents-table">
+        <thead>
+            <tr>
+                <th><?php esc_html_e('Agent name', 'woochat-pro'); ?></th>
+                <th><?php esc_html_e('WhatsApp number', 'woochat-pro'); ?></th>
+                <th class="wcwp-agents-row-actions"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $wcwp_agents = wcwp_get_agents();
+            if (empty($wcwp_agents)) :
+                ?>
+                <tr class="wcwp-agent-row">
+                    <td><input type="text" class="wcwp-agent-name regular-text" placeholder="<?php esc_attr_e('e.g. Sales', 'woochat-pro'); ?>" value="" /></td>
+                    <td><input type="text" class="wcwp-agent-phone regular-text" placeholder="<?php esc_attr_e('e.g. +14155550100', 'woochat-pro'); ?>" value="" /></td>
+                    <td><button type="button" class="button-link wcwp-agent-remove" aria-label="<?php esc_attr_e('Remove agent', 'woochat-pro'); ?>">&times;</button></td>
+                </tr>
+            <?php else : foreach ($wcwp_agents as $wcwp_agent) : ?>
+                <tr class="wcwp-agent-row">
+                    <td><input type="text" class="wcwp-agent-name regular-text" placeholder="<?php esc_attr_e('e.g. Sales', 'woochat-pro'); ?>" value="<?php echo esc_attr($wcwp_agent['name']); ?>" /></td>
+                    <td><input type="text" class="wcwp-agent-phone regular-text" placeholder="<?php esc_attr_e('e.g. +14155550100', 'woochat-pro'); ?>" value="<?php echo esc_attr($wcwp_agent['phone']); ?>" /></td>
+                    <td><button type="button" class="button-link wcwp-agent-remove" aria-label="<?php esc_attr_e('Remove agent', 'woochat-pro'); ?>">&times;</button></td>
+                </tr>
+            <?php endforeach; endif; ?>
+        </tbody>
+    </table>
+    <p>
+        <button type="button" class="button" id="wcwp-agent-add">+ <?php esc_html_e('Add agent', 'woochat-pro'); ?></button>
+    </p>
+    <input type="hidden" name="wcwp_agents" id="wcwp_agents_input" value="<?php echo esc_attr(get_option('wcwp_agents', '[]')); ?>" />
 </div>

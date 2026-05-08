@@ -24,10 +24,25 @@ jQuery(document).ready(function ($) {
         return { score: hits / faqTokens.length, hits: hits };
     }
 
+    function wcwpPickAgentPhone() {
+        var agents = wcwp_chatbot_obj.agents;
+        if (!Array.isArray(agents) || agents.length === 0) return '';
+        var mode = wcwp_chatbot_obj.routing_mode;
+        if (mode === 'random' && agents.length > 1) {
+            return String(agents[Math.floor(Math.random() * agents.length)].phone || '');
+        }
+        return String(agents[0].phone || '');
+    }
+
     function wcwpRenderChatReply(text) {
         $('#wcwp-chat-response').text(text);
         var encoded = encodeURIComponent(text);
-        $('#wcwp-send-wa').attr('href', 'https://wa.me/?text=' + encoded).show();
+        // Routes the click straight to the chosen agent's WhatsApp when one
+        // is configured; falls back to the empty wa.me picker otherwise so
+        // sites that haven't set up agents keep the legacy behaviour.
+        var phone = wcwpPickAgentPhone();
+        var url = 'https://wa.me/' + (phone || '') + '?text=' + encoded;
+        $('#wcwp-send-wa').attr('href', url).show();
     }
 
     // 0.6 keeps obvious matches while rejecting single-token coincidences
