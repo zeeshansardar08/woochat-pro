@@ -479,6 +479,31 @@
   color: #b2f7ef !important;
 }
 
+/* Campaigns tab */
+.wcwp-campaign-create {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin: 18px 0 24px;
+  box-shadow: 0 1px 8px rgba(44,62,80,0.05);
+}
+.wcwp-campaign-create h3 {
+  margin-top: 0;
+}
+.wcwp-campaign-feedback {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 0.95rem;
+  color: #1c7c54;
+}
+.wcwp-campaign-feedback.is-error {
+  color: #c0392b;
+}
+.wcwp-campaigns-list .wcwp-campaign-status {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
 /* Support/Contact card */
 .wcwp-support-form {
   background: #f8f9fa;

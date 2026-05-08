@@ -34,6 +34,21 @@ if (!function_exists('get_woocommerce_currency_symbol')) {
         return $GLOBALS['wcwp_test_currency_symbol'] ?? '&#36;';
     }
 }
+if (!function_exists('get_bloginfo')) {
+    function get_bloginfo($key = '') {
+        return $GLOBALS['wcwp_test_bloginfo'][$key] ?? '';
+    }
+}
+if (!function_exists('__')) {
+    function __($text, $domain = '') { return $text; }
+}
+if (!function_exists('sanitize_text_field')) {
+    function sanitize_text_field($value) { return is_string($value) ? trim($value) : ''; }
+}
+if (!function_exists('sanitize_textarea_field')) {
+    function sanitize_textarea_field($value) { return is_string($value) ? trim($value) : ''; }
+}
 
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/cart-recovery.php';
+require_once __DIR__ . '/../includes/campaigns.php';

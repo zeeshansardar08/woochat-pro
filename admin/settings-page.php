@@ -69,6 +69,61 @@ function wcwp_ajax_dismiss_onboarding() {
     wp_send_json_success();
 }
 
+add_action('wp_ajax_wcwp_create_campaign', 'wcwp_ajax_create_campaign');
+function wcwp_ajax_create_campaign() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+    }
+    if (!check_ajax_referer('wcwp_campaigns', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+    }
+
+    $name         = isset($_POST['name']) ? wcwp_sanitize_text(wp_unslash($_POST['name'])) : '';
+    $template     = isset($_POST['template']) ? wcwp_sanitize_textarea(wp_unslash($_POST['template'])) : '';
+    $segment_type = isset($_POST['segment_type']) ? sanitize_key(wp_unslash($_POST['segment_type'])) : '';
+    $days         = isset($_POST['segment_days']) ? max(1, (int) $_POST['segment_days']) : 30;
+
+    $segment_meta = $segment_type === 'recent_orders' ? ['days' => $days] : [];
+
+    $result = wcwp_campaign_create([
+        'name'         => $name,
+        'template'     => $template,
+        'segment_type' => $segment_type,
+        'segment_meta' => $segment_meta,
+    ]);
+
+    if (is_wp_error($result)) {
+        wp_send_json_error(['message' => $result->get_error_message()], 422);
+    }
+
+    wp_send_json_success(['campaign_id' => (int) $result]);
+}
+
+add_action('wp_ajax_wcwp_campaign_status', 'wcwp_ajax_campaign_status');
+function wcwp_ajax_campaign_status() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+    }
+    if (!check_ajax_referer('wcwp_campaigns', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+    }
+
+    $id = isset($_GET['campaign_id']) ? (int) $_GET['campaign_id'] : 0;
+    $campaign = wcwp_campaign_get($id);
+    if (!$campaign) {
+        wp_send_json_error(['message' => __('Not found', 'woochat-pro')], 404);
+    }
+
+    wp_send_json_success([
+        'id'            => (int) $campaign['id'],
+        'status'        => $campaign['status'],
+        'total_count'   => (int) $campaign['total_count'],
+        'sent_count'    => (int) $campaign['sent_count'],
+        'failed_count'  => (int) $campaign['failed_count'],
+        'skipped_count' => (int) $campaign['skipped_count'],
+    ]);
+}
+
 add_action('wp_ajax_wcwp_save_onboarding_credentials', 'wcwp_ajax_save_onboarding_credentials');
 function wcwp_ajax_save_onboarding_credentials() {
     if (!current_user_can('manage_options')) {
@@ -129,6 +184,19 @@ function wcwp_render_settings_page() {
     wp_enqueue_style('wcwp-admin-premium-css', WCWP_URL . 'assets/css/admin-premium.css', [], WCWP_VERSION);
     // Enqueue premium admin JS
     wp_enqueue_script('wcwp-admin-premium-js', WCWP_URL . 'assets/js/admin-premium.js', [], WCWP_VERSION, true);
+    wp_enqueue_script('wcwp-campaigns-js', WCWP_URL . 'assets/js/campaigns.js', [], WCWP_VERSION, true);
+    wp_localize_script('wcwp-campaigns-js', 'wcwpCampaigns', [
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'nonce'   => wp_create_nonce('wcwp_campaigns'),
+        'i18n'    => [
+            'submitting'   => __('Creating campaign…', 'woochat-pro'),
+            'create'       => __('Create campaign', 'woochat-pro'),
+            'genericError' => __('Could not create campaign. Please try again.', 'woochat-pro'),
+            'completed'    => __('Completed', 'woochat-pro'),
+            'running'      => __('Running', 'woochat-pro'),
+            'queued'       => __('Queued', 'woochat-pro'),
+        ],
+    ]);
     wp_localize_script('wcwp-admin-premium-js', 'wcwpAdminData', [
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'resendNonce' => wp_create_nonce('wcwp_resend_cart'),
@@ -297,6 +365,7 @@ function wcwp_render_settings_page() {
             <button type="button" class="wcwp-tab" data-tab="chatbot"><?php esc_html_e('Chatbot', 'woochat-pro'); ?></button>
             <button type="button" class="wcwp-tab" data-tab="cart-recovery"><?php esc_html_e('Cart Recovery', 'woochat-pro'); ?></button>
             <button type="button" class="wcwp-tab" data-tab="scheduler"><?php esc_html_e('Scheduler', 'woochat-pro'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="campaigns"><?php esc_html_e('Campaigns', 'woochat-pro'); ?></button>
             <button type="button" class="wcwp-tab" data-tab="analytics"><?php esc_html_e('Analytics', 'woochat-pro'); ?></button>
             <button type="button" class="wcwp-tab" data-tab="license"><?php esc_html_e('License', 'woochat-pro'); ?></button>
         </div>
@@ -313,6 +382,7 @@ function wcwp_render_settings_page() {
             <?php require $views . '/tab-cart-recovery.php'; ?>
             <?php require $views . '/tab-analytics.php'; ?>
             <?php require $views . '/tab-scheduler.php'; ?>
+            <?php require $views . '/tab-campaigns.php'; ?>
             <?php require $views . '/tab-license.php'; ?>
             <?php submit_button(); ?>
         </form>
