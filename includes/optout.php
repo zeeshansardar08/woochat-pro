@@ -77,7 +77,7 @@ function wcwp_verify_twilio_signature(WP_REST_Request $request) {
 
     $scheme = is_ssl() ? 'https' : 'http';
     $host   = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])) : '';
-    $uri    = isset($_SERVER['REQUEST_URI']) ? wp_unslash($_SERVER['REQUEST_URI']) : '';
+    $uri    = isset($_SERVER['REQUEST_URI']) ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI'])) : '';
     $url    = $scheme . '://' . $host . $uri;
 
     /**

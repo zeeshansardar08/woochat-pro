@@ -1,13 +1,17 @@
 {
     "name": "zignite/woochat-pro",
-    "description": "WooChat Pro — WhatsApp for WooCommerce. Composer is dev-only here (PHPUnit harness); the plugin itself is shipped as a plain WordPress plugin zip.",
+    "description": "WooChat Pro — WhatsApp for WooCommerce. Composer is dev-only here (PHPUnit harness + PHPCS); the plugin itself is shipped as a plain WordPress plugin zip.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=7.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.6"
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpunit/phpunit": "^9.6",
+        "squizlabs/php_codesniffer": "^3.10",
+        "wp-coding-standards/wpcs": "^3.1"
     },
     "autoload-dev": {
         "psr-4": {
@@ -15,9 +19,14 @@
         }
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "lint": "phpcs",
+        "lint:fix": "phpcbf"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }
