@@ -15,6 +15,8 @@ vendor/
 composer.lock
 phpunit.xml
 .phpunit.result.cache
+phpcs.xml
+.phpcs.cache
 
 # Ignore Node tooling — the plugin has no build step and ships hand-written
 # JS, so package.json (and its lockfile + install dir) are dev-only artifacts

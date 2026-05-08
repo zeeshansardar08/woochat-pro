@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<ruleset name="WooChat Pro">
+    <description>
+        Pragmatic coding-standards lint for CI. Focus is real bugs:
+        PHP-version compatibility, output escaping, input sanitization,
+        and missing nonce checks on action POSTs. Style/naming rules and
+        the noisier "Recommended" sniffs are intentionally not enforced
+        here so CI can run green on the existing codebase from day one.
+    </description>
+
+    <file>./includes</file>
+    <file>./admin</file>
+    <file>./blocks</file>
+    <file>./templates</file>
+    <file>./woochat-pro.php</file>
+    <file>./uninstall.php</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/tests/*</exclude-pattern>
+
+    <arg value="ps"/>
+    <arg name="parallel" value="4"/>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+
+    <!--
+        PHP-version compatibility. PHPCompatibilityWP knows about polyfills
+        WordPress core ships, so it doesn't false-positive on functions like
+        `array_key_first` on PHP 7.4.
+    -->
+    <config name="testVersion" value="7.4-"/>
+    <rule ref="PHPCompatibilityWP"/>
+
+    <!-- Escaping on echo / print / die / etc. -->
+    <rule ref="WordPress.Security.EscapeOutput"/>
+
+    <!-- wp_safe_redirect over wp_redirect when destination is user-controlled. -->
+    <rule ref="WordPress.Security.SafeRedirect"/>
+
+    <!--
+        Sanitization on $_POST/$_GET/$_REQUEST/$_SERVER reads. Custom plugin
+        sanitizers are listed so PHPCS does not flag inputs that pass through
+        e.g. wcwp_sanitize_text(wp_unslash($_POST['x'])).
+    -->
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <properties>
+            <property name="customSanitizingFunctions" type="array">
+                <element value="wcwp_sanitize_text"/>
+                <element value="wcwp_sanitize_textarea"/>
+                <element value="wcwp_sanitize_provider"/>
+                <element value="wcwp_sanitize_int"/>
+                <element value="wcwp_sanitize_yes_no"/>
+                <element value="wcwp_sanitize_url"/>
+                <element value="wcwp_sanitize_hex_color"/>
+                <element value="wcwp_sanitize_optout_keywords"/>
+                <element value="wcwp_parse_optout_list"/>
+                <element value="wcwp_sanitize_json_faq"/>
+                <element value="wcwp_sanitize_agents_json"/>
+                <element value="wcwp_sanitize_agent_routing_mode"/>
+                <element value="wcwp_normalize_phone"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!--
+        Nonce verification — only the Missing-level sub-rule (no nonce on a
+        form-data POST handler) is enforced. The Recommended sub-rule is too
+        noisy for read-only display flows that read $_GET for filtering;
+        rely on AJAX/REST handler-level nonce checks instead.
+    -->
+    <rule ref="WordPress.Security.NonceVerification.Missing"/>
+
+    <!--
+        WordPress.DB.PreparedSQL is intentionally not included. Both
+        sub-rules generate false positives on patterns this codebase uses
+        (table-name interpolation from $wpdb->prefix, split-line $wpdb->prepare
+        results stored in a variable, $wpdb->insert/update with a function-
+        call table name). The audit series PRs #14-#42 verified all SQL is
+        properly prepared. Reintroduce per-call when refactoring those query
+        patterns; do not enable globally without a pass through every site.
+    -->
+</ruleset>

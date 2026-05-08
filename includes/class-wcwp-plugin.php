@@ -144,21 +144,21 @@ final class Plugin {
         if (!current_user_can('activate_plugins')) return;
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
         if ($screen && $screen->id !== 'plugins') return;
-        echo '<div class="notice notice-error"><p>' . $this->dependency_notice_message() . '</p></div>';
+        echo '<div class="notice notice-error"><p>' . wp_kses_post($this->dependency_notice_message()) . '</p></div>';
     }
 
     public function render_wc_network_admin_notice() {
         if (!current_user_can('activate_plugins')) return;
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
         if ($screen && $screen->id !== 'plugins-network') return;
-        echo '<div class="notice notice-error"><p>' . $this->dependency_notice_message() . '</p></div>';
+        echo '<div class="notice notice-error"><p>' . wp_kses_post($this->dependency_notice_message()) . '</p></div>';
     }
 
     public function render_plugin_row_notice($plugin_file, $plugin_data, $status) {
         if (wcwp_is_woocommerce_active()) return;
         if (!current_user_can('activate_plugins')) return;
         echo '<tr class="plugin-update-tr"><td colspan="3" class="plugin-update colspanchange"><div class="update-message notice inline notice-error notice-alt"><p>'
-            . $this->dependency_notice_message()
+            . wp_kses_post($this->dependency_notice_message())
             . '</p></div></td></tr>';
     }
 

@@ -113,6 +113,7 @@ function wcwp_save_cart_ajax() {
 
     $phone = isset($_POST['phone']) ? sanitize_text_field(wp_unslash($_POST['phone'])) : '';
     $phone = wcwp_normalize_phone($phone);
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON cart payload, validated and decoded via json_decode below; nonce verified at function entry.
     $cart_raw = isset($_POST['cart']) ? wp_unslash($_POST['cart']) : '';
     $cart_items = json_decode(is_string($cart_raw) ? $cart_raw : '', true);
     $consent = isset($_POST['consent']) ? sanitize_text_field(wp_unslash($_POST['consent'])) : 'no';
@@ -361,6 +362,7 @@ function wcwp_cart_rate_limit_ok($phone) {
 }
 
 add_action('woocommerce_checkout_order_processed', function($order_id) {
+    // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Hook fires inside WooCommerce's nonce-validated checkout pipeline; relying on WC's own verification.
     $consent_raw = isset($_POST['wcwp-cart-consent']) ? sanitize_text_field(wp_unslash($_POST['wcwp-cart-consent'])) : '';
     $consent = $consent_raw === 'yes' ? 'yes' : 'no';
     $order = wc_get_order( $order_id );
