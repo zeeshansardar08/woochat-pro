@@ -90,6 +90,7 @@ final class Plugin {
         require_once WCWP_PATH . 'includes/cart-recovery.php';
         require_once WCWP_PATH . 'includes/scheduler.php';
         require_once WCWP_PATH . 'includes/campaigns.php';
+        require_once WCWP_PATH . 'includes/blocks.php';
     }
 
     public function run_migrations() {

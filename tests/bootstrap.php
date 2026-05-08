@@ -53,7 +53,31 @@ if (!function_exists('wp_json_encode')) {
         return json_encode($data, $options, $depth);
     }
 }
+if (!function_exists('esc_url')) {
+    function esc_url($url) { return $url; }
+}
+if (!function_exists('esc_attr')) {
+    function esc_attr($value) { return $value; }
+}
+if (!function_exists('esc_html')) {
+    function esc_html($value) { return $value; }
+}
+if (!function_exists('sanitize_html_class')) {
+    function sanitize_html_class($class) { return preg_replace('/[^A-Za-z0-9_-]/', '', (string) $class); }
+}
+if (!function_exists('wp_enqueue_style')) {
+    function wp_enqueue_style(...$args) { /* no-op for unit tests */ }
+}
+if (!function_exists('add_query_arg')) {
+    // Minimal three-arg form (key, value, url) — enough for the block render
+    // tests. The real WP function handles arrays + various url shapes.
+    function add_query_arg($key, $value, $url) {
+        $sep = strpos($url, '?') === false ? '?' : '&';
+        return $url . $sep . $key . '=' . urlencode((string) $value);
+    }
+}
 
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/cart-recovery.php';
 require_once __DIR__ . '/../includes/campaigns.php';
+require_once __DIR__ . '/../includes/blocks.php';

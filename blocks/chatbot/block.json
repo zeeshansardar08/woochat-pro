@@ -1,0 +1,16 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 2,
+    "name": "woochat-pro/chatbot",
+    "title": "WooChat Chatbot",
+    "category": "widgets",
+    "icon": "format-chat",
+    "description": "Embeds the WooChat Pro floating chatbot widget on this page. The widget is also available globally via the site footer.",
+    "textdomain": "woochat-pro",
+    "supports": {
+        "html": false,
+        "multiple": false,
+        "reusable": false
+    },
+    "editorScript": "file:./index.js"
+}
