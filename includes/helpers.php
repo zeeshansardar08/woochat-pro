@@ -104,6 +104,7 @@ function wcwp_get_migrations() {
     return [
         1 => 'wcwp_migration_v1_secrets_autoload',
         2 => 'wcwp_migration_v2_analytics_to_table',
+        3 => 'wcwp_migration_v3_campaign_tables',
     ];
 }
 
@@ -144,6 +145,20 @@ function wcwp_migration_v1_secrets_autoload() {
  */
 function wcwp_migration_v2_analytics_to_table() {
     wcwp_migrate_analytics_options_to_table();
+}
+
+/**
+ * v3: create the campaigns + campaign_recipients tables for bulk-messaging.
+ *
+ * Same guard shape as v2 — the migration runner fires on admin_init priority
+ * 5 regardless of WC state, but boot_modules() (which loads campaigns.php)
+ * only runs when WC is active. The activation hook also runs the table
+ * creator, so a re-activation rebuilds the tables if WC is added later.
+ */
+function wcwp_migration_v3_campaign_tables() {
+    if (function_exists('wcwp_create_campaign_tables')) {
+        wcwp_create_campaign_tables();
+    }
 }
 
 /**

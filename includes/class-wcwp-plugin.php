@@ -89,6 +89,7 @@ final class Plugin {
         require_once WCWP_PATH . 'includes/order-hooks.php';
         require_once WCWP_PATH . 'includes/cart-recovery.php';
         require_once WCWP_PATH . 'includes/scheduler.php';
+        require_once WCWP_PATH . 'includes/campaigns.php';
     }
 
     public function run_migrations() {
@@ -101,6 +102,8 @@ final class Plugin {
         }
         wcwp_create_cart_recovery_table();
         wcwp_create_analytics_table();
+        require_once WCWP_PATH . 'includes/campaigns.php';
+        wcwp_create_campaign_tables();
         wcwp_schedule_cart_recovery_cron();
         wcwp_run_migrations();
     }
