@@ -63,6 +63,10 @@ function wcwp_chatbot_localized_data() {
             'action'   => 'wcwp_chatbot_gpt',
             'thinking' => __('Thinking…', 'woochat-pro'),
         ],
+        // Agents are picked client-side so a full-page cache can't pin every
+        // visitor to the same agent under 'random' mode.
+        'agents'        => wcwp_get_agents(),
+        'routing_mode'  => get_option('wcwp_agent_routing_mode', 'single') === 'random' ? 'random' : 'single',
     ];
 }
 

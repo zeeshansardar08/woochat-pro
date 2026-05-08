@@ -479,6 +479,29 @@
   color: #b2f7ef !important;
 }
 
+/* Agents (multi-agent routing) */
+#wcwp-agents-table {
+  margin-top: 8px;
+  max-width: 720px;
+}
+#wcwp-agents-table th,
+#wcwp-agents-table td {
+  vertical-align: middle;
+}
+#wcwp-agents-table .wcwp-agents-row-actions {
+  width: 40px;
+}
+.wcwp-agent-remove {
+  color: #c0392b;
+  font-size: 1.2rem;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0 4px;
+}
+.wcwp-agent-remove:hover { color: #922b21; }
+
 /* Campaigns tab */
 .wcwp-campaign-create {
   background: #f8f9fa;
