@@ -14,7 +14,7 @@
   border-radius: 14px;
   box-shadow: 0 8px 32px rgba(44,62,80,0.18);
   padding: 36px 40px 28px 40px;
-  max-width: 420px;
+  max-width: 480px;
   width: 100%;
   text-align: center;
   position: relative;
@@ -64,4 +64,99 @@
 }
 .wcwp-onboarding-skip:hover {
   background: #b2f7ef;
-} 
+}
+.wcwp-onboarding-next:disabled,
+.wcwp-onboarding-prev:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wcwp-onboarding-provider-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 18px 0 6px;
+  text-align: left;
+}
+.wcwp-onboarding-provider-choice {
+  display: block;
+  border: 1px solid #d9dee3;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.wcwp-onboarding-provider-choice:hover {
+  border-color: #1c7c54;
+}
+.wcwp-onboarding-provider-choice input[type="radio"] {
+  margin-right: 8px;
+}
+.wcwp-onboarding-provider-choice:has(input:checked) {
+  border-color: #1c7c54;
+  box-shadow: 0 0 0 2px rgba(28,124,84,0.12);
+}
+.wcwp-onboarding-provider-title {
+  font-weight: 600;
+  font-size: 1rem;
+  display: inline;
+}
+.wcwp-onboarding-provider-desc {
+  display: block;
+  margin-top: 4px;
+  margin-left: 22px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.wcwp-onboarding-step-hint {
+  color: #555;
+  font-size: 0.95rem;
+  margin: 4px 0 14px;
+}
+.wcwp-onboarding-fields {
+  display: none;
+  text-align: left;
+  margin-top: 8px;
+}
+.wcwp-onboarding-field {
+  margin-bottom: 12px;
+}
+.wcwp-onboarding-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+  color: #2c3e50;
+}
+.wcwp-onboarding-field input[type="text"],
+.wcwp-onboarding-field input[type="password"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #c8ced4;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+.wcwp-onboarding-field input:focus {
+  border-color: #1c7c54;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(28,124,84,0.15);
+}
+.wcwp-onboarding-field.has-error input {
+  border-color: #c0392b;
+}
+.wcwp-onboarding-field-error {
+  display: block;
+  margin-top: 4px;
+  color: #c0392b;
+  font-size: 0.85rem;
+  min-height: 1em;
+}
+.wcwp-onboarding-form-error {
+  margin-top: 10px;
+  color: #c0392b;
+  font-size: 0.9rem;
+  min-height: 1em;
+  text-align: left;
+}
