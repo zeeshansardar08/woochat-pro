@@ -24,6 +24,12 @@ jQuery(document).ready(function ($) {
         return { score: hits / faqTokens.length, hits: hits };
     }
 
+    function wcwpRenderChatReply(text) {
+        $('#wcwp-chat-response').text(text);
+        var encoded = encodeURIComponent(text);
+        $('#wcwp-send-wa').attr('href', 'https://wa.me/?text=' + encoded).show();
+    }
+
     // 0.6 keeps obvious matches while rejecting single-token coincidences
     // against long FAQs ("shipping" alone shouldn't pick up "how long does
     // international shipping take").
@@ -51,11 +57,37 @@ jQuery(document).ready(function ($) {
             }
         }
 
-        var reply = (best.score >= WCWP_MATCH_THRESHOLD && best.answer) ? best.answer : noAnswer;
+        if (best.score >= WCWP_MATCH_THRESHOLD && best.answer) {
+            wcwpRenderChatReply(best.answer);
+            return;
+        }
 
-        $('#wcwp-chat-response').text(reply);
+        var gpt = wcwp_chatbot_obj.gpt;
+        if (gpt && gpt.enabled && question) {
+            // Show transient placeholder while GPT call is in flight; the
+            // WhatsApp send button is hidden so users don't share the
+            // placeholder text.
+            $('#wcwp-chat-response').text(gpt.thinking || 'Thinking…');
+            $('#wcwp-send-wa').hide();
 
-        var encoded = encodeURIComponent(reply);
-        $('#wcwp-send-wa').attr('href', 'https://wa.me/?text=' + encoded).show();
+            $.ajax({
+                url: gpt.url,
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    action: gpt.action,
+                    nonce: gpt.nonce,
+                    question: question
+                }
+            }).done(function (res) {
+                var reply = (res && res.success && res.data && res.data.reply) ? res.data.reply : noAnswer;
+                wcwpRenderChatReply(reply);
+            }).fail(function () {
+                wcwpRenderChatReply(noAnswer);
+            });
+            return;
+        }
+
+        wcwpRenderChatReply(noAnswer);
     });
 });

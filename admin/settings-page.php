@@ -24,6 +24,7 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_order_message_template', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
     register_setting('wcwp_settings_group', 'wcwp_cart_recovery_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
     register_setting('wcwp_settings_group', 'wcwp_chatbot_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_chatbot_gpt_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
     register_setting('wcwp_settings_group', 'wcwp_faq_pairs', ['sanitize_callback' => 'wcwp_sanitize_json_faq']);
     register_setting('wcwp_settings_group', 'wcwp_license_key', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_test_mode_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);

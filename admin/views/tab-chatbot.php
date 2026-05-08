@@ -45,5 +45,15 @@ if (!defined('ABSPATH')) exit;
                 <p class="description"><?php esc_html_e('Enter question/answer pairs as JSON array.', 'woochat-pro'); ?></p>
             </td>
         </tr>
+        <tr>
+            <th scope="row"><label for="wcwp_chatbot_gpt_enabled"><?php esc_html_e('GPT Fallback', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('When the FAQ matcher finds no answer, ask the configured GPT endpoint for a reply. Requires GPT API endpoint and key set under the Scheduler tab.', 'woochat-pro'); ?></span></span></th>
+            <td>
+                <select name="wcwp_chatbot_gpt_enabled" id="wcwp_chatbot_gpt_enabled">
+                    <option value="no" <?php selected(get_option('wcwp_chatbot_gpt_enabled', 'no'), 'no'); ?>><?php esc_html_e('No', 'woochat-pro'); ?></option>
+                    <option value="yes" <?php selected(get_option('wcwp_chatbot_gpt_enabled', 'no'), 'yes'); ?>><?php esc_html_e('Yes', 'woochat-pro'); ?></option>
+                </select>
+                <p class="description"><?php esc_html_e('Each call costs your GPT account. Rate-limited to 10 requests per hour per visitor IP.', 'woochat-pro'); ?></p>
+            </td>
+        </tr>
     </table>
 </div>

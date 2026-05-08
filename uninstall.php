@@ -24,6 +24,7 @@ $option_keys = [
     'wcwp_order_message_template',
     'wcwp_cart_recovery_enabled',
     'wcwp_chatbot_enabled',
+    'wcwp_chatbot_gpt_enabled',
     'wcwp_faq_pairs',
     'wcwp_license_key',
     'wcwp_license_status',
