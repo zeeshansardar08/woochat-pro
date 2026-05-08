@@ -1,0 +1,48 @@
+/* WooChat Pro – Block frontend styles */
+
+.wcwp-whatsapp-button-block {
+    margin: 16px 0;
+}
+.wcwp-whatsapp-button-block.aligncenter { text-align: center; }
+.wcwp-whatsapp-button-block.alignright  { text-align: right; }
+.wcwp-whatsapp-button-block.alignleft   { text-align: left; }
+
+.wcwp-whatsapp-button {
+    display: inline-block;
+    background: #25d366; /* WhatsApp brand green */
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    line-height: 1.4;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+.wcwp-whatsapp-button:hover,
+.wcwp-whatsapp-button:focus {
+    background: #1da851;
+    color: #fff;
+    text-decoration: none;
+}
+.wcwp-whatsapp-button:active {
+    transform: translateY(1px);
+}
+
+/* Block editor placeholder */
+.wcwp-block-placeholder {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    border: 1px dashed #c8ced4;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+.wcwp-block-placeholder-icon {
+    font-size: 1.6rem;
+}
+.wcwp-block-placeholder-help {
+    margin: 4px 0 0;
+    color: #555;
+    font-size: 0.9rem;
+}
