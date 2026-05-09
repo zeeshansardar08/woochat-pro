@@ -76,6 +76,42 @@ if (!function_exists('add_query_arg')) {
         return $url . $sep . $key . '=' . urlencode((string) $value);
     }
 }
+if (!function_exists('esc_url_raw')) {
+    function esc_url_raw($url) { return is_string($url) ? trim($url) : ''; }
+}
+if (!function_exists('wp_parse_url')) {
+    function wp_parse_url($url, $component = -1) {
+        $parts = parse_url((string) $url);
+        if ($component === -1) return $parts === false ? false : $parts;
+        $key_map = [
+            PHP_URL_SCHEME => 'scheme', PHP_URL_HOST => 'host', PHP_URL_PORT => 'port',
+            PHP_URL_USER => 'user', PHP_URL_PASS => 'pass', PHP_URL_PATH => 'path',
+            PHP_URL_QUERY => 'query', PHP_URL_FRAGMENT => 'fragment',
+        ];
+        $key = $key_map[$component] ?? null;
+        return $key && is_array($parts) && isset($parts[$key]) ? $parts[$key] : null;
+    }
+}
+if (!function_exists('wp_generate_password')) {
+    function wp_generate_password($length = 12, $special_chars = true, $extra_special_chars = false) {
+        // Deterministic stub: counter-prefixed string up to $length.
+        static $counter = 0;
+        $counter++;
+        $base = 'testpw' . $counter . str_repeat('x', max(0, (int) $length - 8));
+        return substr($base, 0, max(1, (int) $length));
+    }
+}
+if (!function_exists('current_time')) {
+    function current_time($type = 'mysql', $gmt = 0) {
+        return $GLOBALS['wcwp_test_current_time'] ?? '2026-05-09 12:34:56';
+    }
+}
+if (!defined('MINUTE_IN_SECONDS')) {
+    define('MINUTE_IN_SECONDS', 60);
+}
+if (!defined('HOUR_IN_SECONDS')) {
+    define('HOUR_IN_SECONDS', 3600);
+}
 
 if (!defined('DAY_IN_SECONDS')) {
     define('DAY_IN_SECONDS', 86400);
@@ -90,3 +126,4 @@ require_once __DIR__ . '/../includes/template-library.php';
 require_once __DIR__ . '/../includes/ab-testing.php';
 require_once __DIR__ . '/../includes/privacy.php';
 require_once __DIR__ . '/../includes/log-viewer.php';
+require_once __DIR__ . '/../includes/webhooks.php';

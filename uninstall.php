@@ -69,6 +69,8 @@ $option_keys = [
     'wcwp_order_message_ab_enabled',
     'wcwp_cart_recovery_ab_enabled',
     'wcwp_followup_ab_enabled',
+    'wcwp_webhooks',
+    'wcwp_webhook_log',
 ];
 
 foreach ($option_keys as $key) {

@@ -538,6 +538,9 @@ function wcwp_handle_tracking_request() {
 
     if ($type === 'click' && $event_id) {
         wcwp_analytics_update_event($event_id, ['status' => 'clicked']);
+        if (function_exists('wcwp_dispatch_webhook')) {
+            wcwp_dispatch_webhook('message.clicked', ['event_id' => $event_id]);
+        }
     }
 
     $redirect_raw = isset($_GET['redirect']) ? esc_url_raw(wp_unslash($_GET['redirect'])) : '';
@@ -557,6 +560,9 @@ function wcwp_track_event_ajax() {
     }
     if ($type === 'delivered') {
         wcwp_analytics_update_event($event_id, ['status' => 'delivered']);
+        if (function_exists('wcwp_dispatch_webhook')) {
+            wcwp_dispatch_webhook('message.delivered', ['event_id' => $event_id]);
+        }
     }
     wp_send_json_success();
 }

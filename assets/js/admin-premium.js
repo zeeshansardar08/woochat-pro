@@ -344,6 +344,60 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// Webhooks tab — confirm-on-delete + AJAX test-fire button.
+document.addEventListener('DOMContentLoaded', function () {
+    const data = window.wcwpAdminData || {};
+
+    document.querySelectorAll('.wcwp-webhook-delete').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            const msg = data.webhookDeleteConfirm || 'Delete this webhook?';
+            if (!window.confirm(msg)) e.preventDefault();
+        });
+    });
+
+    document.querySelectorAll('.wcwp-webhook-test').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const row = btn.closest('tr');
+            const id = btn.getAttribute('data-webhook-id') || '';
+            const result = row ? row.querySelector('.wcwp-webhook-test-result') : null;
+            if (!id || !data.ajaxUrl || !data.webhookTestNonce) return;
+
+            const originalLabel = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = data.webhookTesting || 'Testing…';
+            if (result) { result.textContent = ''; result.style.color = ''; }
+
+            const form = new FormData();
+            form.append('action', 'wcwp_webhook_test');
+            form.append('nonce', data.webhookTestNonce);
+            form.append('webhook_id', id);
+
+            fetch(data.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: form })
+                .then(function (r) { return r.json().catch(function () { return { success: false, data: { message: 'invalid response' } }; }); })
+                .then(function (body) {
+                    btn.disabled = false;
+                    btn.textContent = data.webhookTestLabel || originalLabel;
+                    if (!result) return;
+                    if (body && body.success) {
+                        result.textContent = (body.data && body.data.message) ? body.data.message : 'OK';
+                        result.style.color = '#1c7c54';
+                    } else {
+                        result.textContent = (body && body.data && body.data.message) ? body.data.message : 'Test failed';
+                        result.style.color = '#b32d2e';
+                    }
+                })
+                .catch(function () {
+                    btn.disabled = false;
+                    btn.textContent = data.webhookTestLabel || originalLabel;
+                    if (result) {
+                        result.textContent = 'Network error';
+                        result.style.color = '#b32d2e';
+                    }
+                });
+        });
+    });
+});
+
 // Logs tab — Apply button rebuilds the URL with current filter values,
 // Clear button asks for explicit confirmation before destructive action.
 document.addEventListener('DOMContentLoaded', function () {
