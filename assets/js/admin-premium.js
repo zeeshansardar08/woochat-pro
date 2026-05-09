@@ -344,6 +344,97 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// Date-range preset buttons (Today / Last 7 / Last 30 / This month / All time)
+document.addEventListener('DOMContentLoaded', function () {
+    const presets = document.querySelectorAll('.wcwp-analytics-preset');
+    if (!presets.length) return;
+
+    function fmt(d) {
+        // Format Date as YYYY-MM-DD in local time so it matches what the
+        // admin sees on screen (the date inputs are timezone-naive).
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+    function setRange(range) {
+        const fromInput = document.getElementById('wcwp_date_from');
+        const toInput   = document.getElementById('wcwp_date_to');
+        if (!fromInput || !toInput) return;
+
+        const today = new Date();
+        let from = '';
+        let to   = '';
+
+        if (range === 'today') {
+            from = to = fmt(today);
+        } else if (range === '7d') {
+            const start = new Date(today);
+            start.setDate(start.getDate() - 6);
+            from = fmt(start);
+            to   = fmt(today);
+        } else if (range === '30d') {
+            const start = new Date(today);
+            start.setDate(start.getDate() - 29);
+            from = fmt(start);
+            to   = fmt(today);
+        } else if (range === 'month') {
+            const start = new Date(today.getFullYear(), today.getMonth(), 1);
+            from = fmt(start);
+            to   = fmt(today);
+        } else if (range === 'all') {
+            from = '';
+            to   = '';
+        }
+
+        fromInput.value = from;
+        toInput.value   = to;
+
+        const filterBtn = document.getElementById('wcwp-analytics-filter-button');
+        if (filterBtn) filterBtn.click();
+    }
+
+    presets.forEach(btn => {
+        btn.addEventListener('click', function () {
+            setRange(btn.getAttribute('data-range'));
+        });
+    });
+});
+
+// Export CSV honors the date inputs at click time so the user doesn't
+// have to re-apply the filter just to export. The href was rendered with
+// whatever filters were already in the URL; this rebuild syncs it with
+// the live form values + presets.
+document.addEventListener('DOMContentLoaded', function () {
+    const exportLink = document.getElementById('wcwp-analytics-export-csv');
+    if (!exportLink) return;
+
+    exportLink.addEventListener('click', function (e) {
+        const href = exportLink.getAttribute('href');
+        if (!href) return;
+
+        const url = new URL(href, window.location.origin);
+        const fields = [
+            { id: 'wcwp_type', key: 'wcwp_type' },
+            { id: 'wcwp_status', key: 'wcwp_status' },
+            { id: 'wcwp_phone', key: 'wcwp_phone' },
+            { id: 'wcwp_date_from', key: 'wcwp_date_from' },
+            { id: 'wcwp_date_to', key: 'wcwp_date_to' }
+        ];
+        fields.forEach(field => {
+            const el = document.getElementById(field.id);
+            const value = el ? el.value.trim() : '';
+            if (value) {
+                url.searchParams.set(field.key, value);
+            } else {
+                url.searchParams.delete(field.key);
+            }
+        });
+        exportLink.setAttribute('href', url.pathname + url.search);
+    });
+});
+
 // Send test WhatsApp message
 document.addEventListener('DOMContentLoaded', function () {
     const sendBtn = document.getElementById('wcwp-send-test-message');
