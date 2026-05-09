@@ -223,6 +223,7 @@ function wcwp_render_settings_page() {
             'inactive'           => __('Inactive', 'woochat-pro'),
             'deactivationFailed' => __('Deactivation failed', 'woochat-pro'),
         ],
+        'logClearConfirm' => __('Clear the log file? This cannot be undone.', 'woochat-pro'),
     ]);
     // Onboarding wizard renders once per install — Skip/Finish persists the
     // dismissal flag via admin-ajax, after which the modal stops re-mounting.
@@ -379,6 +380,7 @@ function wcwp_render_settings_page() {
             <button type="button" class="wcwp-tab" data-tab="scheduler"><?php esc_html_e('Scheduler', 'woochat-pro'); ?></button>
             <button type="button" class="wcwp-tab" data-tab="campaigns"><?php esc_html_e('Campaigns', 'woochat-pro'); ?></button>
             <button type="button" class="wcwp-tab" data-tab="analytics"><?php esc_html_e('Analytics', 'woochat-pro'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="logs"><?php esc_html_e('Logs', 'woochat-pro'); ?></button>
             <button type="button" class="wcwp-tab" data-tab="license"><?php esc_html_e('License', 'woochat-pro'); ?></button>
         </div>
         <div class="wcwp-plugin-splash">
@@ -395,6 +397,7 @@ function wcwp_render_settings_page() {
             <?php require $views . '/tab-analytics.php'; ?>
             <?php require $views . '/tab-scheduler.php'; ?>
             <?php require $views . '/tab-campaigns.php'; ?>
+            <?php require $views . '/tab-logs.php'; ?>
             <?php require $views . '/tab-license.php'; ?>
             <?php submit_button(); ?>
         </form>

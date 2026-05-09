@@ -344,6 +344,49 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// Logs tab — Apply button rebuilds the URL with current filter values,
+// Clear button asks for explicit confirmation before destructive action.
+document.addEventListener('DOMContentLoaded', function () {
+    const applyBtn = document.getElementById('wcwp-log-filter-button');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function () {
+            const params = new URLSearchParams(window.location.search);
+            params.set('page', 'wcwp-settings');
+            params.set('tab', 'logs');
+            const fields = [
+                { id: 'wcwp_log_q',     key: 'wcwp_log_q' },
+                { id: 'wcwp_log_tag',   key: 'wcwp_log_tag' },
+                { id: 'wcwp_log_lines', key: 'wcwp_log_lines' }
+            ];
+            fields.forEach(function (field) {
+                const el = document.getElementById(field.id);
+                const value = el ? String(el.value).trim() : '';
+                if (value) {
+                    params.set(field.key, value);
+                } else {
+                    params.delete(field.key);
+                }
+            });
+            // The previous run may have left a status message in the URL —
+            // strip it so the redirect view doesn't show a stale notice.
+            params.delete('wcwp_log_msg');
+            window.location.search = params.toString();
+        });
+    }
+
+    const clearBtn = document.getElementById('wcwp-log-clear-button');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function (e) {
+            const confirmMsg = (window.wcwpAdminData && wcwpAdminData.logClearConfirm)
+                ? wcwpAdminData.logClearConfirm
+                : 'Clear the log file? This cannot be undone.';
+            if (!window.confirm(confirmMsg)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+
 // A/B test toggles — show/hide the Variant B textarea row when the
 // admin flips the per-kind toggle. Persisting still requires WP's
 // Save Changes; this is just live UI state.

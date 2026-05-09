@@ -89,3 +89,4 @@ require_once __DIR__ . '/../includes/analytics.php';
 require_once __DIR__ . '/../includes/template-library.php';
 require_once __DIR__ . '/../includes/ab-testing.php';
 require_once __DIR__ . '/../includes/privacy.php';
+require_once __DIR__ . '/../includes/log-viewer.php';
