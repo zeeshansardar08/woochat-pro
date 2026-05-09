@@ -36,6 +36,12 @@ if (!defined('ABSPATH')) exit;
                     /* translators: do not translate placeholders inside curly braces */
                     esc_html_e('Use placeholders: {items}, {total}, {currency_symbol}, {cart_url}', 'woochat-pro');
                 ?></p>
+                <p style="margin-top:6px;">
+                    <button type="button" class="button wcwp-browse-templates" data-target="wcwp_cart_recovery_message" data-kind="cart_recovery">
+                        <span class="dashicons dashicons-book" style="vertical-align:middle;line-height:28px;"></span>
+                        <?php esc_html_e('Browse template library', 'woochat-pro'); ?>
+                    </button>
+                </p>
             </td>
         </tr>
     </table>
