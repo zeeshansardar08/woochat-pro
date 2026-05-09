@@ -50,6 +50,8 @@ function wcwp_get_secret_option_keys() {
         'wcwp_gpt_model',
         'wcwp_optout_webhook_token',
         'wcwp_license_key',
+        'wcwp_webhooks',
+        'wcwp_webhook_log',
     ];
 }
 
@@ -384,9 +386,14 @@ function wcwp_add_optout($phone) {
     $phone = wcwp_normalize_phone($phone);
     if (!$phone) return false;
     $list = wcwp_get_optout_list();
+    $newly_added = false;
     if (!in_array($phone, $list, true)) {
         $list[] = $phone;
         update_option('wcwp_optout_list', $list, false);
+        $newly_added = true;
+    }
+    if ($newly_added && function_exists('wcwp_dispatch_webhook')) {
+        wcwp_dispatch_webhook('customer.opted_out', ['phone' => $phone]);
     }
     return true;
 }

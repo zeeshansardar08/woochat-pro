@@ -162,6 +162,16 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
         if ( $event_id ) {
             wcwp_analytics_update_event( $event_id, [ 'status' => 'failed' ] );
         }
+        if ( function_exists( 'wcwp_dispatch_webhook' ) ) {
+            wcwp_dispatch_webhook( 'message.failed', [
+                'event_id' => $event_id,
+                'type'     => $event_type,
+                'phone'    => $to,
+                'order_id' => isset( $context['order_id'] ) ? (int) $context['order_id'] : 0,
+                'provider' => $provider_id,
+                'error'    => (string) ( $result['error'] ?? 'unknown' ),
+            ] );
+        }
         return false;
     }
 
@@ -176,6 +186,19 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
             'message_id' => $result['message_id'] ?? '',
         ] );
     }
+
+    if ( function_exists( 'wcwp_dispatch_webhook' ) ) {
+        wcwp_dispatch_webhook( 'message.sent', [
+            'event_id'   => $event_id,
+            'type'       => $event_type,
+            'phone'      => $to,
+            'order_id'   => isset( $context['order_id'] ) ? (int) $context['order_id'] : 0,
+            'provider'   => $provider_id,
+            'message_id' => (string) ( $result['message_id'] ?? '' ),
+            'ab_variant' => isset( $context['ab_variant'] ) ? (string) $context['ab_variant'] : '',
+        ] );
+    }
+
     return true;
 }
 

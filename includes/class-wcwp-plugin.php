@@ -84,6 +84,7 @@ final class Plugin {
         require_once WCWP_PATH . 'includes/ab-testing.php';
         require_once WCWP_PATH . 'includes/privacy.php';
         require_once WCWP_PATH . 'includes/log-viewer.php';
+        require_once WCWP_PATH . 'includes/webhooks.php';
         require_once WCWP_PATH . 'admin/settings-page.php';
         require_once WCWP_PATH . 'includes/chatbot-engine.php';
         require_once WCWP_PATH . 'includes/license-manager.php';
