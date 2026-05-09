@@ -37,6 +37,33 @@ if (!defined('ABSPATH')) exit;
                 </p>
             </td>
         </tr>
+        <?php
+        $followup_ab_enabled = get_option('wcwp_followup_ab_enabled', 'no');
+        $followup_template_b = get_option('wcwp_followup_template_b', '');
+        ?>
+        <tr class="wcwp-ab-row" data-ab-kind="followup">
+            <th scope="row"><label for="wcwp_followup_ab_enabled"><?php esc_html_e('A/B test this message', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Send a 50/50 split between this template and Variant B. Each order is assigned a variant deterministically. View results on the Analytics tab.', 'woochat-pro'); ?></span></span></th>
+            <td>
+                <select name="wcwp_followup_ab_enabled" id="wcwp_followup_ab_enabled" class="wcwp-ab-toggle" data-ab-target="wcwp-ab-variant-b-followup" <?php disabled(!$is_pro); ?>>
+                    <option value="no" <?php selected($followup_ab_enabled, 'no'); ?>><?php esc_html_e('No', 'woochat-pro'); ?></option>
+                    <option value="yes" <?php selected($followup_ab_enabled, 'yes'); ?>><?php esc_html_e('Yes', 'woochat-pro'); ?></option>
+                </select>
+                <p class="description"><?php esc_html_e('When GPT generation is enabled, the variant is still tagged on the event but the message body comes from GPT.', 'woochat-pro'); ?></p>
+            </td>
+        </tr>
+        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-followup" style="<?php echo $followup_ab_enabled === 'yes' ? '' : 'display:none;'; ?>">
+            <th scope="row"><label for="wcwp_followup_template_b"><?php esc_html_e('Variant B', 'woochat-pro'); ?></label></th>
+            <td>
+                <textarea id="wcwp_followup_template_b" name="wcwp_followup_template_b" rows="5" class="large-text" <?php disabled(!$is_pro); ?>><?php echo esc_textarea($followup_template_b); ?></textarea>
+                <p class="description"><?php esc_html_e('Sent in place of the main template for half of orders when A/B is on.', 'woochat-pro'); ?></p>
+                <p style="margin-top:6px;">
+                    <button type="button" class="button wcwp-browse-templates" data-target="wcwp_followup_template_b" data-kind="followup" <?php disabled(!$is_pro); ?>>
+                        <span class="dashicons dashicons-book" style="vertical-align:middle;line-height:28px;"></span>
+                        <?php esc_html_e('Browse template library', 'woochat-pro'); ?>
+                    </button>
+                </p>
+            </td>
+        </tr>
         <tr>
             <th scope="row"><label for="wcwp_followup_use_gpt"><?php esc_html_e('Use GPT (optional)', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Generate the follow-up copy with your GPT endpoint; falls back to the template if the call fails.', 'woochat-pro'); ?></span></span></th>
             <td>

@@ -24,14 +24,19 @@ function wcwp_send_whatsapp_on_order_complete($order_id) {
     $name = $order->get_billing_first_name();
     $total = $order->get_total();
 
-    $template = get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.');
+    $picked    = wcwp_ab_get_template('order', $order_id);
+    $template  = $picked['template'];
     $message = str_replace(
         ['{name}', '{order_id}', '{total}', '{currency_symbol}'],
         [$name, $order_id, $total, wcwp_currency_symbol_text()],
         $template
     );
 
-    $result = wcwp_send_whatsapp_message($to, $message, false, ['type' => 'order', 'order_id' => $order_id]);
+    $result = wcwp_send_whatsapp_message($to, $message, false, [
+        'type'       => 'order',
+        'order_id'   => $order_id,
+        'ab_variant' => $picked['variant'],
+    ]);
     if ($result === true) {
         $order->update_meta_data('_wcwp_order_msg_sent', current_time('mysql'));
         $order->save();

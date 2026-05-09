@@ -57,6 +57,12 @@ function wcwp_register_settings() {
     register_setting('wcwp_settings_group', 'wcwp_optout_webhook_token', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_test_phone', ['sanitize_callback' => 'wcwp_sanitize_text']);
     register_setting('wcwp_settings_group', 'wcwp_test_message', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
+    register_setting('wcwp_settings_group', 'wcwp_order_message_template_b', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_message_b', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
+    register_setting('wcwp_settings_group', 'wcwp_followup_template_b', ['sanitize_callback' => 'wcwp_sanitize_textarea']);
+    register_setting('wcwp_settings_group', 'wcwp_order_message_ab_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_cart_recovery_ab_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
+    register_setting('wcwp_settings_group', 'wcwp_followup_ab_enabled', ['sanitize_callback' => 'wcwp_sanitize_yes_no']);
 }
 
 add_action('wp_ajax_wcwp_dismiss_onboarding', 'wcwp_ajax_dismiss_onboarding');

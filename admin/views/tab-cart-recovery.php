@@ -44,6 +44,36 @@ if (!defined('ABSPATH')) exit;
                 </p>
             </td>
         </tr>
+        <?php
+        $cart_ab_enabled = get_option('wcwp_cart_recovery_ab_enabled', 'no');
+        $cart_message_b  = get_option('wcwp_cart_recovery_message_b', '');
+        ?>
+        <tr class="wcwp-ab-row" data-ab-kind="cart_recovery">
+            <th scope="row"><label for="wcwp_cart_recovery_ab_enabled"><?php esc_html_e('A/B test this message', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Send a 50/50 split between this template and Variant B. Each abandoned cart is assigned a variant deterministically by phone. View results on the Analytics tab.', 'woochat-pro'); ?></span></span></th>
+            <td>
+                <select name="wcwp_cart_recovery_ab_enabled" id="wcwp_cart_recovery_ab_enabled" class="wcwp-ab-toggle" data-ab-target="wcwp-ab-variant-b-cart-recovery">
+                    <option value="no" <?php selected($cart_ab_enabled, 'no'); ?>><?php esc_html_e('No', 'woochat-pro'); ?></option>
+                    <option value="yes" <?php selected($cart_ab_enabled, 'yes'); ?>><?php esc_html_e('Yes', 'woochat-pro'); ?></option>
+                </select>
+                <p class="description"><?php esc_html_e('Resends from the Recent Attempts table always use Variant A regardless of this setting.', 'woochat-pro'); ?></p>
+            </td>
+        </tr>
+        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-cart-recovery" style="<?php echo $cart_ab_enabled === 'yes' ? '' : 'display:none;'; ?>">
+            <th scope="row"><label for="wcwp_cart_recovery_message_b"><?php esc_html_e('Variant B', 'woochat-pro'); ?></label></th>
+            <td>
+                <textarea id="wcwp_cart_recovery_message_b" name="wcwp_cart_recovery_message_b" rows="5" class="large-text"><?php echo esc_textarea($cart_message_b); ?></textarea>
+                <p class="description"><?php
+                    /* translators: do not translate placeholders inside curly braces */
+                    esc_html_e('Use placeholders: {items}, {total}, {currency_symbol}, {cart_url}', 'woochat-pro');
+                ?></p>
+                <p style="margin-top:6px;">
+                    <button type="button" class="button wcwp-browse-templates" data-target="wcwp_cart_recovery_message_b" data-kind="cart_recovery">
+                        <span class="dashicons dashicons-book" style="vertical-align:middle;line-height:28px;"></span>
+                        <?php esc_html_e('Browse template library', 'woochat-pro'); ?>
+                    </button>
+                </p>
+            </td>
+        </tr>
     </table>
     <?php
     // After the cart recovery settings table, show the last 10 recovery attempts

@@ -87,3 +87,4 @@ require_once __DIR__ . '/../includes/campaigns.php';
 require_once __DIR__ . '/../includes/blocks.php';
 require_once __DIR__ . '/../includes/analytics.php';
 require_once __DIR__ . '/../includes/template-library.php';
+require_once __DIR__ . '/../includes/ab-testing.php';
