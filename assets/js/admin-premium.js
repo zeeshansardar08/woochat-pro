@@ -344,6 +344,24 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// A/B test toggles — show/hide the Variant B textarea row when the
+// admin flips the per-kind toggle. Persisting still requires WP's
+// Save Changes; this is just live UI state.
+document.addEventListener('DOMContentLoaded', function () {
+    const toggles = document.querySelectorAll('.wcwp-ab-toggle');
+    if (!toggles.length) return;
+    toggles.forEach(function (sel) {
+        const targetId = sel.getAttribute('data-ab-target');
+        if (!targetId) return;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        function sync() {
+            target.style.display = sel.value === 'yes' ? '' : 'none';
+        }
+        sel.addEventListener('change', sync);
+    });
+});
+
 // Date-range preset buttons (Today / Last 7 / Last 30 / This month / All time)
 document.addEventListener('DOMContentLoaded', function () {
     const presets = document.querySelectorAll('.wcwp-analytics-preset');

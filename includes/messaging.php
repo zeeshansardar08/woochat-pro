@@ -92,16 +92,20 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
     $event_type = isset( $context['type'] ) && $context['type'] ? $context['type'] : 'order';
 
     if ( ! $event_id ) {
+        $meta = [
+            'source' => $context['type'] ?? 'order',
+            'manual' => $manual ? 'yes' : 'no',
+        ];
+        if ( isset( $context['ab_variant'] ) && in_array( $context['ab_variant'], [ 'a', 'b' ], true ) ) {
+            $meta['ab_variant'] = $context['ab_variant'];
+        }
         $event_id = wcwp_analytics_log_event( $event_type, [
             'status'          => 'pending',
             'phone'           => $to,
             'order_id'        => isset( $context['order_id'] ) ? intval( $context['order_id'] ) : 0,
             'message_preview' => $safe_msg,
             'provider'        => $provider_id,
-            'meta'            => [
-                'source' => $context['type'] ?? 'order',
-                'manual' => $manual ? 'yes' : 'no',
-            ],
+            'meta'            => $meta,
         ] );
     } else {
         wcwp_analytics_update_event( $event_id, [

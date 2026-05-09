@@ -63,6 +63,12 @@ $option_keys = [
     'wcwp_optout_webhook_token',
     'wcwp_db_version',
     'wcwp_onboarding_completed',
+    'wcwp_order_message_template_b',
+    'wcwp_cart_recovery_message_b',
+    'wcwp_followup_template_b',
+    'wcwp_order_message_ab_enabled',
+    'wcwp_cart_recovery_ab_enabled',
+    'wcwp_followup_ab_enabled',
 ];
 
 foreach ($option_keys as $key) {

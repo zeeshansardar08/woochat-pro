@@ -44,11 +44,14 @@ function wcwp_send_followup_message_handler($order_id) {
     // burns attempts on the same `false` return.
     if (wcwp_is_opted_out($to)) return;
 
-    $message = wcwp_build_followup_message($order);
+    $picked  = wcwp_ab_get_template('followup', $order_id);
+    $message = wcwp_build_followup_message($order, $picked['template']);
 
     // Optional GPT-generated content. Falls back to the templated $message
     // when the helper returns '' (missing creds, network error, non-200,
-    // or empty response).
+    // or empty response). Note: GPT output is variant-agnostic — the
+    // ab_variant tag still rides along on the event so you can compare A
+    // vs B once you turn GPT off.
     if (get_option('wcwp_followup_use_gpt', 'no') === 'yes') {
         $maybe_ai = wcwp_generate_gpt_followup($order);
         if (!empty($maybe_ai)) {
@@ -56,7 +59,11 @@ function wcwp_send_followup_message_handler($order_id) {
         }
     }
 
-    $result = wcwp_send_whatsapp_message($to, $message, false, ['type' => 'followup', 'order_id' => $order_id]);
+    $result = wcwp_send_whatsapp_message($to, $message, false, [
+        'type'       => 'followup',
+        'order_id'   => $order_id,
+        'ab_variant' => $picked['variant'],
+    ]);
     if ($result === true) {
         $order->update_meta_data('_wcwp_followup_sent', current_time('mysql'));
         $order->save();
@@ -85,8 +92,10 @@ function wcwp_send_followup_message_handler($order_id) {
     wp_schedule_single_event($next_at, 'wcwp_send_followup_message', [$order_id]);
 }
 
-function wcwp_build_followup_message($order) {
-    $template = get_option('wcwp_followup_template', "Hi {name}, thanks again for your order #{order_id}! Reply if you have any questions.");
+function wcwp_build_followup_message($order, $template = null) {
+    if ($template === null || $template === '') {
+        $template = get_option('wcwp_followup_template', "Hi {name}, thanks again for your order #{order_id}! Reply if you have any questions.");
+    }
     return str_replace(
         ['{name}', '{order_id}', '{total}', '{status}', '{date}', '{currency_symbol}'],
         [

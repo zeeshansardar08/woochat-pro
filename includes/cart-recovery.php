@@ -235,7 +235,11 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', 
         ]);
     }
     $tracked_cart_url = $event_id ? wcwp_analytics_tracking_url($event_id, $cart_url) : $cart_url;
-    $message = wcwp_render_cart_recovery_message($items, $total, $tracked_cart_url);
+    // Variant selection happens here, not at the render call site, so the
+    // resend admin button + Recent Attempts view stay on variant A. Only
+    // the automated cart-recovery worker participates in the A/B test.
+    $picked  = wcwp_ab_get_template('cart_recovery', $phone);
+    $message = wcwp_render_cart_recovery_message($items, $total, $tracked_cart_url, $picked['template']);
     $preview = wcwp_redact_message($message);
 
     $log_file = wcwp_get_log_file();
@@ -260,7 +264,11 @@ function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', 
         return 'opted_out';
     }
 
-    $result = wcwp_send_whatsapp_message($phone, $message, false, ['type' => 'cart_recovery', 'event_id' => $event_id]);
+    $result = wcwp_send_whatsapp_message($phone, $message, false, [
+        'type'       => 'cart_recovery',
+        'event_id'   => $event_id,
+        'ab_variant' => $picked['variant'],
+    ]);
     if ($event_id) {
         wcwp_analytics_update_event($event_id, ['status' => $result === true ? 'sent' : 'failed', 'message_preview' => $preview]);
     }
@@ -406,8 +414,10 @@ function wcwp_sum_cart_items_total($cart_items) {
  * tracking-wrapped cart URL) and by the admin "recent attempts" view (with
  * the bare cart URL).
  */
-function wcwp_render_cart_recovery_message($items, $total, $cart_url) {
-    $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} {currency_symbol}\nClick here to complete your order: {cart_url}");
+function wcwp_render_cart_recovery_message($items, $total, $cart_url, $template = null) {
+    if ($template === null || $template === '') {
+        $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} {currency_symbol}\nClick here to complete your order: {cart_url}");
+    }
     return str_replace(
         ['{items}', '{total}', '{cart_url}', '{currency_symbol}'],
         [implode("\n", $items), $total, $cart_url, wcwp_currency_symbol_text()],

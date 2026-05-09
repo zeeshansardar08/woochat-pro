@@ -33,5 +33,35 @@ if (!defined('ABSPATH')) exit;
                 </p>
             </td>
         </tr>
+        <?php
+        $order_ab_enabled = get_option('wcwp_order_message_ab_enabled', 'no');
+        $order_template_b = get_option('wcwp_order_message_template_b', '');
+        ?>
+        <tr class="wcwp-ab-row" data-ab-kind="order">
+            <th scope="row"><label for="wcwp_order_message_ab_enabled"><?php esc_html_e('A/B test this message', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Send a 50/50 split between this template and Variant B. Each customer is assigned the same variant deterministically. View results on the Analytics tab.', 'woochat-pro'); ?></span></span></th>
+            <td>
+                <select name="wcwp_order_message_ab_enabled" id="wcwp_order_message_ab_enabled" class="wcwp-ab-toggle" data-ab-target="wcwp-ab-variant-b-order">
+                    <option value="no" <?php selected($order_ab_enabled, 'no'); ?>><?php esc_html_e('No', 'woochat-pro'); ?></option>
+                    <option value="yes" <?php selected($order_ab_enabled, 'yes'); ?>><?php esc_html_e('Yes', 'woochat-pro'); ?></option>
+                </select>
+                <p class="description"><?php esc_html_e('When enabled and Variant B is non-empty, automatic order confirmations split 50/50 between A and B.', 'woochat-pro'); ?></p>
+            </td>
+        </tr>
+        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-order" style="<?php echo $order_ab_enabled === 'yes' ? '' : 'display:none;'; ?>">
+            <th scope="row"><label for="wcwp_order_message_template_b"><?php esc_html_e('Variant B', 'woochat-pro'); ?></label></th>
+            <td>
+                <textarea id="wcwp_order_message_template_b" name="wcwp_order_message_template_b" rows="5" class="large-text"><?php echo esc_textarea($order_template_b); ?></textarea>
+                <p class="description"><?php
+                    /* translators: do not translate placeholders inside curly braces */
+                    esc_html_e('Use placeholders: {name}, {order_id}, {total}, {currency_symbol}', 'woochat-pro');
+                ?></p>
+                <p style="margin-top:6px;">
+                    <button type="button" class="button wcwp-browse-templates" data-target="wcwp_order_message_template_b" data-kind="order">
+                        <span class="dashicons dashicons-book" style="vertical-align:middle;line-height:28px;"></span>
+                        <?php esc_html_e('Browse template library', 'woochat-pro'); ?>
+                    </button>
+                </p>
+            </td>
+        </tr>
     </table>
 </div>

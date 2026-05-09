@@ -132,6 +132,87 @@ if (!defined('ABSPATH')) exit;
             <?php endif; ?>
         </tbody>
     </table>
+    <h3 style="margin-top:24px;"><?php esc_html_e('A/B test results', 'woochat-pro'); ?></h3>
+    <?php
+    $ab_kinds_cfg = wcwp_ab_kinds();
+    $ab_any_enabled = false;
+    foreach ($ab_kinds_cfg as $ab_kind => $ab_cfg) {
+        if (get_option($ab_cfg['option_enabled'], 'no') === 'yes') {
+            $ab_any_enabled = true;
+            break;
+        }
+    }
+    ?>
+    <?php if (!$ab_any_enabled) : ?>
+        <p class="description" style="margin-top:8px;"><?php esc_html_e('No A/B tests are running. Turn on "A/B test this message" on the Messaging, Cart Recovery, or Scheduler tabs to start measuring.', 'woochat-pro'); ?></p>
+    <?php else : ?>
+        <table class="widefat striped" style="margin-top:10px;">
+            <thead>
+                <tr>
+                    <th><?php esc_html_e('Test', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Variant', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Sent', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Conversions', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Conv. rate', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Revenue', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Outcome', 'woochat-pro'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($ab_kinds_cfg as $ab_kind => $ab_cfg) :
+                    if (get_option($ab_cfg['option_enabled'], 'no') !== 'yes') continue;
+                    $ab_results = wcwp_ab_get_results($ab_kind, $filters);
+                    foreach (['a', 'b'] as $variant) :
+                        $row = $ab_results[$variant];
+                        $is_winner = $ab_results['winner'] === $variant;
+                ?>
+                    <tr>
+                        <?php if ($variant === 'a') : ?>
+                            <td rowspan="2"><strong><?php echo esc_html($ab_cfg['label']); ?></strong></td>
+                        <?php endif; ?>
+                        <td><?php echo esc_html(strtoupper($variant)); ?><?php if ($is_winner) : ?> <span style="color:#1c7c54;font-weight:600;">★</span><?php endif; ?></td>
+                        <td><?php echo esc_html((string) $row['sent']); ?></td>
+                        <td><?php echo esc_html((string) $row['conversions']); ?></td>
+                        <td><?php echo esc_html(number_format_i18n($row['cvr'] * 100, 1) . '%'); ?></td>
+                        <td><?php
+                            if ($row['revenue'] > 0 && function_exists('wc_price')) {
+                                echo wp_kses_post(wc_price($row['revenue']));
+                            } else {
+                                echo esc_html(number_format_i18n($row['revenue'], 2));
+                            }
+                        ?></td>
+                        <?php if ($variant === 'a') :
+                            if ($ab_results['winner'] === null) {
+                                $outcome = sprintf(
+                                    /* translators: %d is the minimum sample size per variant before declaring a winner */
+                                    esc_html__('Insufficient data (need %d sends per variant)', 'woochat-pro'),
+                                    (int) apply_filters('wcwp_ab_min_sample_size', 30)
+                                );
+                            } else {
+                                $outcome = sprintf(
+                                    /* translators: %s is the winning variant letter (A or B) */
+                                    esc_html__('Variant %s leads', 'woochat-pro'),
+                                    strtoupper($ab_results['winner'])
+                                );
+                            }
+                        ?>
+                            <td rowspan="2"><?php echo $outcome; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped via esc_html__ inside sprintf above. ?></td>
+                        <?php endif; ?>
+                    </tr>
+                <?php endforeach; endforeach; ?>
+            </tbody>
+        </table>
+        <p class="description" style="margin-top:6px;">
+            <?php
+            /* translators: %d is the attribution window in days */
+            printf(
+                esc_html__('Conversions count orders placed within %d days of the message by the same phone number — the same attribution window the totals card uses.', 'woochat-pro'),
+                (int) apply_filters('wcwp_analytics_attribution_window_days', 7)
+            );
+            ?>
+        </p>
+    <?php endif; ?>
+
     <h3 style="margin-top:20px;"><?php esc_html_e('Recent Events', 'woochat-pro'); ?></h3>
     <table class="widefat striped" style="margin-top:10px;">
         <thead>
