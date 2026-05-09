@@ -20,11 +20,17 @@ if (!defined('ABSPATH')) exit;
         <tr>
             <th scope="row"><label for="wcwp_order_message_template"><?php esc_html_e('Order Message Template', 'woochat-pro'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Customize the WhatsApp message sent for new orders. Use placeholders: {name}, {order_id}, {total}, {currency_symbol}', 'woochat-pro'); ?></span></span></th>
             <td>
-                <textarea name="wcwp_order_message_template" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.')); ?></textarea>
+                <textarea id="wcwp_order_message_template" name="wcwp_order_message_template" rows="5" class="large-text"><?php echo esc_textarea(get_option('wcwp_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.')); ?></textarea>
                 <p class="description"><?php
                     /* translators: do not translate placeholders inside curly braces */
                     esc_html_e('Use placeholders: {name}, {order_id}, {total}, {currency_symbol}', 'woochat-pro');
                 ?></p>
+                <p style="margin-top:6px;">
+                    <button type="button" class="button wcwp-browse-templates" data-target="wcwp_order_message_template" data-kind="order">
+                        <span class="dashicons dashicons-book" style="vertical-align:middle;line-height:28px;"></span>
+                        <?php esc_html_e('Browse template library', 'woochat-pro'); ?>
+                    </button>
+                </p>
             </td>
         </tr>
     </table>

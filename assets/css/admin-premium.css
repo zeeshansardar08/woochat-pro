@@ -639,4 +639,135 @@
 .wcwp-dark-mode .wcwp-dark-toggle .wcwp-dark-icon {
   transform: rotate(180deg) scale(1.2);
   color: #23272b;
-} 
+}
+
+/* Template Library Modal */
+.wcwp-template-library-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 99998;
+}
+.wcwp-template-library-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(44,62,80,0.45);
+}
+.wcwp-template-library-dialog {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(44,62,80,0.25);
+  width: min(900px, 92vw);
+  max-height: 86vh;
+  margin: 5vh auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.wcwp-template-library-header {
+  padding: 20px 28px 14px;
+  border-bottom: 1px solid #ececec;
+}
+.wcwp-template-library-header h2 {
+  color: #1c7c54;
+  margin: 0 0 4px 0;
+  font-size: 1.4rem;
+}
+.wcwp-template-library-subtitle {
+  color: #666;
+  margin: 0;
+  font-size: 0.95rem;
+}
+.wcwp-template-library-close {
+  position: absolute;
+  top: 14px; right: 18px;
+  font-size: 1.6rem;
+  color: #888;
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+}
+.wcwp-template-library-body {
+  padding: 18px 28px 24px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.wcwp-template-card {
+  background: #f9fbfa;
+  border: 1px solid #e5ece8;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wcwp-template-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wcwp-template-industry {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #2ec4b6;
+  font-weight: 600;
+}
+.wcwp-template-name {
+  margin: 0;
+  font-size: 1.02rem;
+  color: #1c7c54;
+}
+.wcwp-template-body {
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.92em;
+  line-height: 1.45;
+  white-space: pre-line;
+  word-break: break-word;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.wcwp-template-use {
+  align-self: flex-start;
+}
+.wcwp-template-library-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px 0;
+}
+body.wcwp-template-library-open {
+  overflow: hidden;
+}
+.wcwp-dark-mode .wcwp-template-library-dialog {
+  background: #181c1f;
+  color: #e5e5e5;
+}
+.wcwp-dark-mode .wcwp-template-library-header {
+  border-bottom-color: #23272b;
+}
+.wcwp-dark-mode .wcwp-template-library-header h2,
+.wcwp-dark-mode .wcwp-template-name {
+  color: #2ec4b6;
+}
+.wcwp-dark-mode .wcwp-template-library-subtitle {
+  color: #b2f7ef;
+}
+.wcwp-dark-mode .wcwp-template-card {
+  background: #23272b;
+  border-color: #2ec4b6;
+}
+.wcwp-dark-mode .wcwp-template-body {
+  background: #181c1f;
+  border-color: #2ec4b6;
+  color: #e5e5e5;
+}

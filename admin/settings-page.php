@@ -187,6 +187,10 @@ function wcwp_render_settings_page() {
     // Enqueue premium admin JS
     wp_enqueue_script('wcwp-admin-premium-js', WCWP_URL . 'assets/js/admin-premium.js', [], WCWP_VERSION, true);
     wp_enqueue_script('wcwp-campaigns-js', WCWP_URL . 'assets/js/campaigns.js', [], WCWP_VERSION, true);
+    wp_enqueue_script('wcwp-template-library-js', WCWP_URL . 'assets/js/template-library.js', [], WCWP_VERSION, true);
+    wp_localize_script('wcwp-template-library-js', 'wcwpTemplateLibraryI18n', [
+        'empty' => __('No templates available for this section yet.', 'woochat-pro'),
+    ]);
     wp_localize_script('wcwp-campaigns-js', 'wcwpCampaigns', [
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'nonce'   => wp_create_nonce('wcwp_campaigns'),
@@ -388,6 +392,7 @@ function wcwp_render_settings_page() {
             <?php require $views . '/tab-license.php'; ?>
             <?php submit_button(); ?>
         </form>
+        <?php require $views . '/template-library-modal.php'; ?>
     </div>
     <div id="wcwp-upgrade-modal">
         <div class="wcwp-upgrade-modal-content">

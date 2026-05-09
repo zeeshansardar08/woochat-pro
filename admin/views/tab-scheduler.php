@@ -29,6 +29,12 @@ if (!defined('ABSPATH')) exit;
             <td>
                 <textarea name="wcwp_followup_template" id="wcwp_followup_template" rows="5" class="large-text" <?php disabled(!$is_pro); ?>><?php echo esc_textarea(get_option('wcwp_followup_template', "Hi {name}, thanks again for your order #{order_id}! Reply if you have any questions.")); ?></textarea>
                 <p class="description"><?php esc_html_e('Sent once per order after the delay.', 'woochat-pro'); ?></p>
+                <p style="margin-top:6px;">
+                    <button type="button" class="button wcwp-browse-templates" data-target="wcwp_followup_template" data-kind="followup" <?php disabled(!$is_pro); ?>>
+                        <span class="dashicons dashicons-book" style="vertical-align:middle;line-height:28px;"></span>
+                        <?php esc_html_e('Browse template library', 'woochat-pro'); ?>
+                    </button>
+                </p>
             </td>
         </tr>
         <tr>
