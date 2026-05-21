@@ -226,6 +226,11 @@ function wcwp_sanitize_hex_color($value, $default = '') {
     return $default;
 }
 
+/**
+ * Whether WooCommerce is active on the site or network.
+ *
+ * @return bool
+ */
 function wcwp_is_woocommerce_active() {
     if (class_exists('WooCommerce')) return true;
     if (!function_exists('is_plugin_active')) {
@@ -272,6 +277,14 @@ function wcwp_sanitize_agents_json($value) {
     return wp_json_encode($sanitized, JSON_UNESCAPED_UNICODE);
 }
 
+/**
+ * Read the stored multi-agent routing list.
+ *
+ * Rows with an empty name or phone are dropped so callers never get a
+ * half-filled agent.
+ *
+ * @return array<int, array{name:string, phone:string}>
+ */
 function wcwp_get_agents() {
     $raw = get_option('wcwp_agents', '[]');
     $list = is_array($raw) ? $raw : json_decode((string) $raw, true);
@@ -334,17 +347,36 @@ function wcwp_get_log_file() {
     return $log_dir . '/woochat.log';
 }
 
+/**
+ * Reduce a phone number to digits only.
+ *
+ * @param string $phone Raw phone input.
+ * @return string Digits-only phone, or '' when none are present.
+ */
 function wcwp_normalize_phone($phone) {
     $phone = preg_replace('/[^0-9]/', '', (string) $phone);
     return $phone ? $phone : '';
 }
 
+/**
+ * Mask all but the last four digits of a phone number for display/logs.
+ *
+ * @param string $phone Raw phone input.
+ * @return string Masked phone (e.g. "••••••1234").
+ */
 function wcwp_mask_phone($phone) {
     $norm = wcwp_normalize_phone($phone);
     if (strlen($norm) <= 4) return $norm;
     return str_repeat('•', max(0, strlen($norm) - 4)) . substr($norm, -4);
 }
 
+/**
+ * Collapse whitespace and truncate a message for a compact log preview.
+ *
+ * @param string $message Message body.
+ * @param int    $max     Maximum length before truncation. Default 120.
+ * @return string
+ */
 function wcwp_redact_message($message, $max = 120) {
     $msg = trim((string) $message);
     $msg = preg_replace('/\s+/', ' ', $msg);
@@ -354,6 +386,12 @@ function wcwp_redact_message($message, $max = 120) {
     return $msg;
 }
 
+/**
+ * Parse a comma/newline separated opt-out list into unique normalized phones.
+ *
+ * @param string|array $value Raw textarea value or an existing array.
+ * @return string[] Unique digits-only phone numbers.
+ */
 function wcwp_parse_optout_list($value) {
     if (is_array($value)) {
         $list = $value;
@@ -370,6 +408,11 @@ function wcwp_parse_optout_list($value) {
     return array_keys($normalized);
 }
 
+/**
+ * Return the current opt-out (suppression) list.
+ *
+ * @return string[] Normalized phone numbers.
+ */
 function wcwp_get_optout_list() {
     $list = get_option('wcwp_optout_list', []);
     if (!is_array($list)) {
@@ -378,11 +421,22 @@ function wcwp_get_optout_list() {
     return $list;
 }
 
+/**
+ * Replace the stored opt-out list.
+ *
+ * @param string|array $list Raw or array list of phone numbers.
+ */
 function wcwp_set_optout_list($list) {
     $list = wcwp_parse_optout_list($list);
     update_option('wcwp_optout_list', $list, false);
 }
 
+/**
+ * Whether a phone number is on the opt-out list.
+ *
+ * @param string $phone Phone number (any format).
+ * @return bool
+ */
 function wcwp_is_opted_out($phone) {
     $phone = wcwp_normalize_phone($phone);
     if (!$phone) return false;
@@ -390,6 +444,12 @@ function wcwp_is_opted_out($phone) {
     return in_array($phone, $list, true);
 }
 
+/**
+ * Add a phone number to the opt-out list and fire the opt-out webhook.
+ *
+ * @param string $phone Phone number (any format).
+ * @return bool False when the phone is empty, true otherwise.
+ */
 function wcwp_add_optout($phone) {
     $phone = wcwp_normalize_phone($phone);
     if (!$phone) return false;
@@ -416,6 +476,12 @@ function wcwp_sanitize_optout_keywords($value) {
     return implode(', ', array_keys($out));
 }
 
+/**
+ * Whether an inbound message contains a configured opt-out keyword.
+ *
+ * @param string $message Inbound message text.
+ * @return bool
+ */
 function wcwp_optout_keyword_match($message) {
     $keywords = get_option('wcwp_optout_keywords', 'stop, unsubscribe');
     $list = preg_split('/[\n,]+/', strtolower((string) $keywords));

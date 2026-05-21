@@ -4,6 +4,22 @@ if (!defined('ABSPATH')) exit;
 // Load chatbot widget in footer
 add_action('wp_footer', 'wcwp_render_chatbot_widget');
 add_shortcode('woochat_chatbot', 'wcwp_chatbot_shortcode');
+add_action('wp_enqueue_scripts', 'wcwp_enqueue_chatbot_assets');
+
+/**
+ * Register the frontend chatbot stylesheet when the widget will render.
+ *
+ * @since 1.0.0
+ */
+function wcwp_enqueue_chatbot_assets() {
+    if (is_admin() || !wcwp_is_pro_active()) {
+        return;
+    }
+    if (get_option('wcwp_chatbot_enabled', 'yes') !== 'yes') {
+        return;
+    }
+    wp_enqueue_style('wcwp-chatbot-css', WCWP_URL . 'assets/css/chatbot-widget.css', [], WCWP_VERSION);
+}
 
 function wcwp_render_chatbot_widget() {
     if (is_admin()) return;

@@ -147,6 +147,15 @@ function wcwp_save_cart_ajax() {
     wp_send_json_success(['message' => __('Reminder scheduled', 'woochat')]);
 }
 
+/**
+ * Store an abandoned cart so the cron processor can send a reminder later.
+ *
+ * @param string $phone        Customer phone number.
+ * @param array  $cart_items   Cart line items ({name, qty, price} dicts).
+ * @param string $consent      'yes' when the customer opted in. Default 'no'.
+ * @param string $consent_time MySQL datetime the consent was captured.
+ * @return bool True when the cart row was stored/updated.
+ */
 function wcwp_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent_time = '') {
     global $wpdb;
     $table = wcwp_get_cart_table_name();
@@ -219,6 +228,16 @@ function wcwp_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent
     return $inserted !== false;
 }
 
+/**
+ * Send a cart-recovery WhatsApp message immediately.
+ *
+ * @param string $phone        Customer phone number.
+ * @param array  $cart_items   Cart line items ({name, qty, price} dicts).
+ * @param string $consent      'yes' when the customer opted in. Default 'no'.
+ * @param string $consent_time MySQL datetime the consent was captured.
+ * @param array  $context      Optional. Extra context, e.g. ['event_id' => ...].
+ * @return bool True on a successful send.
+ */
 function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', $consent_time = '', $context = []) {
     $event_id = $context['event_id'] ?? null;
 
@@ -338,6 +357,12 @@ function wcwp_process_cart_recovery_queue() {
     }
 }
 
+/**
+ * Per-IP+phone rate limiter for cart saves — 5 requests per hour.
+ *
+ * @param string $phone Customer phone number.
+ * @return bool True when the request is within the limit.
+ */
 function wcwp_cart_rate_limit_ok($phone) {
     $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
     $key = 'wcwp_rate_' . md5($ip . '|' . $phone);
@@ -397,6 +422,12 @@ function wcwp_format_cart_items_list($cart_items) {
     return $items;
 }
 
+/**
+ * Sum price × quantity across cart items.
+ *
+ * @param array $cart_items Cart line items ({price, qty} dicts).
+ * @return float
+ */
 function wcwp_sum_cart_items_total($cart_items) {
     $total = 0.0;
     if (!is_array($cart_items)) return $total;

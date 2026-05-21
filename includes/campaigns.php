@@ -142,6 +142,12 @@ function wcwp_campaign_create($args) {
     return $campaign_id;
 }
 
+/**
+ * Fetch a single campaign row by id.
+ *
+ * @param int $campaign_id
+ * @return array|null Campaign row, or null when not found.
+ */
 function wcwp_campaign_get($campaign_id) {
     global $wpdb;
     $campaign_id = (int) $campaign_id;
@@ -153,6 +159,12 @@ function wcwp_campaign_get($campaign_id) {
     return $row ?: null;
 }
 
+/**
+ * List recent campaigns, newest first.
+ *
+ * @param int $limit Maximum rows to return (clamped 1-200). Default 20.
+ * @return array<int, array> Campaign rows.
+ */
 function wcwp_campaign_list($limit = 20) {
     global $wpdb;
     $limit = max(1, min(200, (int) $limit));
@@ -354,6 +366,11 @@ function wcwp_campaign_process_chunk($campaign_id) {
     }
 }
 
+/**
+ * Mark a campaign complete once every recipient chunk has been processed.
+ *
+ * @param int $campaign_id
+ */
 function wcwp_campaign_finalize($campaign_id) {
     global $wpdb;
     $wpdb->update(

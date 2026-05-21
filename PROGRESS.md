@@ -67,12 +67,18 @@ Current branch: `free`
 
 ---
 
-## PHASE 3 — Code Quality & Optimization — ⬜ Not started
-- [ ] 3.1 Add PHPDoc blocks to public functions
-- [ ] 3.2 Conditional script loading per page
-- [ ] 3.3 Minify JS/CSS assets (ship `.js` + `.min.js`)
-- [ ] 3.4 Move chatbot widget inline CSS → `assets/css/chatbot-widget.css`
-- [ ] 3.5 Run full PHPUnit suite, fix breakage
+## PHASE 3 — Code Quality & Optimization — ✅ Done (3.3 skipped)
+- [x] 3.1 PHPDoc blocks added to substantive public functions in
+      helpers / cart-recovery / analytics / campaigns (messaging already
+      fully documented; trivial one-line sanitizers left undocumented)
+- [x] 3.2 Conditional script loading — verified; per-page enqueue done in
+      Phase 1.2, frontend scripts already gate on pro + feature-enabled
+- [⏭] 3.3 Minify JS/CSS — **skipped by decision**: the repo `.gitignore`
+      explicitly rejects a build step; minification is not a WordPress.org
+      requirement, so assets stay as readable source
+- [x] 3.4 Chatbot widget inline CSS → `assets/css/chatbot-widget.css`
+      (colors passed as CSS custom properties; enqueued conditionally)
+- [x] 3.5 Full PHPUnit suite green — 95 tests, 489 assertions
 
 ---
 

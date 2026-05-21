@@ -53,6 +53,9 @@ function wcwp_create_analytics_table() {
     }
 }
 
+/**
+ * Cron callback — delete analytics events older than the retention window.
+ */
 function wcwp_cleanup_analytics() {
     $days = absint(get_option('wcwp_data_retention_days', 0));
     if ($days < 1) return;
@@ -63,6 +66,14 @@ function wcwp_cleanup_analytics() {
     $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE created_at < %s", $cutoff));
 }
 
+/**
+ * Record a new analytics event and return its generated id.
+ *
+ * @param string $type Event type (order, cart_recovery, followup, etc.).
+ * @param array  $data Optional. status, phone, order_id, message_preview,
+ *                     provider, message_id, meta.
+ * @return string The generated event id.
+ */
 function wcwp_analytics_log_event($type, $data = []) {
     $id = uniqid('wcwp_evt_', true);
 
@@ -83,6 +94,12 @@ function wcwp_analytics_log_event($type, $data = []) {
     return $id;
 }
 
+/**
+ * Update mutable columns (status, message_id, meta, …) on an existing event.
+ *
+ * @param string $event_id Event id returned by wcwp_analytics_log_event().
+ * @param array  $fields   Column => value pairs to update.
+ */
 function wcwp_analytics_update_event($event_id, $fields = []) {
     global $wpdb;
     $table = wcwp_get_analytics_table_name();
@@ -458,6 +475,11 @@ function wcwp_analytics_export_csv() {
     exit;
 }
 
+/**
+ * Insert a fully-formed event row into the analytics table.
+ *
+ * @param array $event Normalized event array (see wcwp_analytics_log_event()).
+ */
 function wcwp_analytics_insert_event($event) {
     global $wpdb;
     $table = wcwp_get_analytics_table_name();
@@ -480,6 +502,13 @@ function wcwp_analytics_insert_event($event) {
     );
 }
 
+/**
+ * Build a click-tracking URL that records the click then redirects.
+ *
+ * @param string $event_id     Event id to attribute the click to.
+ * @param string $redirect_url Final destination after the click is logged.
+ * @return string Tracking URL on this site.
+ */
 function wcwp_analytics_tracking_url($event_id, $redirect_url) {
     $redirect = $redirect_url ? esc_url_raw($redirect_url) : home_url('/');
     return add_query_arg([
