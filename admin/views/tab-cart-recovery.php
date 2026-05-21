@@ -1,8 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 ?>
-<div id="wcwp-tab-content-cart-recovery" class="wcwp-tab-content" style="display:none;">
-    <table class="form-table">
+<table class="form-table">
         <tr>
             <th scope="row"><label for="wcwp_cart_recovery_enabled"><?php esc_html_e('Enable Cart Recovery', 'woochat'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Automatically remind users via WhatsApp if they abandon their cart.', 'woochat'); ?></span></span></th>
             <td>
@@ -99,4 +98,3 @@ if (!defined('ABSPATH')) exit;
         echo '</tbody></table>';
     }
     ?>
-</div>

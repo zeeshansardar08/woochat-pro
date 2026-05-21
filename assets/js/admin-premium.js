@@ -1,24 +1,4 @@
-// WooChat – Premium Admin UI Tab Switcher
-
-document.addEventListener('DOMContentLoaded', function () {
-    const tabs = document.querySelectorAll('.wcwp-tab');
-    const tabContents = document.querySelectorAll('.wcwp-tab-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function () {
-            // Remove active from all tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            // Hide all tab contents
-            tabContents.forEach(tc => tc.style.display = 'none');
-            // Activate clicked tab
-            tab.classList.add('active');
-            // Show corresponding content
-            const tabName = tab.getAttribute('data-tab');
-            const content = document.getElementById('wcwp-tab-content-' + tabName);
-            if (content) content.style.display = 'block';
-        });
-    });
-});
+// WooChat – Premium Admin UI
 
 // Chatbot Customizer Live Preview
 
@@ -319,8 +299,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     filterBtn.addEventListener('click', function () {
         const params = new URLSearchParams(window.location.search);
-        params.set('page', 'wcwp-settings');
-        params.set('tab', 'analytics');
+        params.set('page', 'wcwp-analytics');
+        params.delete('tab');
 
         const fields = [
             { id: 'wcwp_type', key: 'wcwp_type' },
@@ -405,8 +385,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (applyBtn) {
         applyBtn.addEventListener('click', function () {
             const params = new URLSearchParams(window.location.search);
-            params.set('page', 'wcwp-settings');
-            params.set('tab', 'logs');
+            params.set('page', 'wcwp-logs');
+            params.delete('tab');
             const fields = [
                 { id: 'wcwp_log_q',     key: 'wcwp_log_q' },
                 { id: 'wcwp_log_tag',   key: 'wcwp_log_tag' },

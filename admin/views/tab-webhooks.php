@@ -7,8 +7,7 @@ $wcwp_wh_recent    = wcwp_webhook_log_recent('', 25);
 $wcwp_wh_msg       = isset($_GET['wcwp_webhook_msg']) ? sanitize_text_field(wp_unslash($_GET['wcwp_webhook_msg'])) : '';
 $wcwp_wh_post_url  = admin_url('admin-post.php');
 ?>
-<div id="wcwp-tab-content-webhooks" class="wcwp-tab-content" style="display:none;">
-    <h2><?php esc_html_e('Webhooks', 'woochat'); ?></h2>
+<h2><?php esc_html_e('Webhooks', 'woochat'); ?></h2>
     <p class="description">
         <?php esc_html_e('Pipe plugin events to Zapier, Make, n8n, or your own backend. Each request is signed with HMAC-SHA256 — receivers verify by recomputing the signature with the per-webhook secret.', 'woochat'); ?>
     </p>
@@ -140,4 +139,3 @@ $wcwp_wh_post_url  = admin_url('admin-post.php');
             </tbody>
         </table>
     <?php endif; ?>
-</div>

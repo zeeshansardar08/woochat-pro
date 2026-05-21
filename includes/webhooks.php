@@ -366,7 +366,7 @@ function wcwp_webhook_add_handler() {
     $created = wcwp_add_webhook(['url' => $url, 'events' => $events]);
 
     $msg = $created ? 'added' : 'invalid';
-    wp_safe_redirect(add_query_arg(['page' => 'wcwp-settings', 'tab' => 'webhooks', 'wcwp_webhook_msg' => $msg], admin_url('admin.php')));
+    wp_safe_redirect(add_query_arg(['page' => 'wcwp-webhooks', 'wcwp_webhook_msg' => $msg], admin_url('admin.php')));
     exit;
 }
 
@@ -380,8 +380,7 @@ function wcwp_webhook_delete_handler() {
     $deleted = wcwp_delete_webhook($id);
 
     wp_safe_redirect(add_query_arg([
-        'page'              => 'wcwp-settings',
-        'tab'               => 'webhooks',
+        'page'              => 'wcwp-webhooks',
         'wcwp_webhook_msg'  => $deleted ? 'deleted' : 'invalid',
     ], admin_url('admin.php')));
     exit;

@@ -1,8 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 ?>
-<div id="wcwp-tab-content-license" class="wcwp-tab-content" style="display:none;">
-    <table class="form-table">
+<table class="form-table">
         <tr>
             <th scope="row"><label for="wcwp_license_key"><?php esc_html_e('License Key', 'woochat'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Enter your Pro license key to unlock premium features.', 'woochat'); ?></span></span></th>
             <td>
@@ -31,4 +30,3 @@ if (!defined('ABSPATH')) exit;
             </td>
         </tr>
     </table>
-</div>

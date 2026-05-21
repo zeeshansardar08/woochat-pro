@@ -29,8 +29,7 @@ $wcwp_log_clear_url = wp_nonce_url(
     'wcwp_log_clear_nonce'
 );
 ?>
-<div id="wcwp-tab-content-logs" class="wcwp-tab-content" style="display:none;">
-    <h2><?php esc_html_e('Logs', 'woochat'); ?></h2>
+<h2><?php esc_html_e('Logs', 'woochat'); ?></h2>
     <p class="description">
         <?php
         printf(
@@ -139,4 +138,3 @@ $wcwp_log_clear_url = wp_nonce_url(
             <?php endif; ?>
         </tbody>
     </table>
-</div>

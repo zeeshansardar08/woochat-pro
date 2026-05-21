@@ -4,8 +4,7 @@ if (!defined('ABSPATH')) exit;
 $wcwp_segment_types = wcwp_campaign_segment_types();
 $wcwp_recent_campaigns = wcwp_campaign_list(20);
 ?>
-<div id="wcwp-tab-content-campaigns" class="wcwp-tab-content" style="display:none;">
-    <h2><?php esc_html_e('Bulk Campaigns', 'woochat'); ?></h2>
+<h2><?php esc_html_e('Bulk Campaigns', 'woochat'); ?></h2>
     <p class="description">
         <?php esc_html_e('Send a one-shot WhatsApp message to a customer segment. Sends are throttled to 10 per minute by default and skip anyone on the suppression list.', 'woochat'); ?>
     </p>
@@ -82,4 +81,3 @@ $wcwp_recent_campaigns = wcwp_campaign_list(20);
             </tbody>
         </table>
     <?php endif; ?>
-</div>

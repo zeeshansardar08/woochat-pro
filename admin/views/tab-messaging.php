@@ -1,8 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 ?>
-<div id="wcwp-tab-content-messaging" class="wcwp-tab-content" style="display:none;">
-    <table class="form-table">
+<table class="form-table">
         <tr>
             <th scope="row"><label for="wcwp_test_phone"><?php esc_html_e('Send Test Message', 'woochat'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Send a one-off message to verify your setup. Test mode logs instead of sending.', 'woochat'); ?></span></span></th>
             <td>
@@ -64,4 +63,3 @@ if (!defined('ABSPATH')) exit;
             </td>
         </tr>
     </table>
-</div>

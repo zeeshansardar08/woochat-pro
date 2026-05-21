@@ -4,7 +4,7 @@
  * Plugin URI:  https://zignites.com/woochat
  * Description: Send WhatsApp order notifications, add a chat widget, and engage WooCommerce customers via WhatsApp. Supports Twilio and WhatsApp Cloud API.
  * Version:     1.0.0
- * Author:      Zignite
+ * Author:      Zignites
  * Author URI:  https://zignites.com
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html

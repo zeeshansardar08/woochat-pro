@@ -1,8 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 ?>
-<div id="wcwp-tab-content-general" class="wcwp-tab-content" style="display:block;">
-    <table class="form-table">
+<table class="form-table">
         <tr>
             <th scope="row"><label for="wcwp_twilio_sid"><?php esc_html_e('Twilio SID', 'woochat'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Your Twilio Account SID. Find it in your Twilio dashboard.', 'woochat'); ?></span></span></th>
             <td><input type="text" name="wcwp_twilio_sid" id="wcwp_twilio_sid" value="<?php echo esc_attr(get_option('wcwp_twilio_sid')); ?>" class="regular-text" /></td>
@@ -95,4 +94,3 @@ if (!defined('ABSPATH')) exit;
             </td>
         </tr>
     </table>
-</div>

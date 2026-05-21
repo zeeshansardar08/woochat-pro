@@ -1,8 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 ?>
-<div id="wcwp-tab-content-chatbot" class="wcwp-tab-content" style="display:none;">
-    <div class="wcwp-chatbot-customizer">
+<div class="wcwp-chatbot-customizer">
         <div class="wcwp-chatbot-customizer-controls">
             <label for="wcwp-chatbot-bg"><?php esc_html_e('Chatbot Bubble Color', 'woochat'); ?></label>
             <input type="color" id="wcwp-chatbot-bg" name="wcwp_chatbot_bg" value="<?php echo esc_attr(get_option('wcwp_chatbot_bg', '#1c7c54')); ?>">
@@ -104,4 +103,3 @@ if (!defined('ABSPATH')) exit;
         <button type="button" class="button" id="wcwp-agent-add">+ <?php esc_html_e('Add agent', 'woochat'); ?></button>
     </p>
     <input type="hidden" name="wcwp_agents" id="wcwp_agents_input" value="<?php echo esc_attr(get_option('wcwp_agents', '[]')); ?>" />
-</div>

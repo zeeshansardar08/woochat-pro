@@ -187,7 +187,7 @@ function wcwp_log_download_handler() {
 
     $file = wcwp_get_log_file();
     if (!is_file($file) || !is_readable($file)) {
-        wp_safe_redirect(add_query_arg(['page' => 'wcwp-settings', 'tab' => 'logs', 'wcwp_log_msg' => 'empty'], admin_url('admin.php')));
+        wp_safe_redirect(add_query_arg(['page' => 'wcwp-logs', 'wcwp_log_msg' => 'empty'], admin_url('admin.php')));
         exit;
     }
 
@@ -222,8 +222,7 @@ function wcwp_log_clear_handler() {
     }
 
     wp_safe_redirect(add_query_arg([
-        'page'         => 'wcwp-settings',
-        'tab'          => 'logs',
+        'page'         => 'wcwp-logs',
         'wcwp_log_msg' => $msg,
     ], admin_url('admin.php')));
     exit;

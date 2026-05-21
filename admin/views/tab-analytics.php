@@ -1,8 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 ?>
-<div id="wcwp-tab-content-analytics" class="wcwp-tab-content" style="display:none;">
-    <?php $is_pro = wcwp_is_pro_active(); ?>
+<?php $is_pro = wcwp_is_pro_active(); ?>
     <?php
     $filters = [
         'type' => isset($_GET['wcwp_type']) ? sanitize_text_field(wp_unslash($_GET['wcwp_type'])) : '',
@@ -236,4 +235,3 @@ if (!defined('ABSPATH')) exit;
             <?php endif; ?>
         </tbody>
     </table>
-</div>
