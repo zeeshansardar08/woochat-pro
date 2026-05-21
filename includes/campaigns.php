@@ -157,7 +157,10 @@ function wcwp_campaign_list($limit = 20) {
     global $wpdb;
     $limit = max(1, min(200, (int) $limit));
     return $wpdb->get_results(
-        "SELECT * FROM " . wcwp_campaigns_table_name() . " ORDER BY id DESC LIMIT " . $limit,
+        $wpdb->prepare(
+            'SELECT * FROM ' . wcwp_campaigns_table_name() . ' ORDER BY id DESC LIMIT %d',
+            $limit
+        ),
         ARRAY_A
     ) ?: [];
 }

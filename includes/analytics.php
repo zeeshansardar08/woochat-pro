@@ -118,7 +118,10 @@ function wcwp_analytics_increment_total($bucket, $amount = 1) {
 function wcwp_analytics_get_totals() {
     global $wpdb;
     $table = wcwp_get_analytics_table_name();
-    $rows = $wpdb->get_results("SELECT status, COUNT(*) AS total FROM {$table} GROUP BY status");
+    // No user input in this query and no values to bind, so prepare() is not
+    // applicable. The table name comes from wcwp_get_analytics_table_name(),
+    // which is derived from $wpdb->prefix and is not user-controlled.
+    $rows = $wpdb->get_results( "SELECT status, COUNT(*) AS total FROM {$table} GROUP BY status" ); // phpcs:ignore WordPress.DB.PreparedSQL
     $totals = [ 'sent' => 0, 'delivered' => 0, 'clicked' => 0 ];
     if ($rows) {
         foreach ($rows as $row) {
@@ -225,9 +228,13 @@ function wcwp_analytics_get_per_type_breakdown($filters = []) {
     }
     $sql .= ' GROUP BY type, status';
 
+    // When $params is non-empty the query is run through prepare(). When it is
+    // empty there are no values to bind and no user input in $sql (the only
+    // interpolation is the table name from wcwp_get_analytics_table_name(),
+    // derived from $wpdb->prefix), so prepare() is not applicable.
     $rows = !empty($params)
         ? $wpdb->get_results($wpdb->prepare($sql, $params), ARRAY_A)
-        : $wpdb->get_results($sql, ARRAY_A);
+        : $wpdb->get_results($sql, ARRAY_A); // phpcs:ignore WordPress.DB.PreparedSQL
 
     if (!$rows) return [];
 

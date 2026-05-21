@@ -51,7 +51,7 @@ if (!defined('ABSPATH')) exit;
                 <p class="description"><?php esc_html_e('When GPT generation is enabled, the variant is still tagged on the event but the message body comes from GPT.', 'woochat-pro'); ?></p>
             </td>
         </tr>
-        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-followup" style="<?php echo $followup_ab_enabled === 'yes' ? '' : 'display:none;'; ?>">
+        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-followup" style="<?php echo esc_attr( $followup_ab_enabled === 'yes' ? '' : 'display:none;' ); ?>">
             <th scope="row"><label for="wcwp_followup_template_b"><?php esc_html_e('Variant B', 'woochat-pro'); ?></label></th>
             <td>
                 <textarea id="wcwp_followup_template_b" name="wcwp_followup_template_b" rows="5" class="large-text" <?php disabled(!$is_pro); ?>><?php echo esc_textarea($followup_template_b); ?></textarea>

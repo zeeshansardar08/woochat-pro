@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) exit;
                 <input type="text" name="wcwp_license_key" id="wcwp_license_key" value="<?php echo esc_attr(get_option('wcwp_license_key')); ?>" class="regular-text" />
                 <div style="margin-top:8px; display:flex; align-items:center; gap:12px;">
                     <?php $status = get_option('wcwp_license_status', 'inactive'); ?>
-                    <span id="wcwp-license-status" class="wcwp-badge <?php echo $status === 'valid' ? 'wcwp-badge-success' : 'wcwp-badge-muted'; ?>">
+                    <span id="wcwp-license-status" class="wcwp-badge <?php echo esc_attr( $status === 'valid' ? 'wcwp-badge-success' : 'wcwp-badge-muted' ); ?>">
                         <?php echo esc_html(wcwp_license_status_label($status)); ?>
                     </span>
                     <button type="button" class="button button-primary" id="wcwp-activate-license"><?php esc_html_e('Activate', 'woochat-pro'); ?></button>

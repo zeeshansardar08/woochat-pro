@@ -78,17 +78,19 @@ foreach ($option_keys as $key) {
 }
 
 global $wpdb;
-$table = $wpdb->prefix . 'wcwp_abandoned_carts';
-$wpdb->query("DROP TABLE IF EXISTS {$table}");
 
-$analytics_table = $wpdb->prefix . 'wcwp_analytics_events';
-$wpdb->query("DROP TABLE IF EXISTS {$analytics_table}");
-
-$campaign_recipients = $wpdb->prefix . 'wcwp_campaign_recipients';
-$wpdb->query("DROP TABLE IF EXISTS {$campaign_recipients}");
-
-$campaigns_table = $wpdb->prefix . 'wcwp_campaigns';
-$wpdb->query("DROP TABLE IF EXISTS {$campaigns_table}");
+// Drop the plugin's custom tables. A table name cannot be passed as a
+// prepare() placeholder, and these names are built solely from $wpdb->prefix
+// plus hard-coded suffixes, so there is no user input to bind.
+$wcwp_tables = array(
+	$wpdb->prefix . 'wcwp_abandoned_carts',
+	$wpdb->prefix . 'wcwp_analytics_events',
+	$wpdb->prefix . 'wcwp_campaign_recipients',
+	$wpdb->prefix . 'wcwp_campaigns',
+);
+foreach ( $wcwp_tables as $wcwp_table ) {
+	$wpdb->query( "DROP TABLE IF EXISTS `{$wcwp_table}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+}
 
 $upload_dir = wp_upload_dir();
 $plugin_log = $upload_dir['basedir'] . '/woochat-pro/woochat-pro.log';

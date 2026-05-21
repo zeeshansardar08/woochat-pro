@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) exit;
                     <span id="wcwp-test-mode-badge" style="display:none;background:#fff3cd;color:#856404;border:1px solid #ffe066;border-radius:12px;padding:2px 8px;font-size:12px;font-weight:600;"><?php esc_html_e('Test Mode ON', 'woochat-pro'); ?></span>
                     <span id="wcwp-test-status" style="font-weight:600;"></span>
                 </div>
-                <p id="wcwp-test-log-hint" class="description" style="margin-top:6px;<?php echo get_option('wcwp_test_mode_enabled', 'no') === 'yes' ? '' : 'display:none;'; ?>"><?php esc_html_e('Test Mode is enabled. Messages are logged to wp-content/uploads/woochat-pro/woochat-pro.log.', 'woochat-pro'); ?></p>
+                <p id="wcwp-test-log-hint" class="description" style="<?php echo esc_attr( 'margin-top:6px;' . ( get_option('wcwp_test_mode_enabled', 'no') === 'yes' ? '' : 'display:none;' ) ); ?>"><?php esc_html_e('Test Mode is enabled. Messages are logged to wp-content/uploads/woochat-pro/woochat-pro.log.', 'woochat-pro'); ?></p>
             </td>
         </tr>
         <tr>
@@ -47,7 +47,7 @@ if (!defined('ABSPATH')) exit;
                 <p class="description"><?php esc_html_e('When enabled and Variant B is non-empty, automatic order confirmations split 50/50 between A and B.', 'woochat-pro'); ?></p>
             </td>
         </tr>
-        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-order" style="<?php echo $order_ab_enabled === 'yes' ? '' : 'display:none;'; ?>">
+        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-order" style="<?php echo esc_attr( $order_ab_enabled === 'yes' ? '' : 'display:none;' ); ?>">
             <th scope="row"><label for="wcwp_order_message_template_b"><?php esc_html_e('Variant B', 'woochat-pro'); ?></label></th>
             <td>
                 <textarea id="wcwp_order_message_template_b" name="wcwp_order_message_template_b" rows="5" class="large-text"><?php echo esc_textarea($order_template_b); ?></textarea>

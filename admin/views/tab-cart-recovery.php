@@ -58,7 +58,7 @@ if (!defined('ABSPATH')) exit;
                 <p class="description"><?php esc_html_e('Resends from the Recent Attempts table always use Variant A regardless of this setting.', 'woochat-pro'); ?></p>
             </td>
         </tr>
-        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-cart-recovery" style="<?php echo $cart_ab_enabled === 'yes' ? '' : 'display:none;'; ?>">
+        <tr class="wcwp-ab-variant-b" id="wcwp-ab-variant-b-cart-recovery" style="<?php echo esc_attr( $cart_ab_enabled === 'yes' ? '' : 'display:none;' ); ?>">
             <th scope="row"><label for="wcwp_cart_recovery_message_b"><?php esc_html_e('Variant B', 'woochat-pro'); ?></label></th>
             <td>
                 <textarea id="wcwp_cart_recovery_message_b" name="wcwp_cart_recovery_message_b" rows="5" class="large-text"><?php echo esc_textarea($cart_message_b); ?></textarea>

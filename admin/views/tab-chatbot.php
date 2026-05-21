@@ -13,10 +13,10 @@ if (!defined('ABSPATH')) exit;
             <label><?php esc_html_e('Choose Icon', 'woochat-pro'); ?></label>
             <div class="wcwp-icon-select">
                 <?php $icon_option = get_option('wcwp_chatbot_icon', '💬'); ?>
-                <span class="wcwp-icon-option <?php echo $icon_option === '💬' ? 'selected' : ''; ?>">💬</span>
-                <span class="wcwp-icon-option <?php echo $icon_option === '🤖' ? 'selected' : ''; ?>">🤖</span>
-                <span class="wcwp-icon-option <?php echo $icon_option === '🟢' ? 'selected' : ''; ?>">🟢</span>
-                <span class="wcwp-icon-option <?php echo $icon_option === '📞' ? 'selected' : ''; ?>">📞</span>
+                <span class="wcwp-icon-option <?php echo esc_attr( $icon_option === '💬' ? 'selected' : '' ); ?>">💬</span>
+                <span class="wcwp-icon-option <?php echo esc_attr( $icon_option === '🤖' ? 'selected' : '' ); ?>">🤖</span>
+                <span class="wcwp-icon-option <?php echo esc_attr( $icon_option === '🟢' ? 'selected' : '' ); ?>">🟢</span>
+                <span class="wcwp-icon-option <?php echo esc_attr( $icon_option === '📞' ? 'selected' : '' ); ?>">📞</span>
             </div>
             <input type="hidden" id="wcwp-chatbot-icon-value" name="wcwp_chatbot_icon" value="<?php echo esc_attr($icon_option); ?>" />
             <label for="wcwp-chatbot-welcome"><?php esc_html_e('Welcome Message', 'woochat-pro'); ?></label>
