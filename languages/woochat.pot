@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooChat Pro – WhatsApp for WooCommerce 1.0.1\n"
+"Project-Id-Version: WooChat – WhatsApp Order Notifications & Chat for WooCommerce 1.0.0\n"
 "Report-Msgid-Bugs-To: https://zignites.com/support\n"
 "Last-Translator: Zignite <support@zignites.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -12,30 +12,30 @@ msgstr ""
 "POT-Creation-Date: 2026-02-27T04:25:44+01:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: woochat-pro\n"
+"X-Domain: woochat\n"
 
 #. Plugin Name of the plugin
-#: woochat-pro.php
-msgid "WooChat Pro – WhatsApp for WooCommerce"
+#: woochat.php
+msgid "WooChat – WhatsApp Order Notifications & Chat for WooCommerce"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: woochat-pro.php
-msgid "https://zignites.com/woochat-pro"
+#: woochat.php
+msgid "https://zignites.com/woochat"
 msgstr ""
 
 #. Description of the plugin
-#: woochat-pro.php
-msgid "Sends WhatsApp messages when a WooCommerce order is placed."
+#: woochat.php
+msgid "Send WhatsApp order notifications, add a chat widget, and engage WooCommerce customers via WhatsApp. Supports Twilio and WhatsApp Cloud API."
 msgstr ""
 
 #. Author of the plugin
-#: woochat-pro.php
+#: woochat.php
 msgid "Zignite"
 msgstr ""
 
 #. Author URI of the plugin
-#: woochat-pro.php
+#: woochat.php
 msgid "https://zignites.com"
 msgstr ""
 
@@ -48,7 +48,7 @@ msgid "WooChat"
 msgstr ""
 
 #: admin/settings-page.php:76
-msgid "Welcome to WooChat Pro!"
+msgid "Welcome to WooChat!"
 msgstr ""
 
 #: admin/settings-page.php:76
@@ -84,7 +84,7 @@ msgid "All Set!"
 msgstr ""
 
 #: admin/settings-page.php:80
-msgid "You're ready to start using WooChat Pro. Enjoy!"
+msgid "You're ready to start using WooChat. Enjoy!"
 msgstr ""
 
 #: admin/settings-page.php:82
@@ -334,7 +334,7 @@ msgid "Test Mode ON"
 msgstr ""
 
 #: admin/settings-page.php:238
-msgid "Test Mode is enabled. Messages are logged to wp-content/uploads/woochat-pro/woochat-pro.log."
+msgid "Test Mode is enabled. Messages are logged to wp-content/uploads/woochat/woochat.log."
 msgstr ""
 
 #: admin/settings-page.php:242
@@ -867,11 +867,11 @@ msgid "Failed to send WhatsApp message. Check logs for details."
 msgstr ""
 
 #: includes/order-hooks.php:271
-msgid "WooChat Pro:"
+msgid "WooChat:"
 msgstr ""
 
 #: includes/order-hooks.php:271
-msgid "Unable to write to log file. Please check file permissions for wp-content/uploads/woochat-pro/."
+msgid "Unable to write to log file. Please check file permissions for wp-content/uploads/woochat/."
 msgstr ""
 
 #: templates/chatbot-widget.php:20
@@ -890,40 +890,40 @@ msgstr ""
 msgid "Chat"
 msgstr ""
 
-#: woochat-pro.php:48
+#: woochat.php:48
 msgid "Activate WooCommerce"
 msgstr ""
 
-#: woochat-pro.php:55
+#: woochat.php:55
 msgid "Install WooCommerce"
 msgstr ""
 
-#: woochat-pro.php:64
-#: woochat-pro.php:110
-#: woochat-pro.php:111
-#: woochat-pro.php:119
-#: woochat-pro.php:120
-#: woochat-pro.php:149
-msgid "WooChat Pro"
+#: woochat.php:64
+#: woochat.php:110
+#: woochat.php:111
+#: woochat.php:119
+#: woochat.php:120
+#: woochat.php:149
+msgid "WooChat"
 msgstr ""
 
-#: woochat-pro.php:64
+#: woochat.php:64
 msgid "requires WooCommerce. Please install and activate WooCommerce."
 msgstr ""
 
-#: woochat-pro.php:110
+#: woochat.php:110
 msgid "requires WooCommerce to be network-activated."
 msgstr ""
 
-#: woochat-pro.php:110
-#: woochat-pro.php:119
+#: woochat.php:110
+#: woochat.php:119
 msgid "Return to Plugins"
 msgstr ""
 
-#: woochat-pro.php:119
+#: woochat.php:119
 msgid "requires WooCommerce to be installed and active."
 msgstr ""
 
-#: woochat-pro.php:149
+#: woochat.php:149
 msgid "was deactivated because WooCommerce is not active."
 msgstr ""

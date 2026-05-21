@@ -1,4 +1,4 @@
-// WooChat Pro – Admin orders list: manual "Send WhatsApp" button.
+// WooChat – Admin orders list: manual "Send WhatsApp" button.
 // Submits via POST + nonce so the action is no longer a GET side-effect.
 
 (function () {

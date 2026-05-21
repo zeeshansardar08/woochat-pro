@@ -134,7 +134,7 @@ function wcwp_optout_webhook_handler(WP_REST_Request $request) {
     // from being a probing oracle.
     $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
     if (!wcwp_optout_rate_limit_ok($ip)) {
-        return new WP_REST_Response(['message' => __('Rate limited', 'woochat-pro')], 429);
+        return new WP_REST_Response(['message' => __('Rate limited', 'woochat')], 429);
     }
 
     // Provider-signature verification. If a known provider's signature
@@ -143,11 +143,11 @@ function wcwp_optout_webhook_handler(WP_REST_Request $request) {
     // claims to be Twilio / Meta.
     $twilio = wcwp_verify_twilio_signature($request);
     if ($twilio === false) {
-        return new WP_REST_Response(['message' => __('Invalid signature', 'woochat-pro')], 401);
+        return new WP_REST_Response(['message' => __('Invalid signature', 'woochat')], 401);
     }
     $meta = wcwp_verify_meta_signature($request);
     if ($meta === false) {
-        return new WP_REST_Response(['message' => __('Invalid signature', 'woochat-pro')], 401);
+        return new WP_REST_Response(['message' => __('Invalid signature', 'woochat')], 401);
     }
 
     // If no provider signature was attempted, fall back to the static
@@ -162,7 +162,7 @@ function wcwp_optout_webhook_handler(WP_REST_Request $request) {
         }
         $expected = (string) get_option('wcwp_optout_webhook_token', '');
         if (!$expected || !hash_equals($expected, $token)) {
-            return new WP_REST_Response(['message' => __('Unauthorized', 'woochat-pro')], 401);
+            return new WP_REST_Response(['message' => __('Unauthorized', 'woochat')], 401);
         }
     }
 
@@ -189,15 +189,15 @@ function wcwp_optout_webhook_handler(WP_REST_Request $request) {
     }
 
     if (!$from || !$body) {
-        return new WP_REST_Response(['message' => __('Missing data', 'woochat-pro')], 400);
+        return new WP_REST_Response(['message' => __('Missing data', 'woochat')], 400);
     }
 
     if (!wcwp_optout_keyword_match($body)) {
-        return new WP_REST_Response(['message' => __('No opt-out keyword detected', 'woochat-pro')], 200);
+        return new WP_REST_Response(['message' => __('No opt-out keyword detected', 'woochat')], 200);
     }
 
     $saved = wcwp_add_optout($from);
     return new WP_REST_Response([
-        'message' => $saved ? __('Opted out', 'woochat-pro') : __('Invalid phone', 'woochat-pro'),
+        'message' => $saved ? __('Opted out', 'woochat') : __('Invalid phone', 'woochat'),
     ], $saved ? 200 : 400);
 }

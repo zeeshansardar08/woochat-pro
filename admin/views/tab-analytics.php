@@ -28,55 +28,55 @@ if (!defined('ABSPATH')) exit;
     );
     ?>
     <?php if (!$is_pro) : ?>
-        <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong><?php esc_html_e('Analytics Dashboard', 'woochat-pro'); ?></strong> <?php esc_html_e('is a Pro feature.', 'woochat-pro'); ?> <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;"><?php esc_html_e('Upgrade', 'woochat-pro'); ?></button></div>
+        <div class="wcwp-pro-banner"><span class="dashicons dashicons-chart-bar"></span> <strong><?php esc_html_e('Analytics Dashboard', 'woochat'); ?></strong> <?php esc_html_e('is a Pro feature.', 'woochat'); ?> <button type="button" class="wcwp-open-upgrade-modal" style="margin-left:12px;"><?php esc_html_e('Upgrade', 'woochat'); ?></button></div>
     <?php endif; ?>
     <div class="wcwp-analytics-presets" style="margin:16px 0 4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-        <span style="color:#666;font-size:0.95em;"><?php esc_html_e('Quick range:', 'woochat-pro'); ?></span>
-        <button type="button" class="button button-small wcwp-analytics-preset" data-range="today"><?php esc_html_e('Today', 'woochat-pro'); ?></button>
-        <button type="button" class="button button-small wcwp-analytics-preset" data-range="7d"><?php esc_html_e('Last 7 days', 'woochat-pro'); ?></button>
-        <button type="button" class="button button-small wcwp-analytics-preset" data-range="30d"><?php esc_html_e('Last 30 days', 'woochat-pro'); ?></button>
-        <button type="button" class="button button-small wcwp-analytics-preset" data-range="month"><?php esc_html_e('This month', 'woochat-pro'); ?></button>
-        <button type="button" class="button button-small wcwp-analytics-preset" data-range="all"><?php esc_html_e('All time', 'woochat-pro'); ?></button>
+        <span style="color:#666;font-size:0.95em;"><?php esc_html_e('Quick range:', 'woochat'); ?></span>
+        <button type="button" class="button button-small wcwp-analytics-preset" data-range="today"><?php esc_html_e('Today', 'woochat'); ?></button>
+        <button type="button" class="button button-small wcwp-analytics-preset" data-range="7d"><?php esc_html_e('Last 7 days', 'woochat'); ?></button>
+        <button type="button" class="button button-small wcwp-analytics-preset" data-range="30d"><?php esc_html_e('Last 30 days', 'woochat'); ?></button>
+        <button type="button" class="button button-small wcwp-analytics-preset" data-range="month"><?php esc_html_e('This month', 'woochat'); ?></button>
+        <button type="button" class="button button-small wcwp-analytics-preset" data-range="all"><?php esc_html_e('All time', 'woochat'); ?></button>
     </div>
     <div class="wcwp-analytics-filters" style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
         <div>
-            <label for="wcwp_type"><?php esc_html_e('Type', 'woochat-pro'); ?></label><br>
+            <label for="wcwp_type"><?php esc_html_e('Type', 'woochat'); ?></label><br>
             <input type="text" id="wcwp_type" name="wcwp_type" value="<?php echo esc_attr($filters['type']); ?>" placeholder="order, cart_recovery" />
         </div>
         <div>
-            <label for="wcwp_status"><?php esc_html_e('Status', 'woochat-pro'); ?></label><br>
+            <label for="wcwp_status"><?php esc_html_e('Status', 'woochat'); ?></label><br>
             <input type="text" id="wcwp_status" name="wcwp_status" value="<?php echo esc_attr($filters['status']); ?>" placeholder="sent, failed" />
         </div>
         <div>
-            <label for="wcwp_phone"><?php esc_html_e('Phone', 'woochat-pro'); ?></label><br>
+            <label for="wcwp_phone"><?php esc_html_e('Phone', 'woochat'); ?></label><br>
             <input type="text" id="wcwp_phone" name="wcwp_phone" value="<?php echo esc_attr($filters['phone']); ?>" placeholder="last 4 digits" />
         </div>
         <div>
-            <label for="wcwp_date_from"><?php esc_html_e('From', 'woochat-pro'); ?></label><br>
+            <label for="wcwp_date_from"><?php esc_html_e('From', 'woochat'); ?></label><br>
             <input type="date" id="wcwp_date_from" name="wcwp_date_from" value="<?php echo esc_attr($filters['date_from']); ?>" />
         </div>
         <div>
-            <label for="wcwp_date_to"><?php esc_html_e('To', 'woochat-pro'); ?></label><br>
+            <label for="wcwp_date_to"><?php esc_html_e('To', 'woochat'); ?></label><br>
             <input type="date" id="wcwp_date_to" name="wcwp_date_to" value="<?php echo esc_attr($filters['date_to']); ?>" />
         </div>
         <div>
-            <button type="button" class="button button-primary" id="wcwp-analytics-filter-button"><?php esc_html_e('Filter', 'woochat-pro'); ?></button>
+            <button type="button" class="button button-primary" id="wcwp-analytics-filter-button"><?php esc_html_e('Filter', 'woochat'); ?></button>
         </div>
         <div>
-            <a class="button" href="<?php echo esc_url($export_url); ?>" id="wcwp-analytics-export-csv"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Export CSV', 'woochat-pro'); ?></a>
+            <a class="button" href="<?php echo esc_url($export_url); ?>" id="wcwp-analytics-export-csv"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Export CSV', 'woochat'); ?></a>
         </div>
     </div>
     <div class="wcwp-analytics-cards" style="display:flex;gap:12px;flex-wrap:wrap;">
         <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
-            <div class="wcwp-analytics-label"><?php esc_html_e('Sent', 'woochat-pro'); ?></div>
+            <div class="wcwp-analytics-label"><?php esc_html_e('Sent', 'woochat'); ?></div>
             <div class="wcwp-analytics-value"><?php echo esc_html($totals['sent']); ?></div>
         </div>
         <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
-            <div class="wcwp-analytics-label"><?php esc_html_e('Delivered', 'woochat-pro'); ?></div>
+            <div class="wcwp-analytics-label"><?php esc_html_e('Delivered', 'woochat'); ?></div>
             <div class="wcwp-analytics-value"><?php echo esc_html($totals['delivered']); ?></div>
         </div>
         <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
-            <div class="wcwp-analytics-label"><?php esc_html_e('Clicked', 'woochat-pro'); ?></div>
+            <div class="wcwp-analytics-label"><?php esc_html_e('Clicked', 'woochat'); ?></div>
             <div class="wcwp-analytics-value"><?php echo esc_html($totals['clicked']); ?></div>
         </div>
         <div class="wcwp-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:200px;">
@@ -84,7 +84,7 @@ if (!defined('ABSPATH')) exit;
                 <?php
                 /* translators: %d is the attribution window in days */
                 printf(
-                    esc_html__('Attributed orders (%d-day window)', 'woochat-pro'),
+                    esc_html__('Attributed orders (%d-day window)', 'woochat'),
                     (int) $conversions['window_days']
                 );
                 ?>
@@ -103,16 +103,16 @@ if (!defined('ABSPATH')) exit;
             <?php endif; ?>
         </div>
     </div>
-    <h3 style="margin-top:20px;"><?php esc_html_e('Performance by template', 'woochat-pro'); ?></h3>
+    <h3 style="margin-top:20px;"><?php esc_html_e('Performance by template', 'woochat'); ?></h3>
     <table class="widefat striped" style="margin-top:10px;max-width:780px;">
         <thead>
             <tr>
-                <th><?php esc_html_e('Template / source', 'woochat-pro'); ?></th>
-                <th><?php esc_html_e('Sent', 'woochat-pro'); ?></th>
-                <th><?php esc_html_e('Delivered', 'woochat-pro'); ?></th>
-                <th><?php esc_html_e('Clicked', 'woochat-pro'); ?></th>
-                <th><?php esc_html_e('Failed', 'woochat-pro'); ?></th>
-                <th><?php esc_html_e('Total', 'woochat-pro'); ?></th>
+                <th><?php esc_html_e('Template / source', 'woochat'); ?></th>
+                <th><?php esc_html_e('Sent', 'woochat'); ?></th>
+                <th><?php esc_html_e('Delivered', 'woochat'); ?></th>
+                <th><?php esc_html_e('Clicked', 'woochat'); ?></th>
+                <th><?php esc_html_e('Failed', 'woochat'); ?></th>
+                <th><?php esc_html_e('Total', 'woochat'); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -128,11 +128,11 @@ if (!defined('ABSPATH')) exit;
                     </tr>
                 <?php endforeach; ?>
             <?php else : ?>
-                <tr><td colspan="6"><?php esc_html_e('No events match the current filters.', 'woochat-pro'); ?></td></tr>
+                <tr><td colspan="6"><?php esc_html_e('No events match the current filters.', 'woochat'); ?></td></tr>
             <?php endif; ?>
         </tbody>
     </table>
-    <h3 style="margin-top:24px;"><?php esc_html_e('A/B test results', 'woochat-pro'); ?></h3>
+    <h3 style="margin-top:24px;"><?php esc_html_e('A/B test results', 'woochat'); ?></h3>
     <?php
     $ab_kinds_cfg = wcwp_ab_kinds();
     $ab_any_enabled = false;
@@ -144,18 +144,18 @@ if (!defined('ABSPATH')) exit;
     }
     ?>
     <?php if (!$ab_any_enabled) : ?>
-        <p class="description" style="margin-top:8px;"><?php esc_html_e('No A/B tests are running. Turn on "A/B test this message" on the Messaging, Cart Recovery, or Scheduler tabs to start measuring.', 'woochat-pro'); ?></p>
+        <p class="description" style="margin-top:8px;"><?php esc_html_e('No A/B tests are running. Turn on "A/B test this message" on the Messaging, Cart Recovery, or Scheduler tabs to start measuring.', 'woochat'); ?></p>
     <?php else : ?>
         <table class="widefat striped" style="margin-top:10px;">
             <thead>
                 <tr>
-                    <th><?php esc_html_e('Test', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Variant', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Sent', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Conversions', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Conv. rate', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Revenue', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Outcome', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Test', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Variant', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Sent', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Conversions', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Conv. rate', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Revenue', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Outcome', 'woochat'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -185,13 +185,13 @@ if (!defined('ABSPATH')) exit;
                             if ($ab_results['winner'] === null) {
                                 $outcome = sprintf(
                                     /* translators: %d is the minimum sample size per variant before declaring a winner */
-                                    esc_html__('Insufficient data (need %d sends per variant)', 'woochat-pro'),
+                                    esc_html__('Insufficient data (need %d sends per variant)', 'woochat'),
                                     (int) apply_filters('wcwp_ab_min_sample_size', 30)
                                 );
                             } else {
                                 $outcome = sprintf(
                                     /* translators: %s is the winning variant letter (A or B) */
-                                    esc_html__('Variant %s leads', 'woochat-pro'),
+                                    esc_html__('Variant %s leads', 'woochat'),
                                     strtoupper($ab_results['winner'])
                                 );
                             }
@@ -206,17 +206,17 @@ if (!defined('ABSPATH')) exit;
             <?php
             /* translators: %d is the attribution window in days */
             printf(
-                esc_html__('Conversions count orders placed within %d days of the message by the same phone number — the same attribution window the totals card uses.', 'woochat-pro'),
+                esc_html__('Conversions count orders placed within %d days of the message by the same phone number — the same attribution window the totals card uses.', 'woochat'),
                 (int) apply_filters('wcwp_analytics_attribution_window_days', 7)
             );
             ?>
         </p>
     <?php endif; ?>
 
-    <h3 style="margin-top:20px;"><?php esc_html_e('Recent Events', 'woochat-pro'); ?></h3>
+    <h3 style="margin-top:20px;"><?php esc_html_e('Recent Events', 'woochat'); ?></h3>
     <table class="widefat striped" style="margin-top:10px;">
         <thead>
-            <tr><th><?php esc_html_e('Time', 'woochat-pro'); ?></th><th><?php esc_html_e('Type', 'woochat-pro'); ?></th><th><?php esc_html_e('Status', 'woochat-pro'); ?></th><th><?php esc_html_e('Phone', 'woochat-pro'); ?></th><th><?php esc_html_e('Provider', 'woochat-pro'); ?></th><th><?php esc_html_e('Message ID', 'woochat-pro'); ?></th><th><?php esc_html_e('Preview', 'woochat-pro'); ?></th></tr>
+            <tr><th><?php esc_html_e('Time', 'woochat'); ?></th><th><?php esc_html_e('Type', 'woochat'); ?></th><th><?php esc_html_e('Status', 'woochat'); ?></th><th><?php esc_html_e('Phone', 'woochat'); ?></th><th><?php esc_html_e('Provider', 'woochat'); ?></th><th><?php esc_html_e('Message ID', 'woochat'); ?></th><th><?php esc_html_e('Preview', 'woochat'); ?></th></tr>
         </thead>
         <tbody>
             <?php if (!empty($events)) : ?>
@@ -232,7 +232,7 @@ if (!defined('ABSPATH')) exit;
                     </tr>
                 <?php endforeach; ?>
             <?php else : ?>
-                <tr><td colspan="7"><?php esc_html_e('No analytics events logged yet.', 'woochat-pro'); ?></td></tr>
+                <tr><td colspan="7"><?php esc_html_e('No analytics events logged yet.', 'woochat'); ?></td></tr>
             <?php endif; ?>
         </tbody>
     </table>

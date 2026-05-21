@@ -55,13 +55,13 @@ function wcwp_chatbot_localized_data() {
 
     return [
         'faq_pairs'    => $faq_pairs,
-        'noAnswerText' => __( "Sorry, I don't have an answer for that.", 'woochat-pro' ),
+        'noAnswerText' => __( "Sorry, I don't have an answer for that.", 'woochat' ),
         'gpt'          => [
             'enabled'  => get_option('wcwp_chatbot_gpt_enabled', 'no') === 'yes',
             'url'      => admin_url('admin-ajax.php'),
             'nonce'    => wp_create_nonce('wcwp_chatbot_gpt'),
             'action'   => 'wcwp_chatbot_gpt',
-            'thinking' => __('Thinking…', 'woochat-pro'),
+            'thinking' => __('Thinking…', 'woochat'),
         ],
         // Agents are picked client-side so a full-page cache can't pin every
         // visitor to the same agent under 'random' mode.
@@ -88,27 +88,27 @@ add_action('wp_ajax_wcwp_chatbot_gpt', 'wcwp_ajax_chatbot_gpt');
 add_action('wp_ajax_nopriv_wcwp_chatbot_gpt', 'wcwp_ajax_chatbot_gpt');
 function wcwp_ajax_chatbot_gpt() {
     if (!check_ajax_referer('wcwp_chatbot_gpt', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
     }
 
     if (get_option('wcwp_chatbot_gpt_enabled', 'no') !== 'yes') {
-        wp_send_json_error(['message' => __('GPT fallback disabled', 'woochat-pro')], 403);
+        wp_send_json_error(['message' => __('GPT fallback disabled', 'woochat')], 403);
     }
 
     // Defense in depth: the widget render paths already gate on Pro, but a
     // direct admin-ajax call would otherwise sail past the front-end gate.
     if (!wcwp_is_pro_active()) {
-        wp_send_json_error(['message' => __('Pro license required', 'woochat-pro')], 403);
+        wp_send_json_error(['message' => __('Pro license required', 'woochat')], 403);
     }
 
     $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
     if (!wcwp_chatbot_gpt_rate_limit_ok($ip)) {
-        wp_send_json_error(['message' => __('Too many requests', 'woochat-pro')], 429);
+        wp_send_json_error(['message' => __('Too many requests', 'woochat')], 429);
     }
 
     $question = isset($_POST['question']) ? sanitize_text_field(wp_unslash($_POST['question'])) : '';
     if ($question === '') {
-        wp_send_json_error(['message' => __('Empty question', 'woochat-pro')], 400);
+        wp_send_json_error(['message' => __('Empty question', 'woochat')], 400);
     }
 
     // Cap input length: keeps the upstream prompt bounded and curbs misuse.
@@ -120,7 +120,7 @@ function wcwp_ajax_chatbot_gpt() {
 
     $reply = wcwp_generate_chatbot_reply($question);
     if ($reply === '') {
-        wp_send_json_error(['message' => __('No reply available', 'woochat-pro')], 502);
+        wp_send_json_error(['message' => __('No reply available', 'woochat')], 502);
     }
 
     wp_send_json_success(['reply' => $reply]);

@@ -49,7 +49,7 @@ function wcwp_render_whatsapp_button_block($attributes = []) {
     $phone   = isset($attributes['phone']) ? wcwp_normalize_phone((string) $attributes['phone']) : '';
     $text    = isset($attributes['text']) && $attributes['text'] !== ''
         ? sanitize_text_field((string) $attributes['text'])
-        : __('Chat on WhatsApp', 'woochat-pro');
+        : __('Chat on WhatsApp', 'woochat');
     $message = isset($attributes['message']) ? sanitize_text_field((string) $attributes['message']) : '';
 
     $url = 'https://wa.me/' . $phone;

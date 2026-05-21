@@ -1,4 +1,4 @@
-// WooChat Pro – Onboarding Wizard
+// WooChat – Onboarding Wizard
 
 document.addEventListener('DOMContentLoaded', function () {
     const wizard = document.getElementById('wcwp-onboarding-modal');

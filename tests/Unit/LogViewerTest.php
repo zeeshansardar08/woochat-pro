@@ -27,16 +27,16 @@ final class LogViewerTest extends TestCase
 
     public function test_parse_line_returns_tag_and_message(): void
     {
-        $parsed = \wcwp_log_parse_line('[WooChat Pro] Sent message to ••••1234');
-        $this->assertSame('WooChat Pro', $parsed['tag']);
+        $parsed = \wcwp_log_parse_line('[WooChat] Sent message to ••••1234');
+        $this->assertSame('WooChat', $parsed['tag']);
         $this->assertSame('Sent message to ••••1234', $parsed['message']);
-        $this->assertSame('[WooChat Pro] Sent message to ••••1234', $parsed['raw']);
+        $this->assertSame('[WooChat] Sent message to ••••1234', $parsed['raw']);
     }
 
     public function test_parse_line_preserves_subtag(): void
     {
-        $parsed = \wcwp_log_parse_line('[WooChat Pro - Cart Recovery] Attempt evt_xyz to ••••1234: Hi!');
-        $this->assertSame('WooChat Pro - Cart Recovery', $parsed['tag']);
+        $parsed = \wcwp_log_parse_line('[WooChat - Cart Recovery] Attempt evt_xyz to ••••1234: Hi!');
+        $this->assertSame('WooChat - Cart Recovery', $parsed['tag']);
         $this->assertSame('Attempt evt_xyz to ••••1234: Hi!', $parsed['message']);
     }
 
@@ -113,9 +113,9 @@ final class LogViewerTest extends TestCase
     public function test_filter_lines_applies_keyword_case_insensitively(): void
     {
         $lines = [
-            '[WooChat Pro] Sent OK',
-            '[WooChat Pro] Send failed: timeout',
-            '[WooChat Pro - Cart Recovery] Sent reminder',
+            '[WooChat] Sent OK',
+            '[WooChat] Send failed: timeout',
+            '[WooChat - Cart Recovery] Sent reminder',
         ];
         $filtered = \wcwp_log_filter_lines($lines, 'sent');
 
@@ -127,24 +127,24 @@ final class LogViewerTest extends TestCase
     public function test_filter_lines_applies_tag_filter(): void
     {
         $lines = [
-            '[WooChat Pro] Sent OK',
-            '[WooChat Pro - Cart Recovery] Sent reminder',
-            '[WooChat Pro - MANUAL] Sent manual',
+            '[WooChat] Sent OK',
+            '[WooChat - Cart Recovery] Sent reminder',
+            '[WooChat - MANUAL] Sent manual',
         ];
-        $filtered = \wcwp_log_filter_lines($lines, '', 'WooChat Pro - Cart Recovery');
+        $filtered = \wcwp_log_filter_lines($lines, '', 'WooChat - Cart Recovery');
 
         $this->assertCount(1, $filtered);
-        $this->assertSame('WooChat Pro - Cart Recovery', $filtered[0]['tag']);
+        $this->assertSame('WooChat - Cart Recovery', $filtered[0]['tag']);
     }
 
     public function test_filter_lines_combines_keyword_and_tag(): void
     {
         $lines = [
-            '[WooChat Pro] Sent OK',
-            '[WooChat Pro - Cart Recovery] Sent reminder',
-            '[WooChat Pro - Cart Recovery] Skipped opted-out number',
+            '[WooChat] Sent OK',
+            '[WooChat - Cart Recovery] Sent reminder',
+            '[WooChat - Cart Recovery] Skipped opted-out number',
         ];
-        $filtered = \wcwp_log_filter_lines($lines, 'opted', 'WooChat Pro - Cart Recovery');
+        $filtered = \wcwp_log_filter_lines($lines, 'opted', 'WooChat - Cart Recovery');
 
         $this->assertCount(1, $filtered);
         $this->assertSame('Skipped opted-out number', $filtered[0]['message']);
@@ -152,7 +152,7 @@ final class LogViewerTest extends TestCase
 
     public function test_filter_lines_returns_all_when_filters_empty(): void
     {
-        $lines = ['[WooChat Pro] One', '[WooChat Pro] Two'];
+        $lines = ['[WooChat] One', '[WooChat] Two'];
         $filtered = \wcwp_log_filter_lines($lines, '', '');
 
         $this->assertCount(2, $filtered);
@@ -161,16 +161,16 @@ final class LogViewerTest extends TestCase
     public function test_tags_present_returns_distinct_sorted_tags(): void
     {
         $entries = [
-            ['tag' => 'WooChat Pro - Cart Recovery'],
-            ['tag' => 'WooChat Pro'],
-            ['tag' => 'WooChat Pro - Cart Recovery'],
+            ['tag' => 'WooChat - Cart Recovery'],
+            ['tag' => 'WooChat'],
+            ['tag' => 'WooChat - Cart Recovery'],
             ['tag' => ''],
-            ['tag' => 'WooChat Pro - MANUAL'],
+            ['tag' => 'WooChat - MANUAL'],
         ];
         $tags = \wcwp_log_tags_present($entries);
 
         $this->assertSame(
-            ['WooChat Pro', 'WooChat Pro - Cart Recovery', 'WooChat Pro - MANUAL'],
+            ['WooChat', 'WooChat - Cart Recovery', 'WooChat - MANUAL'],
             $tags
         );
     }

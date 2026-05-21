@@ -41,40 +41,40 @@ add_filter('wp_privacy_personal_data_erasers', 'wcwp_privacy_register_erasers', 
 add_action('admin_init', 'wcwp_privacy_register_policy_content');
 
 function wcwp_privacy_register_exporters($exporters) {
-    $exporters['woochat-pro-events'] = [
-        'exporter_friendly_name' => __('WooChat Pro – WhatsApp messaging events', 'woochat-pro'),
+    $exporters['woochat-events'] = [
+        'exporter_friendly_name' => __('WooChat – WhatsApp messaging events', 'woochat'),
         'callback'               => 'wcwp_privacy_export_events',
     ];
-    $exporters['woochat-pro-carts'] = [
-        'exporter_friendly_name' => __('WooChat Pro – Abandoned cart records', 'woochat-pro'),
+    $exporters['woochat-carts'] = [
+        'exporter_friendly_name' => __('WooChat – Abandoned cart records', 'woochat'),
         'callback'               => 'wcwp_privacy_export_carts',
     ];
-    $exporters['woochat-pro-campaigns'] = [
-        'exporter_friendly_name' => __('WooChat Pro – Bulk campaign recipients', 'woochat-pro'),
+    $exporters['woochat-campaigns'] = [
+        'exporter_friendly_name' => __('WooChat – Bulk campaign recipients', 'woochat'),
         'callback'               => 'wcwp_privacy_export_campaigns',
     ];
-    $exporters['woochat-pro-optout'] = [
-        'exporter_friendly_name' => __('WooChat Pro – Opt-out status', 'woochat-pro'),
+    $exporters['woochat-optout'] = [
+        'exporter_friendly_name' => __('WooChat – Opt-out status', 'woochat'),
         'callback'               => 'wcwp_privacy_export_optout',
     ];
     return $exporters;
 }
 
 function wcwp_privacy_register_erasers($erasers) {
-    $erasers['woochat-pro-events'] = [
-        'eraser_friendly_name' => __('WooChat Pro – WhatsApp messaging events', 'woochat-pro'),
+    $erasers['woochat-events'] = [
+        'eraser_friendly_name' => __('WooChat – WhatsApp messaging events', 'woochat'),
         'callback'             => 'wcwp_privacy_erase_events',
     ];
-    $erasers['woochat-pro-carts'] = [
-        'eraser_friendly_name' => __('WooChat Pro – Abandoned cart records', 'woochat-pro'),
+    $erasers['woochat-carts'] = [
+        'eraser_friendly_name' => __('WooChat – Abandoned cart records', 'woochat'),
         'callback'             => 'wcwp_privacy_erase_carts',
     ];
-    $erasers['woochat-pro-campaigns'] = [
-        'eraser_friendly_name' => __('WooChat Pro – Bulk campaign recipients', 'woochat-pro'),
+    $erasers['woochat-campaigns'] = [
+        'eraser_friendly_name' => __('WooChat – Bulk campaign recipients', 'woochat'),
         'callback'             => 'wcwp_privacy_erase_campaigns',
     ];
-    $erasers['woochat-pro-optout'] = [
-        'eraser_friendly_name' => __('WooChat Pro – Opt-out status', 'woochat-pro'),
+    $erasers['woochat-optout'] = [
+        'eraser_friendly_name' => __('WooChat – Opt-out status', 'woochat'),
         'callback'             => 'wcwp_privacy_erase_optout',
     ];
     return $erasers;
@@ -82,16 +82,16 @@ function wcwp_privacy_register_erasers($erasers) {
 
 function wcwp_privacy_register_policy_content() {
     if (!function_exists('wp_add_privacy_policy_content')) return;
-    $content  = '<p>' . esc_html__('When WooChat Pro is active, WhatsApp messages sent on your behalf are recorded for analytics, retry, and compliance reasons.', 'woochat-pro') . '</p>';
-    $content .= '<p><strong>' . esc_html__('What is stored:', 'woochat-pro') . '</strong></p>';
+    $content  = '<p>' . esc_html__('When WooChat is active, WhatsApp messages sent on your behalf are recorded for analytics, retry, and compliance reasons.', 'woochat') . '</p>';
+    $content .= '<p><strong>' . esc_html__('What is stored:', 'woochat') . '</strong></p>';
     $content .= '<ul>';
-    $content .= '<li>' . esc_html__('Per-message events: timestamp, message type, status, phone number, order id (if any), provider id, message id, and a redacted preview of the message body.', 'woochat-pro') . '</li>';
-    $content .= '<li>' . esc_html__('Abandoned cart records: phone number, cart contents, and timestamps used to schedule recovery messages.', 'woochat-pro') . '</li>';
-    $content .= '<li>' . esc_html__('Bulk campaign recipients: phone number and first name, scoped to the campaign that targeted them.', 'woochat-pro') . '</li>';
-    $content .= '<li>' . esc_html__('Suppression list: phone numbers that opted out of further messages. Retained for compliance even after a personal-data erasure request, to keep the opt-out honoured.', 'woochat-pro') . '</li>';
+    $content .= '<li>' . esc_html__('Per-message events: timestamp, message type, status, phone number, order id (if any), provider id, message id, and a redacted preview of the message body.', 'woochat') . '</li>';
+    $content .= '<li>' . esc_html__('Abandoned cart records: phone number, cart contents, and timestamps used to schedule recovery messages.', 'woochat') . '</li>';
+    $content .= '<li>' . esc_html__('Bulk campaign recipients: phone number and first name, scoped to the campaign that targeted them.', 'woochat') . '</li>';
+    $content .= '<li>' . esc_html__('Suppression list: phone numbers that opted out of further messages. Retained for compliance even after a personal-data erasure request, to keep the opt-out honoured.', 'woochat') . '</li>';
     $content .= '</ul>';
-    $content .= '<p>' . esc_html__('Customers can request export or erasure of this data via Tools → Export Personal Data and Tools → Erase Personal Data, keyed on the email address they used at checkout.', 'woochat-pro') . '</p>';
-    wp_add_privacy_policy_content('WooChat Pro', $content);
+    $content .= '<p>' . esc_html__('Customers can request export or erasure of this data via Tools → Export Personal Data and Tools → Erase Personal Data, keyed on the email address they used at checkout.', 'woochat') . '</p>';
+    wp_add_privacy_policy_content('WooChat', $content);
 }
 
 /**
@@ -172,50 +172,50 @@ function wcwp_privacy_phone_match_suffix($normalized_phone) {
 function wcwp_privacy_format_event_row($row) {
     $event_id = isset($row['event_id']) ? (string) $row['event_id'] : (isset($row['id']) ? (string) $row['id'] : '');
     return [
-        'group_id'    => 'woochat-pro-events',
-        'group_label' => __('WooChat Pro – WhatsApp messaging events', 'woochat-pro'),
+        'group_id'    => 'woochat-events',
+        'group_label' => __('WooChat – WhatsApp messaging events', 'woochat'),
         'item_id'     => 'wcwp-event-' . $event_id,
         'data'        => [
-            ['name' => __('Date',       'woochat-pro'), 'value' => $row['created_at'] ?? ($row['time'] ?? '')],
-            ['name' => __('Type',       'woochat-pro'), 'value' => $row['type'] ?? ''],
-            ['name' => __('Status',     'woochat-pro'), 'value' => $row['status'] ?? ''],
-            ['name' => __('Phone',      'woochat-pro'), 'value' => $row['phone'] ?? ''],
-            ['name' => __('Order ID',   'woochat-pro'), 'value' => isset($row['order_id']) ? (string) (int) $row['order_id'] : ''],
-            ['name' => __('Provider',   'woochat-pro'), 'value' => $row['provider'] ?? ''],
-            ['name' => __('Message ID', 'woochat-pro'), 'value' => $row['message_id'] ?? ''],
-            ['name' => __('Preview',    'woochat-pro'), 'value' => $row['message_preview'] ?? ''],
+            ['name' => __('Date',       'woochat'), 'value' => $row['created_at'] ?? ($row['time'] ?? '')],
+            ['name' => __('Type',       'woochat'), 'value' => $row['type'] ?? ''],
+            ['name' => __('Status',     'woochat'), 'value' => $row['status'] ?? ''],
+            ['name' => __('Phone',      'woochat'), 'value' => $row['phone'] ?? ''],
+            ['name' => __('Order ID',   'woochat'), 'value' => isset($row['order_id']) ? (string) (int) $row['order_id'] : ''],
+            ['name' => __('Provider',   'woochat'), 'value' => $row['provider'] ?? ''],
+            ['name' => __('Message ID', 'woochat'), 'value' => $row['message_id'] ?? ''],
+            ['name' => __('Preview',    'woochat'), 'value' => $row['message_preview'] ?? ''],
         ],
     ];
 }
 
 function wcwp_privacy_format_cart_row($row) {
     return [
-        'group_id'    => 'woochat-pro-carts',
-        'group_label' => __('WooChat Pro – Abandoned cart records', 'woochat-pro'),
+        'group_id'    => 'woochat-carts',
+        'group_label' => __('WooChat – Abandoned cart records', 'woochat'),
         'item_id'     => 'wcwp-cart-' . (isset($row['id']) ? (int) $row['id'] : 0),
         'data'        => [
-            ['name' => __('Created',  'woochat-pro'), 'value' => $row['created_at'] ?? ''],
-            ['name' => __('Phone',    'woochat-pro'), 'value' => $row['phone'] ?? ''],
-            ['name' => __('Total',    'woochat-pro'), 'value' => isset($row['total']) ? (string) $row['total'] : ''],
-            ['name' => __('Items',    'woochat-pro'), 'value' => $row['cart_json'] ?? ''],
-            ['name' => __('Status',   'woochat-pro'), 'value' => $row['status'] ?? ''],
-            ['name' => __('Consent',  'woochat-pro'), 'value' => $row['consent'] ?? ''],
-            ['name' => __('Attempts', 'woochat-pro'), 'value' => isset($row['attempts']) ? (string) (int) $row['attempts'] : '0'],
+            ['name' => __('Created',  'woochat'), 'value' => $row['created_at'] ?? ''],
+            ['name' => __('Phone',    'woochat'), 'value' => $row['phone'] ?? ''],
+            ['name' => __('Total',    'woochat'), 'value' => isset($row['total']) ? (string) $row['total'] : ''],
+            ['name' => __('Items',    'woochat'), 'value' => $row['cart_json'] ?? ''],
+            ['name' => __('Status',   'woochat'), 'value' => $row['status'] ?? ''],
+            ['name' => __('Consent',  'woochat'), 'value' => $row['consent'] ?? ''],
+            ['name' => __('Attempts', 'woochat'), 'value' => isset($row['attempts']) ? (string) (int) $row['attempts'] : '0'],
         ],
     ];
 }
 
 function wcwp_privacy_format_campaign_recipient_row($row, $campaign_name = '') {
     return [
-        'group_id'    => 'woochat-pro-campaigns',
-        'group_label' => __('WooChat Pro – Bulk campaign recipients', 'woochat-pro'),
+        'group_id'    => 'woochat-campaigns',
+        'group_label' => __('WooChat – Bulk campaign recipients', 'woochat'),
         'item_id'     => 'wcwp-campaign-recipient-' . (isset($row['id']) ? (int) $row['id'] : 0),
         'data'        => [
-            ['name' => __('Campaign',      'woochat-pro'), 'value' => $campaign_name !== '' ? $campaign_name : (isset($row['campaign_id']) ? '#' . (int) $row['campaign_id'] : '')],
-            ['name' => __('Phone',         'woochat-pro'), 'value' => $row['phone'] ?? ''],
-            ['name' => __('Customer name', 'woochat-pro'), 'value' => $row['customer_name'] ?? ''],
-            ['name' => __('Status',        'woochat-pro'), 'value' => $row['status'] ?? ''],
-            ['name' => __('Sent at',       'woochat-pro'), 'value' => $row['sent_at'] ?? ''],
+            ['name' => __('Campaign',      'woochat'), 'value' => $campaign_name !== '' ? $campaign_name : (isset($row['campaign_id']) ? '#' . (int) $row['campaign_id'] : '')],
+            ['name' => __('Phone',         'woochat'), 'value' => $row['phone'] ?? ''],
+            ['name' => __('Customer name', 'woochat'), 'value' => $row['customer_name'] ?? ''],
+            ['name' => __('Status',        'woochat'), 'value' => $row['status'] ?? ''],
+            ['name' => __('Sent at',       'woochat'), 'value' => $row['sent_at'] ?? ''],
         ],
     ];
 }
@@ -352,12 +352,12 @@ function wcwp_privacy_export_optout($email_address, $page = 1) {
         foreach ($phones as $phone) {
             if (!in_array($phone, $optout, true)) continue;
             $items[] = [
-                'group_id'    => 'woochat-pro-optout',
-                'group_label' => __('WooChat Pro – Opt-out status', 'woochat-pro'),
+                'group_id'    => 'woochat-optout',
+                'group_label' => __('WooChat – Opt-out status', 'woochat'),
                 'item_id'     => 'wcwp-optout-' . md5($phone),
                 'data'        => [
-                    ['name' => __('Phone',  'woochat-pro'), 'value' => $phone],
-                    ['name' => __('Status', 'woochat-pro'), 'value' => __('Opted out of further messages', 'woochat-pro')],
+                    ['name' => __('Phone',  'woochat'), 'value' => $phone],
+                    ['name' => __('Status', 'woochat'), 'value' => __('Opted out of further messages', 'woochat')],
                 ],
             ];
         }
@@ -406,7 +406,7 @@ function wcwp_privacy_erase_events($email_address, $page = 1) {
                 )
             );
             $removed = count($ids);
-            $messages[] = __('WhatsApp messaging events were anonymised. Aggregate counts are preserved.', 'woochat-pro');
+            $messages[] = __('WhatsApp messaging events were anonymised. Aggregate counts are preserved.', 'woochat');
         }
     }
     return [
@@ -505,7 +505,7 @@ function wcwp_privacy_erase_optout($email_address, $page = 1) {
             }
         }
         if ($retained > 0) {
-            $messages[] = __('Suppression list entries are retained to keep your prior opt-out request honoured. They will not be used to contact you.', 'woochat-pro');
+            $messages[] = __('Suppression list entries are retained to keep your prior opt-out request honoured. They will not be used to contact you.', 'woochat');
         }
     }
     return [

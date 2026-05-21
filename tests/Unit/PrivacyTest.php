@@ -43,7 +43,7 @@ final class PrivacyTest extends TestCase
         ];
         $item = \wcwp_privacy_format_event_row($row);
 
-        $this->assertSame('woochat-pro-events', $item['group_id']);
+        $this->assertSame('woochat-events', $item['group_id']);
         $this->assertSame('wcwp-event-evt_123', $item['item_id']);
         $this->assertNotSame('', $item['group_label']);
 
@@ -83,7 +83,7 @@ final class PrivacyTest extends TestCase
         ];
         $item = \wcwp_privacy_format_cart_row($row);
 
-        $this->assertSame('woochat-pro-carts', $item['group_id']);
+        $this->assertSame('woochat-carts', $item['group_id']);
         $this->assertSame('wcwp-cart-7', $item['item_id']);
 
         $byName = [];

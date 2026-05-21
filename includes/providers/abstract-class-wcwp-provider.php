@@ -1,6 +1,6 @@
 <?php
 /**
- * Abstract base for WooChat Pro WhatsApp providers.
+ * Abstract base for WooChat WhatsApp providers.
  *
  * Each concrete provider speaks one external API (Twilio, Meta Cloud,
  * 360dialog, etc.) and is responsible for: validating its own

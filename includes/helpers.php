@@ -316,14 +316,14 @@ function wcwp_sanitize_json_faq($value) {
  */
 function wcwp_get_log_file() {
     $upload_dir = wp_upload_dir();
-    $log_dir    = $upload_dir['basedir'] . '/woochat-pro';
+    $log_dir    = $upload_dir['basedir'] . '/woochat';
     if ( ! file_exists( $log_dir ) ) {
         wp_mkdir_p( $log_dir );
         // Protect against direct browsing.
         @file_put_contents( $log_dir . '/.htaccess', 'deny from all' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
         @file_put_contents( $log_dir . '/index.php', '<?php // Silence is golden.' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
     }
-    return $log_dir . '/woochat-pro.log';
+    return $log_dir . '/woochat.log';
 }
 
 function wcwp_normalize_phone($phone) {

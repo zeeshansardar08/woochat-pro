@@ -97,15 +97,15 @@ function wcwp_campaign_create($args) {
     $segment_type = isset($args['segment_type']) ? sanitize_key($args['segment_type']) : '';
     $segment_meta = isset($args['segment_meta']) && is_array($args['segment_meta']) ? $args['segment_meta'] : [];
 
-    if ($name === '')     return new WP_Error('wcwp_campaign_name_required', __('Campaign name is required.', 'woochat-pro'));
-    if ($template === '') return new WP_Error('wcwp_campaign_template_required', __('Message template is required.', 'woochat-pro'));
+    if ($name === '')     return new WP_Error('wcwp_campaign_name_required', __('Campaign name is required.', 'woochat'));
+    if ($template === '') return new WP_Error('wcwp_campaign_template_required', __('Message template is required.', 'woochat'));
     if (!array_key_exists($segment_type, wcwp_campaign_segment_types())) {
-        return new WP_Error('wcwp_campaign_segment_invalid', __('Unknown segment.', 'woochat-pro'));
+        return new WP_Error('wcwp_campaign_segment_invalid', __('Unknown segment.', 'woochat'));
     }
 
     $recipients = wcwp_campaign_resolve_segment($segment_type, $segment_meta);
     if (empty($recipients)) {
-        return new WP_Error('wcwp_campaign_no_recipients', __('No matching customers — campaign not created.', 'woochat-pro'));
+        return new WP_Error('wcwp_campaign_no_recipients', __('No matching customers — campaign not created.', 'woochat'));
     }
 
     $now = current_time('mysql');
@@ -121,7 +121,7 @@ function wcwp_campaign_create($args) {
 
     $campaign_id = (int) $wpdb->insert_id;
     if ($campaign_id <= 0) {
-        return new WP_Error('wcwp_campaign_insert_failed', __('Could not create campaign.', 'woochat-pro'));
+        return new WP_Error('wcwp_campaign_insert_failed', __('Could not create campaign.', 'woochat'));
     }
 
     $rt = wcwp_campaign_recipients_table_name();
@@ -171,8 +171,8 @@ function wcwp_campaign_list($limit = 20) {
 
 function wcwp_campaign_segment_types() {
     return [
-        'all_customers' => __('All customers with phone', 'woochat-pro'),
-        'recent_orders' => __('Customers who ordered recently', 'woochat-pro'),
+        'all_customers' => __('All customers with phone', 'woochat'),
+        'recent_orders' => __('Customers who ordered recently', 'woochat'),
     ];
 }
 
@@ -323,7 +323,7 @@ function wcwp_campaign_process_chunk($campaign_id) {
             $wpdb->update($rt, [
                 'status'        => 'failed',
                 'attempt_count' => (int) $row['attempt_count'] + 1,
-                'last_error'    => __('Provider returned failure.', 'woochat-pro'),
+                'last_error'    => __('Provider returned failure.', 'woochat'),
             ], ['id' => $row['id']], ['%s', '%d', '%s'], ['%d']);
             $failed++;
         }

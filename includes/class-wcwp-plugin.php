@@ -1,6 +1,6 @@
 <?php
 /**
- * WooChat Pro plugin entry-point class.
+ * WooChat plugin entry-point class.
  *
  * Owns bootstrap orchestration: HPOS compat declaration, text domain
  * loading, WooCommerce-dependency gate, module require chain, activation
@@ -66,7 +66,7 @@ final class Plugin {
     }
 
     public function load_textdomain() {
-        load_plugin_textdomain('woochat-pro', false, dirname(plugin_basename(WCWP_PLUGIN_FILE)) . '/languages');
+        load_plugin_textdomain('woochat', false, dirname(plugin_basename(WCWP_PLUGIN_FILE)) . '/languages');
     }
 
     /**
@@ -138,8 +138,8 @@ final class Plugin {
             add_action('admin_notices', function() {
                 if (!current_user_can('activate_plugins')) return;
                 echo '<div class="notice notice-error"><p><strong>'
-                    . esc_html__('WooChat Pro', 'woochat-pro') . '</strong> '
-                    . esc_html__('was deactivated because WooCommerce is not active.', 'woochat-pro')
+                    . esc_html__('WooChat', 'woochat') . '</strong> '
+                    . esc_html__('was deactivated because WooCommerce is not active.', 'woochat')
                     . '</p></div>';
             });
         }
@@ -198,11 +198,11 @@ final class Plugin {
                 deactivate_plugins(plugin_basename(WCWP_PLUGIN_FILE));
                 $plugins_url = network_admin_url('plugins.php');
                 wp_die(
-                    '<p><strong>' . esc_html__('WooChat Pro', 'woochat-pro') . '</strong> '
-                    . esc_html__('requires WooCommerce to be network-activated.', 'woochat-pro')
+                    '<p><strong>' . esc_html__('WooChat', 'woochat') . '</strong> '
+                    . esc_html__('requires WooCommerce to be network-activated.', 'woochat')
                     . '</p><p><a href="' . esc_url($plugins_url) . '">'
-                    . esc_html__('Return to Plugins', 'woochat-pro') . '</a></p>',
-                    esc_html__('WooChat Pro', 'woochat-pro'),
+                    . esc_html__('Return to Plugins', 'woochat') . '</a></p>',
+                    esc_html__('WooChat', 'woochat'),
                     ['response' => 200]
                 );
             }
@@ -210,11 +210,11 @@ final class Plugin {
         deactivate_plugins(plugin_basename(WCWP_PLUGIN_FILE));
         $plugins_url = is_network_admin() ? network_admin_url('plugins.php') : admin_url('plugins.php');
         wp_die(
-            '<p><strong>' . esc_html__('WooChat Pro', 'woochat-pro') . '</strong> '
-            . esc_html__('requires WooCommerce to be installed and active.', 'woochat-pro')
+            '<p><strong>' . esc_html__('WooChat', 'woochat') . '</strong> '
+            . esc_html__('requires WooCommerce to be installed and active.', 'woochat')
             . '</p><p><a href="' . esc_url($plugins_url) . '">'
-            . esc_html__('Return to Plugins', 'woochat-pro') . '</a></p>',
-            esc_html__('WooChat Pro', 'woochat-pro'),
+            . esc_html__('Return to Plugins', 'woochat') . '</a></p>',
+            esc_html__('WooChat', 'woochat'),
             ['response' => 200]
         );
     }
@@ -226,14 +226,14 @@ final class Plugin {
         if ($is_installed) {
             if (current_user_can('activate_plugins')) {
                 $url = wp_nonce_url(self_admin_url('plugins.php?action=activate&plugin=' . $plugin_file), 'activate-plugin_' . $plugin_file);
-                return '<a href="' . esc_url($url) . '">' . esc_html__('Activate WooCommerce', 'woochat-pro') . '</a>';
+                return '<a href="' . esc_url($url) . '">' . esc_html__('Activate WooCommerce', 'woochat') . '</a>';
             }
             return '';
         }
 
         if (current_user_can('install_plugins')) {
             $url = wp_nonce_url(self_admin_url('update.php?action=install-plugin&plugin=woocommerce'), 'install-plugin_woocommerce');
-            return '<a href="' . esc_url($url) . '">' . esc_html__('Install WooCommerce', 'woochat-pro') . '</a>';
+            return '<a href="' . esc_url($url) . '">' . esc_html__('Install WooCommerce', 'woochat') . '</a>';
         }
 
         return '';
@@ -242,8 +242,8 @@ final class Plugin {
     private function dependency_notice_message() {
         $link = $this->dependency_link();
         $tail = $link ? ' ' . $link . '.' : '';
-        return '<strong>' . esc_html__('WooChat Pro', 'woochat-pro') . '</strong> '
-            . esc_html__('requires WooCommerce. Please install and activate WooCommerce.', 'woochat-pro')
+        return '<strong>' . esc_html__('WooChat', 'woochat') . '</strong> '
+            . esc_html__('requires WooCommerce. Please install and activate WooCommerce.', 'woochat')
             . $tail;
     }
 }

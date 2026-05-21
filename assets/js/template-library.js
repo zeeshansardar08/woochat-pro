@@ -1,4 +1,4 @@
-// WooChat Pro – Template Library modal
+// WooChat – Template Library modal
 //
 // Wires the "Browse template library" button next to each message
 // textarea (Order, Cart Recovery, Follow-up) to a single shared modal

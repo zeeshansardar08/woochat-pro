@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="WooChat Pro">
+<ruleset name="WooChat">
     <description>
         Pragmatic coding-standards lint for CI. Focus is real bugs:
         PHP-version compatibility, output escaping, input sanitization,
@@ -12,7 +12,7 @@
     <file>./admin</file>
     <file>./blocks</file>
     <file>./templates</file>
-    <file>./woochat-pro.php</file>
+    <file>./woochat.php</file>
     <file>./uninstall.php</file>
 
     <exclude-pattern>*/vendor/*</exclude-pattern>

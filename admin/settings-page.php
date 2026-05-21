@@ -5,8 +5,8 @@ if (!defined('ABSPATH')) exit;
 add_action('admin_menu', 'wcwp_register_settings_page');
 function wcwp_register_settings_page() {
     add_menu_page(
-        __('WooChat Settings', 'woochat-pro'),
-        __('WooChat', 'woochat-pro'),
+        __('WooChat Settings', 'woochat'),
+        __('WooChat', 'woochat'),
         'manage_options',
         'wcwp-settings',
         'wcwp_render_settings_page',
@@ -68,10 +68,10 @@ function wcwp_register_settings() {
 add_action('wp_ajax_wcwp_dismiss_onboarding', 'wcwp_ajax_dismiss_onboarding');
 function wcwp_ajax_dismiss_onboarding() {
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat')], 403);
     }
     if (!check_ajax_referer('wcwp_dismiss_onboarding', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
     }
     update_option('wcwp_onboarding_completed', 'yes', false);
     wp_send_json_success();
@@ -80,10 +80,10 @@ function wcwp_ajax_dismiss_onboarding() {
 add_action('wp_ajax_wcwp_create_campaign', 'wcwp_ajax_create_campaign');
 function wcwp_ajax_create_campaign() {
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat')], 403);
     }
     if (!check_ajax_referer('wcwp_campaigns', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
     }
 
     $name         = isset($_POST['name']) ? wcwp_sanitize_text(wp_unslash($_POST['name'])) : '';
@@ -110,16 +110,16 @@ function wcwp_ajax_create_campaign() {
 add_action('wp_ajax_wcwp_campaign_status', 'wcwp_ajax_campaign_status');
 function wcwp_ajax_campaign_status() {
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat')], 403);
     }
     if (!check_ajax_referer('wcwp_campaigns', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
     }
 
     $id = isset($_GET['campaign_id']) ? (int) $_GET['campaign_id'] : 0;
     $campaign = wcwp_campaign_get($id);
     if (!$campaign) {
-        wp_send_json_error(['message' => __('Not found', 'woochat-pro')], 404);
+        wp_send_json_error(['message' => __('Not found', 'woochat')], 404);
     }
 
     wp_send_json_success([
@@ -135,15 +135,15 @@ function wcwp_ajax_campaign_status() {
 add_action('wp_ajax_wcwp_save_onboarding_credentials', 'wcwp_ajax_save_onboarding_credentials');
 function wcwp_ajax_save_onboarding_credentials() {
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat')], 403);
     }
     if (!check_ajax_referer('wcwp_save_onboarding', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
     }
 
     $provider_raw = isset($_POST['provider']) ? sanitize_text_field(wp_unslash($_POST['provider'])) : '';
     if (!in_array($provider_raw, ['twilio', 'cloud'], true)) {
-        wp_send_json_error(['message' => __('Choose a provider before continuing.', 'woochat-pro')], 422);
+        wp_send_json_error(['message' => __('Choose a provider before continuing.', 'woochat')], 422);
     }
 
     $errors = [];
@@ -153,9 +153,9 @@ function wcwp_ajax_save_onboarding_credentials() {
         $token = isset($_POST['twilio_token']) ? wcwp_sanitize_text(wp_unslash($_POST['twilio_token'])) : '';
         $from  = isset($_POST['twilio_from'])  ? wcwp_sanitize_text(wp_unslash($_POST['twilio_from']))  : '';
 
-        if ($sid === '')   { $errors['twilio_sid']   = __('Twilio Account SID is required.', 'woochat-pro'); }
-        if ($token === '') { $errors['twilio_token'] = __('Twilio Auth Token is required.', 'woochat-pro'); }
-        if ($from === '')  { $errors['twilio_from']  = __('From Number is required.', 'woochat-pro'); }
+        if ($sid === '')   { $errors['twilio_sid']   = __('Twilio Account SID is required.', 'woochat'); }
+        if ($token === '') { $errors['twilio_token'] = __('Twilio Auth Token is required.', 'woochat'); }
+        if ($from === '')  { $errors['twilio_from']  = __('From Number is required.', 'woochat'); }
 
         if (!empty($errors)) {
             wp_send_json_error(['fields' => $errors], 422);
@@ -170,9 +170,9 @@ function wcwp_ajax_save_onboarding_credentials() {
         $phone = isset($_POST['cloud_phone_id']) ? wcwp_sanitize_text(wp_unslash($_POST['cloud_phone_id'])) : '';
         $from  = isset($_POST['cloud_from'])     ? wcwp_sanitize_text(wp_unslash($_POST['cloud_from']))     : '';
 
-        if ($token === '') { $errors['cloud_token']    = __('Access Token is required.', 'woochat-pro'); }
-        if ($phone === '') { $errors['cloud_phone_id'] = __('Phone Number ID is required.', 'woochat-pro'); }
-        if ($from === '')  { $errors['cloud_from']     = __('From Number is required.', 'woochat-pro'); }
+        if ($token === '') { $errors['cloud_token']    = __('Access Token is required.', 'woochat'); }
+        if ($phone === '') { $errors['cloud_phone_id'] = __('Phone Number ID is required.', 'woochat'); }
+        if ($from === '')  { $errors['cloud_from']     = __('From Number is required.', 'woochat'); }
 
         if (!empty($errors)) {
             wp_send_json_error(['fields' => $errors], 422);
@@ -195,18 +195,18 @@ function wcwp_render_settings_page() {
     wp_enqueue_script('wcwp-campaigns-js', WCWP_URL . 'assets/js/campaigns.js', [], WCWP_VERSION, true);
     wp_enqueue_script('wcwp-template-library-js', WCWP_URL . 'assets/js/template-library.js', [], WCWP_VERSION, true);
     wp_localize_script('wcwp-template-library-js', 'wcwpTemplateLibraryI18n', [
-        'empty' => __('No templates available for this section yet.', 'woochat-pro'),
+        'empty' => __('No templates available for this section yet.', 'woochat'),
     ]);
     wp_localize_script('wcwp-campaigns-js', 'wcwpCampaigns', [
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'nonce'   => wp_create_nonce('wcwp_campaigns'),
         'i18n'    => [
-            'submitting'   => __('Creating campaign…', 'woochat-pro'),
-            'create'       => __('Create campaign', 'woochat-pro'),
-            'genericError' => __('Could not create campaign. Please try again.', 'woochat-pro'),
-            'completed'    => __('Completed', 'woochat-pro'),
-            'running'      => __('Running', 'woochat-pro'),
-            'queued'       => __('Queued', 'woochat-pro'),
+            'submitting'   => __('Creating campaign…', 'woochat'),
+            'create'       => __('Create campaign', 'woochat'),
+            'genericError' => __('Could not create campaign. Please try again.', 'woochat'),
+            'completed'    => __('Completed', 'woochat'),
+            'running'      => __('Running', 'woochat'),
+            'queued'       => __('Queued', 'woochat'),
         ],
     ]);
     wp_localize_script('wcwp-admin-premium-js', 'wcwpAdminData', [
@@ -215,19 +215,19 @@ function wcwp_render_settings_page() {
         'licenseNonce' => wp_create_nonce('wcwp_license_nonce'),
         'testNonce' => wp_create_nonce('wcwp_test_message'),
         'licenseLabels' => [
-            'keyRequired'        => __('Key required', 'woochat-pro'),
-            'activating'         => __('Activating…', 'woochat-pro'),
-            'active'             => __('Active', 'woochat-pro'),
-            'activationFailed'   => __('Activation failed', 'woochat-pro'),
-            'deactivating'       => __('Deactivating…', 'woochat-pro'),
-            'inactive'           => __('Inactive', 'woochat-pro'),
-            'deactivationFailed' => __('Deactivation failed', 'woochat-pro'),
+            'keyRequired'        => __('Key required', 'woochat'),
+            'activating'         => __('Activating…', 'woochat'),
+            'active'             => __('Active', 'woochat'),
+            'activationFailed'   => __('Activation failed', 'woochat'),
+            'deactivating'       => __('Deactivating…', 'woochat'),
+            'inactive'           => __('Inactive', 'woochat'),
+            'deactivationFailed' => __('Deactivation failed', 'woochat'),
         ],
-        'logClearConfirm'    => __('Clear the log file? This cannot be undone.', 'woochat-pro'),
+        'logClearConfirm'    => __('Clear the log file? This cannot be undone.', 'woochat'),
         'webhookTestNonce'   => wp_create_nonce('wcwp_webhook_test'),
-        'webhookDeleteConfirm' => __('Delete this webhook? Receivers will stop getting events immediately.', 'woochat-pro'),
-        'webhookTesting'     => __('Testing…', 'woochat-pro'),
-        'webhookTestLabel'   => __('Test fire', 'woochat-pro'),
+        'webhookDeleteConfirm' => __('Delete this webhook? Receivers will stop getting events immediately.', 'woochat'),
+        'webhookTesting'     => __('Testing…', 'woochat'),
+        'webhookTestLabel'   => __('Test fire', 'woochat'),
     ]);
     // Onboarding wizard renders once per install — Skip/Finish persists the
     // dismissal flag via admin-ajax, after which the modal stops re-mounting.
@@ -240,10 +240,10 @@ function wcwp_render_settings_page() {
             'dismissNonce' => wp_create_nonce('wcwp_dismiss_onboarding'),
             'saveNonce'    => wp_create_nonce('wcwp_save_onboarding'),
             'i18n'         => [
-                'saveError'    => __('Could not save. Please check the highlighted fields.', 'woochat-pro'),
-                'networkError' => __('Network error. Please try again.', 'woochat-pro'),
-                'saving'       => __('Saving…', 'woochat-pro'),
-                'next'         => __('Next', 'woochat-pro'),
+                'saveError'    => __('Could not save. Please check the highlighted fields.', 'woochat'),
+                'networkError' => __('Network error. Please try again.', 'woochat'),
+                'saving'       => __('Saving…', 'woochat'),
+                'next'         => __('Next', 'woochat'),
             ],
         ]);
     }
@@ -267,45 +267,45 @@ function wcwp_render_settings_page() {
             <div class="wcwp-onboarding-progress"><div class="wcwp-onboarding-progress-inner"></div></div>
 
             <div class="wcwp-onboarding-step" data-step="welcome">
-                <h2><?php esc_html_e('Welcome to WooChat Pro!', 'woochat-pro'); ?></h2>
-                <p><?php esc_html_e("Let's connect your WhatsApp account in a couple of steps.", 'woochat-pro'); ?></p>
+                <h2><?php esc_html_e('Welcome to WooChat!', 'woochat'); ?></h2>
+                <p><?php esc_html_e("Let's connect your WhatsApp account in a couple of steps.", 'woochat'); ?></p>
             </div>
 
             <div class="wcwp-onboarding-step" data-step="provider">
-                <h2><?php esc_html_e('Choose your WhatsApp provider', 'woochat-pro'); ?></h2>
-                <p><?php esc_html_e('Pick the API you have an account with. You can change this later.', 'woochat-pro'); ?></p>
+                <h2><?php esc_html_e('Choose your WhatsApp provider', 'woochat'); ?></h2>
+                <p><?php esc_html_e('Pick the API you have an account with. You can change this later.', 'woochat'); ?></p>
                 <div class="wcwp-onboarding-provider-choices">
                     <label class="wcwp-onboarding-provider-choice">
                         <input type="radio" name="wcwp_ob_provider" value="twilio" <?php checked($ob_provider, 'twilio'); ?> />
-                        <span class="wcwp-onboarding-provider-title"><?php esc_html_e('Twilio', 'woochat-pro'); ?></span>
-                        <span class="wcwp-onboarding-provider-desc"><?php esc_html_e('WhatsApp via Twilio Programmable Messaging.', 'woochat-pro'); ?></span>
+                        <span class="wcwp-onboarding-provider-title"><?php esc_html_e('Twilio', 'woochat'); ?></span>
+                        <span class="wcwp-onboarding-provider-desc"><?php esc_html_e('WhatsApp via Twilio Programmable Messaging.', 'woochat'); ?></span>
                     </label>
                     <label class="wcwp-onboarding-provider-choice">
                         <input type="radio" name="wcwp_ob_provider" value="cloud" <?php checked($ob_provider, 'cloud'); ?> />
-                        <span class="wcwp-onboarding-provider-title"><?php esc_html_e('Meta Cloud API', 'woochat-pro'); ?></span>
-                        <span class="wcwp-onboarding-provider-desc"><?php esc_html_e('WhatsApp Business Platform direct from Meta.', 'woochat-pro'); ?></span>
+                        <span class="wcwp-onboarding-provider-title"><?php esc_html_e('Meta Cloud API', 'woochat'); ?></span>
+                        <span class="wcwp-onboarding-provider-desc"><?php esc_html_e('WhatsApp Business Platform direct from Meta.', 'woochat'); ?></span>
                     </label>
                 </div>
             </div>
 
             <div class="wcwp-onboarding-step" data-step="credentials">
-                <h2><?php esc_html_e('Enter your credentials', 'woochat-pro'); ?></h2>
-                <p class="wcwp-onboarding-step-hint" data-provider-hint="twilio"><?php esc_html_e('Find these in your Twilio Console.', 'woochat-pro'); ?></p>
-                <p class="wcwp-onboarding-step-hint" data-provider-hint="cloud"><?php esc_html_e('Find these in your Meta for Developers app.', 'woochat-pro'); ?></p>
+                <h2><?php esc_html_e('Enter your credentials', 'woochat'); ?></h2>
+                <p class="wcwp-onboarding-step-hint" data-provider-hint="twilio"><?php esc_html_e('Find these in your Twilio Console.', 'woochat'); ?></p>
+                <p class="wcwp-onboarding-step-hint" data-provider-hint="cloud"><?php esc_html_e('Find these in your Meta for Developers app.', 'woochat'); ?></p>
 
                 <div class="wcwp-onboarding-fields" data-provider-fields="twilio">
                     <div class="wcwp-onboarding-field">
-                        <label for="wcwp_ob_twilio_sid"><?php esc_html_e('Account SID', 'woochat-pro'); ?></label>
+                        <label for="wcwp_ob_twilio_sid"><?php esc_html_e('Account SID', 'woochat'); ?></label>
                         <input type="text" id="wcwp_ob_twilio_sid" name="twilio_sid" value="<?php echo esc_attr($ob_twilio_sid); ?>" autocomplete="off" />
                         <span class="wcwp-onboarding-field-error" data-error-for="twilio_sid"></span>
                     </div>
                     <div class="wcwp-onboarding-field">
-                        <label for="wcwp_ob_twilio_token"><?php esc_html_e('Auth Token', 'woochat-pro'); ?></label>
+                        <label for="wcwp_ob_twilio_token"><?php esc_html_e('Auth Token', 'woochat'); ?></label>
                         <input type="password" id="wcwp_ob_twilio_token" name="twilio_token" value="<?php echo esc_attr($ob_twilio_token); ?>" autocomplete="off" />
                         <span class="wcwp-onboarding-field-error" data-error-for="twilio_token"></span>
                     </div>
                     <div class="wcwp-onboarding-field">
-                        <label for="wcwp_ob_twilio_from"><?php esc_html_e('From Number', 'woochat-pro'); ?></label>
+                        <label for="wcwp_ob_twilio_from"><?php esc_html_e('From Number', 'woochat'); ?></label>
                         <input type="text" id="wcwp_ob_twilio_from" name="twilio_from" value="<?php echo esc_attr($ob_twilio_from); ?>" placeholder="whatsapp:+14155238886" autocomplete="off" />
                         <span class="wcwp-onboarding-field-error" data-error-for="twilio_from"></span>
                     </div>
@@ -313,17 +313,17 @@ function wcwp_render_settings_page() {
 
                 <div class="wcwp-onboarding-fields" data-provider-fields="cloud">
                     <div class="wcwp-onboarding-field">
-                        <label for="wcwp_ob_cloud_token"><?php esc_html_e('Access Token', 'woochat-pro'); ?></label>
+                        <label for="wcwp_ob_cloud_token"><?php esc_html_e('Access Token', 'woochat'); ?></label>
                         <input type="password" id="wcwp_ob_cloud_token" name="cloud_token" value="<?php echo esc_attr($ob_cloud_token); ?>" autocomplete="off" />
                         <span class="wcwp-onboarding-field-error" data-error-for="cloud_token"></span>
                     </div>
                     <div class="wcwp-onboarding-field">
-                        <label for="wcwp_ob_cloud_phone_id"><?php esc_html_e('Phone Number ID', 'woochat-pro'); ?></label>
+                        <label for="wcwp_ob_cloud_phone_id"><?php esc_html_e('Phone Number ID', 'woochat'); ?></label>
                         <input type="text" id="wcwp_ob_cloud_phone_id" name="cloud_phone_id" value="<?php echo esc_attr($ob_cloud_phone); ?>" autocomplete="off" />
                         <span class="wcwp-onboarding-field-error" data-error-for="cloud_phone_id"></span>
                     </div>
                     <div class="wcwp-onboarding-field">
-                        <label for="wcwp_ob_cloud_from"><?php esc_html_e('From Number', 'woochat-pro'); ?></label>
+                        <label for="wcwp_ob_cloud_from"><?php esc_html_e('From Number', 'woochat'); ?></label>
                         <input type="text" id="wcwp_ob_cloud_from" name="cloud_from" value="<?php echo esc_attr($ob_cloud_from); ?>" placeholder="+14155238886" autocomplete="off" />
                         <span class="wcwp-onboarding-field-error" data-error-for="cloud_from"></span>
                     </div>
@@ -333,21 +333,21 @@ function wcwp_render_settings_page() {
             </div>
 
             <div class="wcwp-onboarding-step" data-step="done">
-                <h2><?php esc_html_e('All set!', 'woochat-pro'); ?></h2>
-                <p><?php esc_html_e('Your provider is connected. Visit the tabs below to enable cart recovery, the chatbot, and follow-ups.', 'woochat-pro'); ?></p>
+                <h2><?php esc_html_e('All set!', 'woochat'); ?></h2>
+                <p><?php esc_html_e('Your provider is connected. Visit the tabs below to enable cart recovery, the chatbot, and follow-ups.', 'woochat'); ?></p>
             </div>
 
             <div class="wcwp-onboarding-buttons">
-                <button type="button" class="wcwp-onboarding-prev"><?php esc_html_e('Back', 'woochat-pro'); ?></button>
-                <button type="button" class="wcwp-onboarding-next"><?php esc_html_e('Next', 'woochat-pro'); ?></button>
-                <button type="button" class="wcwp-onboarding-finish"><?php esc_html_e('Finish', 'woochat-pro'); ?></button>
-                <button type="button" class="wcwp-onboarding-skip"><?php esc_html_e('Skip', 'woochat-pro'); ?></button>
+                <button type="button" class="wcwp-onboarding-prev"><?php esc_html_e('Back', 'woochat'); ?></button>
+                <button type="button" class="wcwp-onboarding-next"><?php esc_html_e('Next', 'woochat'); ?></button>
+                <button type="button" class="wcwp-onboarding-finish"><?php esc_html_e('Finish', 'woochat'); ?></button>
+                <button type="button" class="wcwp-onboarding-skip"><?php esc_html_e('Skip', 'woochat'); ?></button>
             </div>
         </div>
     </div>
     <?php endif; ?>
     <div class="wcwp-admin-premium-wrap">
-        <h1><?php esc_html_e('WooChat – WhatsApp Settings', 'woochat-pro'); ?></h1>
+        <h1><?php esc_html_e('WooChat – WhatsApp Settings', 'woochat'); ?></h1>
         <div class="wcwp-dashboard-widget">
             <?php
             $dash_totals = wcwp_analytics_get_totals();
@@ -358,39 +358,39 @@ function wcwp_render_settings_page() {
                 <div class="wcwp-dashboard-widget-stat">
                     <span class="dashicons dashicons-format-chat"></span>
                     <div class="wcwp-stat-value"><?php echo esc_html(number_format_i18n($dash_totals['sent'])); ?></div>
-                    <div class="wcwp-stat-label"><?php esc_html_e('Messages Sent', 'woochat-pro'); ?></div>
+                    <div class="wcwp-stat-label"><?php esc_html_e('Messages Sent', 'woochat'); ?></div>
                 </div>
                 <div class="wcwp-dashboard-widget-stat">
                     <span class="dashicons dashicons-yes"></span>
                     <div class="wcwp-stat-value"><?php echo esc_html($dash_open_rate); ?></div>
-                    <div class="wcwp-stat-label"><?php esc_html_e('Open Rate', 'woochat-pro'); ?></div>
+                    <div class="wcwp-stat-label"><?php esc_html_e('Open Rate', 'woochat'); ?></div>
                 </div>
                 <div class="wcwp-dashboard-widget-stat">
                     <span class="dashicons dashicons-admin-network"></span>
                     <div class="wcwp-stat-value"><?php echo esc_html(wcwp_license_status_label($dash_license)); ?></div>
-                    <div class="wcwp-stat-label"><?php esc_html_e('License Status', 'woochat-pro'); ?></div>
+                    <div class="wcwp-stat-label"><?php esc_html_e('License Status', 'woochat'); ?></div>
                 </div>
             </div>
             <div class="wcwp-dashboard-widget-actions">
-                <a href="#wcwp-tab-content-messaging" class="button"><?php esc_html_e('Send Test Message', 'woochat-pro'); ?></a>
-                <a href="#wcwp-tab-content-license" class="button"><?php esc_html_e('Manage License', 'woochat-pro'); ?></a>
+                <a href="#wcwp-tab-content-messaging" class="button"><?php esc_html_e('Send Test Message', 'woochat'); ?></a>
+                <a href="#wcwp-tab-content-license" class="button"><?php esc_html_e('Manage License', 'woochat'); ?></a>
             </div>
         </div>
         <div class="wcwp-tabs" id="wcwp-tabs">
-            <button type="button" class="wcwp-tab active" data-tab="general"><?php esc_html_e('General', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="messaging"><?php esc_html_e('Messaging', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="chatbot"><?php esc_html_e('Chatbot', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="cart-recovery"><?php esc_html_e('Cart Recovery', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="scheduler"><?php esc_html_e('Scheduler', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="campaigns"><?php esc_html_e('Campaigns', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="analytics"><?php esc_html_e('Analytics', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="logs"><?php esc_html_e('Logs', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="webhooks"><?php esc_html_e('Webhooks', 'woochat-pro'); ?></button>
-            <button type="button" class="wcwp-tab" data-tab="license"><?php esc_html_e('License', 'woochat-pro'); ?></button>
+            <button type="button" class="wcwp-tab active" data-tab="general"><?php esc_html_e('General', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="messaging"><?php esc_html_e('Messaging', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="chatbot"><?php esc_html_e('Chatbot', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="cart-recovery"><?php esc_html_e('Cart Recovery', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="scheduler"><?php esc_html_e('Scheduler', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="campaigns"><?php esc_html_e('Campaigns', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="analytics"><?php esc_html_e('Analytics', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="logs"><?php esc_html_e('Logs', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="webhooks"><?php esc_html_e('Webhooks', 'woochat'); ?></button>
+            <button type="button" class="wcwp-tab" data-tab="license"><?php esc_html_e('License', 'woochat'); ?></button>
         </div>
         <div class="wcwp-plugin-splash">
             <span class="wcwp-plugin-logo">💬</span>
-            <span class="wcwp-plugin-title">WooChat Pro</span>
+            <span class="wcwp-plugin-title">WooChat</span>
         </div>
         <form method="post" action="options.php">
             <?php settings_fields('wcwp_settings_group'); ?>
@@ -412,37 +412,37 @@ function wcwp_render_settings_page() {
     <div id="wcwp-upgrade-modal">
         <div class="wcwp-upgrade-modal-content">
             <button class="wcwp-upgrade-modal-close" aria-label="Close">&times;</button>
-            <h2><?php esc_html_e('Upgrade to WooChat Pro', 'woochat-pro'); ?></h2>
-            <p><?php esc_html_e('Unlock all premium features and maximize your store\'s potential!', 'woochat-pro'); ?></p>
+            <h2><?php esc_html_e('Upgrade to WooChat Pro', 'woochat'); ?></h2>
+            <p><?php esc_html_e('Unlock all premium features and maximize your store\'s potential!', 'woochat'); ?></p>
             <table class="wcwp-comparison-table">
-                <tr><th><?php esc_html_e('Feature', 'woochat-pro'); ?></th><th><?php esc_html_e('Free', 'woochat-pro'); ?></th><th class="pro"><?php esc_html_e('Pro', 'woochat-pro'); ?></th></tr>
-                <tr><td><?php esc_html_e('Order Confirmation via WhatsApp', 'woochat-pro'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Manual Message Button', 'woochat-pro'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Cart Recovery', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Smart Chatbot Widget', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Chatbot Customizer', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Scheduled Messages', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('GPT/AI Auto Replies', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Usage Analytics', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Widget Shortcodes', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Premium Support', 'woochat-pro'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><th><?php esc_html_e('Feature', 'woochat'); ?></th><th><?php esc_html_e('Free', 'woochat'); ?></th><th class="pro"><?php esc_html_e('Pro', 'woochat'); ?></th></tr>
+                <tr><td><?php esc_html_e('Order Confirmation via WhatsApp', 'woochat'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Manual Message Button', 'woochat'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Cart Recovery', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Smart Chatbot Widget', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Chatbot Customizer', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Scheduled Messages', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('GPT/AI Auto Replies', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Usage Analytics', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Widget Shortcodes', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Premium Support', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
             </table>
-            <a href="https://zignites.com/woochat-pro" target="_blank"><button class="wcwp-upgrade-btn"><?php esc_html_e('Upgrade Now', 'woochat-pro'); ?></button></a>
-            <p style="margin-top:10px;font-size:0.97rem;color:#888;"><?php esc_html_e('Already have a license? Enter it in the License tab.', 'woochat-pro'); ?></p>
+            <a href="https://zignites.com/woochat" target="_blank"><button class="wcwp-upgrade-btn"><?php esc_html_e('Upgrade Now', 'woochat'); ?></button></a>
+            <p style="margin-top:10px;font-size:0.97rem;color:#888;"><?php esc_html_e('Already have a license? Enter it in the License tab.', 'woochat'); ?></p>
         </div>
     </div>
     <div class="wcwp-support-form" id="wcwp-support-form">
-        <h2><?php esc_html_e('Contact Support', 'woochat-pro'); ?></h2>
-        <p><?php esc_html_e('Reach our team using one of the channels below.', 'woochat-pro'); ?></p>
+        <h2><?php esc_html_e('Contact Support', 'woochat'); ?></h2>
+        <p><?php esc_html_e('Reach our team using one of the channels below.', 'woochat'); ?></p>
         <div style="margin-top:12px;font-size:0.97rem;color:#888;">
             <?php
             printf(
                 /* translators: %s: support email link */
-                esc_html__('Email us at %s', 'woochat-pro'),
+                esc_html__('Email us at %s', 'woochat'),
                 '<a href="mailto:support@zignites.com">support@zignites.com</a>'
             );
             ?><br>
-            <a href="https://zignites.com/feature-request" target="_blank" rel="noopener"><?php esc_html_e('Suggest a Feature', 'woochat-pro'); ?></a> &nbsp;|&nbsp; <a href="https://zignites.com/bug-report" target="_blank" rel="noopener"><?php esc_html_e('Report a Bug', 'woochat-pro'); ?></a>
+            <a href="https://zignites.com/feature-request" target="_blank" rel="noopener"><?php esc_html_e('Suggest a Feature', 'woochat'); ?></a> &nbsp;|&nbsp; <a href="https://zignites.com/bug-report" target="_blank" rel="noopener"><?php esc_html_e('Report a Bug', 'woochat'); ?></a>
         </div>
     </div>
     <?php

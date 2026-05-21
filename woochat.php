@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name: WooChat Pro – WhatsApp for WooCommerce
- * Plugin URI:  https://zignites.com/woochat-pro
- * Description: Sends WhatsApp messages when a WooCommerce order is placed.
- * Version:     1.0.1
+ * Plugin Name: WooChat – WhatsApp Order Notifications & Chat for WooCommerce
+ * Plugin URI:  https://zignites.com/woochat
+ * Description: Send WhatsApp order notifications, add a chat widget, and engage WooCommerce customers via WhatsApp. Supports Twilio and WhatsApp Cloud API.
+ * Version:     1.0.0
  * Author:      Zignite
  * Author URI:  https://zignites.com
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: woochat-pro
+ * Text Domain: woochat
  * Domain Path: /languages
  * Requires Plugins: woocommerce
  * Requires at least: 6.0
@@ -18,7 +18,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WCWP_VERSION', '1.0.1' );
+define( 'WCWP_VERSION', '1.0.0' );
 define( 'WCWP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WCWP_URL', plugin_dir_url( __FILE__ ) );
 define( 'WCWP_PLUGIN_FILE', __FILE__ );

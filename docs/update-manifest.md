@@ -1,6 +1,6 @@
 # Update manifest
 
-WooChat Pro's in-plugin updater (`includes/update-checker.php`) fetches a JSON
+WooChat's in-plugin updater (`includes/update-checker.php`) fetches a JSON
 manifest from the URL returned by `wcwp_update_api_url()` and offers an update
 when its `version` is greater than the installed `WCWP_VERSION`.
 
@@ -12,12 +12,12 @@ The updater resolves the manifest URL in this order:
    sites at a real production endpoint:
 
    ```php
-   define( 'WCWP_UPDATE_API_URL', 'https://example.com/woochat-pro/update.json' );
+   define( 'WCWP_UPDATE_API_URL', 'https://example.com/woochat/update.json' );
    ```
 
 2. **`.local` short-circuit** — when no constant is set and the site is detected
    as local (`wp_get_environment_type() === 'local'` or hostname contains
-   `.local`), the updater fetches `home_url('/woochat-pro-update.json')` so
+   `.local`), the updater fetches `home_url('/woochat-update.json')` so
    developers can drop a manifest at the site root for testing.
 
 3. **`wcwp_update_api_url` filter** — wraps the resolved URL. Site/theme code
@@ -25,7 +25,7 @@ The updater resolves the manifest URL in this order:
 
    ```php
    add_filter( 'wcwp_update_api_url', function ( $url ) {
-       return 'https://staging.example.com/woochat-pro/update.json';
+       return 'https://staging.example.com/woochat/update.json';
    } );
    ```
 
@@ -45,7 +45,7 @@ Optional fields surfaced in the "View details" modal via `plugins_api`:
 
 | Field      | Type   | Notes                                                |
 | ---------- | ------ | ---------------------------------------------------- |
-| `name`     | string | Defaults to `WooChat Pro`.                           |
+| `name`     | string | Defaults to `WooChat`.                           |
 | `author`   | string | Defaults to `Zignite`.                               |
 | `homepage` | string | Plugin homepage link.                                |
 | `requires` | string | Minimum WordPress version.                           |

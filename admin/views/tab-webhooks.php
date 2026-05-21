@@ -8,33 +8,33 @@ $wcwp_wh_msg       = isset($_GET['wcwp_webhook_msg']) ? sanitize_text_field(wp_u
 $wcwp_wh_post_url  = admin_url('admin-post.php');
 ?>
 <div id="wcwp-tab-content-webhooks" class="wcwp-tab-content" style="display:none;">
-    <h2><?php esc_html_e('Webhooks', 'woochat-pro'); ?></h2>
+    <h2><?php esc_html_e('Webhooks', 'woochat'); ?></h2>
     <p class="description">
-        <?php esc_html_e('Pipe plugin events to Zapier, Make, n8n, or your own backend. Each request is signed with HMAC-SHA256 — receivers verify by recomputing the signature with the per-webhook secret.', 'woochat-pro'); ?>
+        <?php esc_html_e('Pipe plugin events to Zapier, Make, n8n, or your own backend. Each request is signed with HMAC-SHA256 — receivers verify by recomputing the signature with the per-webhook secret.', 'woochat'); ?>
     </p>
 
     <?php if ($wcwp_wh_msg === 'added') : ?>
-        <div class="notice notice-success is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Webhook saved.', 'woochat-pro'); ?></p></div>
+        <div class="notice notice-success is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Webhook saved.', 'woochat'); ?></p></div>
     <?php elseif ($wcwp_wh_msg === 'deleted') : ?>
-        <div class="notice notice-success is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Webhook deleted.', 'woochat-pro'); ?></p></div>
+        <div class="notice notice-success is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Webhook deleted.', 'woochat'); ?></p></div>
     <?php elseif ($wcwp_wh_msg === 'invalid') : ?>
-        <div class="notice notice-error is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Could not save the webhook. Check that the URL is valid and at least one event is selected.', 'woochat-pro'); ?></p></div>
+        <div class="notice notice-error is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Could not save the webhook. Check that the URL is valid and at least one event is selected.', 'woochat'); ?></p></div>
     <?php endif; ?>
 
-    <h3 style="margin-top:18px;"><?php esc_html_e('Add a webhook', 'woochat-pro'); ?></h3>
+    <h3 style="margin-top:18px;"><?php esc_html_e('Add a webhook', 'woochat'); ?></h3>
     <form method="post" action="<?php echo esc_url($wcwp_wh_post_url); ?>" style="margin-top:8px;max-width:780px;">
         <?php wp_nonce_field('wcwp_webhook_add', 'wcwp_webhook_add_nonce'); ?>
         <input type="hidden" name="action" value="wcwp_webhook_add" />
         <table class="form-table">
             <tr>
-                <th scope="row"><label for="wcwp_webhook_url"><?php esc_html_e('Endpoint URL', 'woochat-pro'); ?></label></th>
+                <th scope="row"><label for="wcwp_webhook_url"><?php esc_html_e('Endpoint URL', 'woochat'); ?></label></th>
                 <td>
                     <input type="url" name="wcwp_webhook_url" id="wcwp_webhook_url" class="regular-text" placeholder="https://hooks.example.com/wcwp" required />
-                    <p class="description"><?php esc_html_e('Must be HTTP or HTTPS. The receiver will get a JSON POST with X-WCWP-Event and X-WCWP-Signature headers.', 'woochat-pro'); ?></p>
+                    <p class="description"><?php esc_html_e('Must be HTTP or HTTPS. The receiver will get a JSON POST with X-WCWP-Event and X-WCWP-Signature headers.', 'woochat'); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php esc_html_e('Events', 'woochat-pro'); ?></th>
+                <th scope="row"><?php esc_html_e('Events', 'woochat'); ?></th>
                 <td>
                     <fieldset>
                         <?php foreach ($wcwp_wh_events as $wcwp_wh_event_key => $wcwp_wh_event_label) : ?>
@@ -45,25 +45,25 @@ $wcwp_wh_post_url  = admin_url('admin-post.php');
                             </label>
                         <?php endforeach; ?>
                     </fieldset>
-                    <p class="description"><?php esc_html_e('Select at least one event. A secret is generated automatically when the webhook is saved.', 'woochat-pro'); ?></p>
+                    <p class="description"><?php esc_html_e('Select at least one event. A secret is generated automatically when the webhook is saved.', 'woochat'); ?></p>
                 </td>
             </tr>
         </table>
-        <?php submit_button(__('Save webhook', 'woochat-pro'), 'primary', 'wcwp_webhook_submit', false); ?>
+        <?php submit_button(__('Save webhook', 'woochat'), 'primary', 'wcwp_webhook_submit', false); ?>
     </form>
 
-    <h3 style="margin-top:24px;"><?php esc_html_e('Active webhooks', 'woochat-pro'); ?></h3>
+    <h3 style="margin-top:24px;"><?php esc_html_e('Active webhooks', 'woochat'); ?></h3>
     <?php if (empty($wcwp_wh_list)) : ?>
-        <p><em><?php esc_html_e('No webhooks configured yet.', 'woochat-pro'); ?></em></p>
+        <p><em><?php esc_html_e('No webhooks configured yet.', 'woochat'); ?></em></p>
     <?php else : ?>
         <table class="widefat striped" style="margin-top:8px;">
             <thead>
                 <tr>
-                    <th><?php esc_html_e('Endpoint', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Events', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Secret', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Created', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Actions', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Endpoint', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Events', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Secret', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Created', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Actions', 'woochat'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -93,8 +93,8 @@ $wcwp_wh_post_url  = admin_url('admin-post.php');
                         <td><code style="font-size:0.82em;word-break:break-all;"><?php echo esc_html($wcwp_wh_secret); ?></code></td>
                         <td><?php echo esc_html($wcwp_wh_created); ?></td>
                         <td>
-                            <button type="button" class="button wcwp-webhook-test" data-webhook-id="<?php echo esc_attr($wcwp_wh_id); ?>"><?php esc_html_e('Test fire', 'woochat-pro'); ?></button>
-                            <a class="button wcwp-webhook-delete" href="<?php echo esc_url($wcwp_wh_delete_url); ?>" style="color:#b32d2e;"><?php esc_html_e('Delete', 'woochat-pro'); ?></a>
+                            <button type="button" class="button wcwp-webhook-test" data-webhook-id="<?php echo esc_attr($wcwp_wh_id); ?>"><?php esc_html_e('Test fire', 'woochat'); ?></button>
+                            <a class="button wcwp-webhook-delete" href="<?php echo esc_url($wcwp_wh_delete_url); ?>" style="color:#b32d2e;"><?php esc_html_e('Delete', 'woochat'); ?></a>
                             <span class="wcwp-webhook-test-result" style="display:block;margin-top:4px;font-size:0.92em;"></span>
                         </td>
                     </tr>
@@ -103,20 +103,20 @@ $wcwp_wh_post_url  = admin_url('admin-post.php');
         </table>
     <?php endif; ?>
 
-    <h3 style="margin-top:24px;"><?php esc_html_e('Recent dispatches', 'woochat-pro'); ?></h3>
+    <h3 style="margin-top:24px;"><?php esc_html_e('Recent dispatches', 'woochat'); ?></h3>
     <?php if (empty($wcwp_wh_recent)) : ?>
-        <p><em><?php esc_html_e('Nothing dispatched yet.', 'woochat-pro'); ?></em></p>
+        <p><em><?php esc_html_e('Nothing dispatched yet.', 'woochat'); ?></em></p>
     <?php else : ?>
         <table class="widefat striped" style="margin-top:8px;">
             <thead>
                 <tr>
-                    <th><?php esc_html_e('Time', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Event', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Webhook', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Status', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('HTTP', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Attempt', 'woochat-pro'); ?></th>
-                    <th><?php esc_html_e('Error', 'woochat-pro'); ?></th>
+                    <th><?php esc_html_e('Time', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Event', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Webhook', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Status', 'woochat'); ?></th>
+                    <th><?php esc_html_e('HTTP', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Attempt', 'woochat'); ?></th>
+                    <th><?php esc_html_e('Error', 'woochat'); ?></th>
                 </tr>
             </thead>
             <tbody>

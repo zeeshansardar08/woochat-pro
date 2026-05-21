@@ -2,8 +2,8 @@
 /**
  * Admin-side log viewer.
  *
- * Surfaces the plugin's log file (`wp-content/uploads/woochat-pro/
- * woochat-pro.log` — see wcwp_get_log_file()) inside the WooChat
+ * Surfaces the plugin's log file (`wp-content/uploads/woochat/
+ * woochat.log` — see wcwp_get_log_file()) inside the WooChat
  * Settings page so admins don't have to SFTP into uploads/ to debug a
  * failed send. Every write into that file already goes through the
  * shared `error_log($msg, 3, $log_file)` pattern in messaging.php and
@@ -94,9 +94,9 @@ function wcwp_log_tail_lines($file, $max_lines = 200, $chunk_size = 4096) {
  * Parse one log line into [tag, message, raw].
  *
  * Lines written by messaging.php / cart-recovery.php look like:
- *   [WooChat Pro] message text
- *   [WooChat Pro - Cart Recovery] message text
- *   [WooChat Pro - MANUAL] message text
+ *   [WooChat] message text
+ *   [WooChat - Cart Recovery] message text
+ *   [WooChat - MANUAL] message text
  *
  * The bracketed prefix is the "tag" we surface in the filter dropdown.
  * Lines without a recognised prefix get an empty tag and the whole
@@ -112,7 +112,7 @@ function wcwp_log_parse_line($line) {
     if ($line === '') {
         return ['tag' => '', 'message' => '', 'raw' => ''];
     }
-    if (preg_match('/^\[(WooChat Pro(?: - [^\]]+)?)\]\s*(.*)$/', $line, $matches)) {
+    if (preg_match('/^\[(WooChat(?: - [^\]]+)?)\]\s*(.*)$/', $line, $matches)) {
         return [
             'tag'     => $matches[1],
             'message' => $matches[2],
@@ -181,7 +181,7 @@ function wcwp_log_size_bytes() {
 
 function wcwp_log_download_handler() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat-pro'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
     }
     check_admin_referer('wcwp_log_download', 'wcwp_log_download_nonce');
 
@@ -191,7 +191,7 @@ function wcwp_log_download_handler() {
         exit;
     }
 
-    $filename = 'woochat-pro-' . gmdate('Ymd-His') . '.log';
+    $filename = 'woochat-' . gmdate('Ymd-His') . '.log';
     nocache_headers();
     header('Content-Type: text/plain; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -202,7 +202,7 @@ function wcwp_log_download_handler() {
 
 function wcwp_log_clear_handler() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat-pro'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
     }
     check_admin_referer('wcwp_log_clear', 'wcwp_log_clear_nonce');
 

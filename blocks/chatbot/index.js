@@ -11,7 +11,7 @@
     var el = element.createElement;
     var __ = i18n.__;
 
-    blocks.registerBlockType( 'woochat-pro/chatbot', {
+    blocks.registerBlockType( 'woochat/chatbot', {
         edit: function () {
             return el(
                 'div',
@@ -24,11 +24,11 @@
                 el(
                     'div',
                     null,
-                    el( 'strong', null, __( 'WooChat Chatbot', 'woochat-pro' ) ),
+                    el( 'strong', null, __( 'WooChat Chatbot', 'woochat' ) ),
                     el(
                         'p',
                         { className: 'wcwp-block-placeholder-help' },
-                        __( 'The floating chatbot widget will render on the published page when the chatbot is enabled and a Pro license is active.', 'woochat-pro' )
+                        __( 'The floating chatbot widget will render on the published page when the chatbot is enabled and a Pro license is active.', 'woochat' )
                     )
                 )
             );

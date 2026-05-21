@@ -1,12 +1,12 @@
 {
     "$schema": "https://schemas.wp.org/trunk/block.json",
     "apiVersion": 2,
-    "name": "woochat-pro/whatsapp-button",
+    "name": "woochat/whatsapp-button",
     "title": "WhatsApp Button",
     "category": "widgets",
     "icon": "phone",
     "description": "A WhatsApp call-to-action button that opens a chat with a configured phone number.",
-    "textdomain": "woochat-pro",
+    "textdomain": "woochat",
     "attributes": {
         "phone":   { "type": "string", "default": "" },
         "text":    { "type": "string", "default": "" },

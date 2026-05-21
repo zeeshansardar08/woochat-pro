@@ -1,6 +1,6 @@
-# WooChat Pro – WhatsApp for WooCommerce
+# WooChat – WhatsApp for WooCommerce
 
-**WooChat Pro** is a powerful, lightweight WordPress plugin that integrates **WhatsApp messaging directly into WooCommerce**, helping store owners increase conversions, recover abandoned carts, and engage customers faster.
+**WooChat** is a powerful, lightweight WordPress plugin that integrates **WhatsApp messaging directly into WooCommerce**, helping store owners increase conversions, recover abandoned carts, and engage customers faster.
 
 ## ✅ Core Features
 - 📦 **Order Notifications** – Send WhatsApp messages when orders are placed or completed.
@@ -10,7 +10,7 @@
 - 📊 **Analytics Dashboard** – Track sent / delivered / clicked message statistics; per-event log plus a summary widget on the settings page.
 - 🤖 **GPT Integration** – Optionally generate follow-up copy with a configurable GPT endpoint (OpenAI-compatible).
 - 🔐 **License Control System** – Lock premium features behind license keys.
-- 🌍 **Translation-ready** – `woochat-pro` textdomain with `.pot` file provided in `languages/`.
+- 🌍 **Translation-ready** – `woochat` textdomain with `.pot` file provided in `languages/`.
 
 ## 🚀 Coming Soon in Pro
 - 📢 Bulk Messaging to Customers

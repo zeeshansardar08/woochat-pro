@@ -14,10 +14,10 @@
     var TextControl       = components.TextControl;
     var TextareaControl   = components.TextareaControl;
 
-    blocks.registerBlockType( 'woochat-pro/whatsapp-button', {
+    blocks.registerBlockType( 'woochat/whatsapp-button', {
         edit: function ( props ) {
             var attrs = props.attributes;
-            var label = attrs.text && attrs.text.length ? attrs.text : __( 'Chat on WhatsApp', 'woochat-pro' );
+            var label = attrs.text && attrs.text.length ? attrs.text : __( 'Chat on WhatsApp', 'woochat' );
 
             return [
                 el(
@@ -25,23 +25,23 @@
                     { key: 'inspector' },
                     el(
                         PanelBody,
-                        { title: __( 'Button', 'woochat-pro' ), initialOpen: true },
+                        { title: __( 'Button', 'woochat' ), initialOpen: true },
                         el( TextControl, {
-                            label: __( 'Phone number', 'woochat-pro' ),
+                            label: __( 'Phone number', 'woochat' ),
                             value: attrs.phone || '',
                             onChange: function ( v ) { props.setAttributes( { phone: v } ); },
-                            help: __( 'Include the country code, e.g. +14155550100. Leave blank to open WhatsApp without a destination.', 'woochat-pro' )
+                            help: __( 'Include the country code, e.g. +14155550100. Leave blank to open WhatsApp without a destination.', 'woochat' )
                         } ),
                         el( TextControl, {
-                            label: __( 'Button text', 'woochat-pro' ),
+                            label: __( 'Button text', 'woochat' ),
                             value: attrs.text || '',
                             onChange: function ( v ) { props.setAttributes( { text: v } ); }
                         } ),
                         el( TextareaControl, {
-                            label: __( 'Preset message', 'woochat-pro' ),
+                            label: __( 'Preset message', 'woochat' ),
                             value: attrs.message || '',
                             onChange: function ( v ) { props.setAttributes( { message: v } ); },
-                            help: __( 'Shown as the prefilled WhatsApp message body.', 'woochat-pro' )
+                            help: __( 'Shown as the prefilled WhatsApp message body.', 'woochat' )
                         } )
                     )
                 ),

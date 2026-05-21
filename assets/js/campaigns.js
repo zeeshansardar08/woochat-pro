@@ -1,4 +1,4 @@
-// WooChat Pro – Campaigns admin tab.
+// WooChat – Campaigns admin tab.
 
 (function () {
     document.addEventListener('DOMContentLoaded', function () {

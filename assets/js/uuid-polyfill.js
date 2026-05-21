@@ -1,4 +1,4 @@
-// WooChat Pro – crypto.randomUUID() polyfill.
+// WooChat – crypto.randomUUID() polyfill.
 // Older Safari (< 15.4), Firefox (< 95), Chrome (< 92) ship Web Crypto
 // without randomUUID. Some downstream code (queue ids, click trackers,
 // chatbot session tokens, embedded checkout flows) assumes the modern

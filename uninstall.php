@@ -2,7 +2,7 @@
 if (!defined('WP_UNINSTALL_PLUGIN')) exit;
 
 if (!function_exists('wcwp_is_woocommerce_active')) {
-    $helpers = WP_PLUGIN_DIR . '/woochat-pro/includes/helpers.php';
+    $helpers = WP_PLUGIN_DIR . '/woochat/includes/helpers.php';
     if (file_exists($helpers)) {
         include_once $helpers;
     }
@@ -93,8 +93,8 @@ foreach ( $wcwp_tables as $wcwp_table ) {
 }
 
 $upload_dir = wp_upload_dir();
-$plugin_log = $upload_dir['basedir'] . '/woochat-pro/woochat-pro.log';
-$plugin_log_dir = $upload_dir['basedir'] . '/woochat-pro';
+$plugin_log = $upload_dir['basedir'] . '/woochat/woochat.log';
+$plugin_log_dir = $upload_dir['basedir'] . '/woochat';
 if (file_exists($plugin_log)) @unlink($plugin_log);
 // Clean up auxiliary files created by the log helper.
 $htaccess = $plugin_log_dir . '/.htaccess';

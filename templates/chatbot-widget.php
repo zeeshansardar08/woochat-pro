@@ -17,13 +17,13 @@ $welcome = isset($settings['welcome']) ? $settings['welcome'] : 'Hi! How can I h
         #wcwp-send-wa { display:none; margin-top:10px; background: <?php echo esc_attr($bubble); ?>; color: <?php echo esc_attr($text); ?>; padding:9px 12px; border-radius:6px; text-decoration:none; font-weight:600; }
     </style>
     <div id="wcwp-chat-window">
-        <h4><span class="wcwp-icon" style="color:<?php echo esc_attr($iconColor); ?>;"><?php echo esc_html($icon); ?></span> <?php esc_html_e('Chat with us', 'woochat-pro'); ?></h4>
-        <input type="text" id="wcwp-user-input" placeholder="<?php esc_attr_e('Ask a question...', 'woochat-pro'); ?>" />
+        <h4><span class="wcwp-icon" style="color:<?php echo esc_attr($iconColor); ?>;"><?php echo esc_html($icon); ?></span> <?php esc_html_e('Chat with us', 'woochat'); ?></h4>
+        <input type="text" id="wcwp-user-input" placeholder="<?php esc_attr_e('Ask a question...', 'woochat'); ?>" />
         <div id="wcwp-chat-response"><?php echo esc_html($welcome); ?></div>
-        <a id="wcwp-send-wa" href="#" target="_blank"><?php esc_html_e('Send via WhatsApp', 'woochat-pro'); ?></a>
+        <a id="wcwp-send-wa" href="#" target="_blank"><?php esc_html_e('Send via WhatsApp', 'woochat'); ?></a>
     </div>
     <button id="wcwp-toggle-chat">
         <span class="wcwp-icon"><?php echo esc_html($icon); ?></span>
-        <span><?php esc_html_e('Chat', 'woochat-pro'); ?></span>
+        <span><?php esc_html_e('Chat', 'woochat'); ?></span>
     </button>
 </div>

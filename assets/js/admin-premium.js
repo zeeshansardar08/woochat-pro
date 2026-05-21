@@ -1,4 +1,4 @@
-// WooChat Pro – Premium Admin UI Tab Switcher
+// WooChat – Premium Admin UI Tab Switcher
 
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('.wcwp-tab');

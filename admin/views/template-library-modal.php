@@ -7,9 +7,9 @@ $wcwp_template_library = wcwp_get_template_library();
     <div class="wcwp-template-library-overlay"></div>
     <div class="wcwp-template-library-dialog" role="dialog" aria-modal="true" aria-labelledby="wcwp-template-library-title">
         <header class="wcwp-template-library-header">
-            <h2 id="wcwp-template-library-title"><?php esc_html_e('Template library', 'woochat-pro'); ?></h2>
-            <p class="wcwp-template-library-subtitle"><?php esc_html_e('Pick a starter and tweak it to taste. Placeholders inside curly braces are filled in automatically when the message is sent.', 'woochat-pro'); ?></p>
-            <button type="button" class="wcwp-template-library-close" aria-label="<?php esc_attr_e('Close', 'woochat-pro'); ?>">&times;</button>
+            <h2 id="wcwp-template-library-title"><?php esc_html_e('Template library', 'woochat'); ?></h2>
+            <p class="wcwp-template-library-subtitle"><?php esc_html_e('Pick a starter and tweak it to taste. Placeholders inside curly braces are filled in automatically when the message is sent.', 'woochat'); ?></p>
+            <button type="button" class="wcwp-template-library-close" aria-label="<?php esc_attr_e('Close', 'woochat'); ?>">&times;</button>
         </header>
         <div class="wcwp-template-library-body">
             <?php
@@ -28,7 +28,7 @@ $wcwp_template_library = wcwp_get_template_library();
                         <h3 class="wcwp-template-name"><?php echo esc_html($name); ?></h3>
                     </div>
                     <pre class="wcwp-template-body"><?php echo esc_html($body); ?></pre>
-                    <button type="button" class="button button-primary wcwp-template-use" data-body="<?php echo esc_attr($body); ?>"><?php esc_html_e('Use this template', 'woochat-pro'); ?></button>
+                    <button type="button" class="button button-primary wcwp-template-use" data-body="<?php echo esc_attr($body); ?>"><?php esc_html_e('Use this template', 'woochat'); ?></button>
                 </article>
             <?php
                 endforeach;

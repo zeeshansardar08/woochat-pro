@@ -54,11 +54,11 @@ add_action('wp_ajax_wcwp_webhook_test', 'wcwp_webhook_test_ajax');
  */
 function wcwp_webhook_event_keys() {
     $keys = [
-        'message.sent'        => __('Message sent', 'woochat-pro'),
-        'message.delivered'   => __('Message delivered', 'woochat-pro'),
-        'message.clicked'     => __('Tracked link clicked', 'woochat-pro'),
-        'message.failed'      => __('Message send failed', 'woochat-pro'),
-        'customer.opted_out'  => __('Customer opted out', 'woochat-pro'),
+        'message.sent'        => __('Message sent', 'woochat'),
+        'message.delivered'   => __('Message delivered', 'woochat'),
+        'message.clicked'     => __('Tracked link clicked', 'woochat'),
+        'message.failed'      => __('Message send failed', 'woochat'),
+        'customer.opted_out'  => __('Customer opted out', 'woochat'),
     ];
     return (array) apply_filters('wcwp_webhook_event_keys', $keys);
 }
@@ -354,7 +354,7 @@ function wcwp_webhook_log_recent($webhook_id = '', $limit = 20) {
 
 function wcwp_webhook_add_handler() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat-pro'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
     }
     check_admin_referer('wcwp_webhook_add', 'wcwp_webhook_add_nonce');
 
@@ -372,7 +372,7 @@ function wcwp_webhook_add_handler() {
 
 function wcwp_webhook_delete_handler() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat-pro'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
     }
     check_admin_referer('wcwp_webhook_delete', 'wcwp_webhook_delete_nonce');
 
@@ -389,20 +389,20 @@ function wcwp_webhook_delete_handler() {
 
 function wcwp_webhook_test_ajax() {
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => __('Unauthorized', 'woochat-pro')], 403);
+        wp_send_json_error(['message' => __('Unauthorized', 'woochat')], 403);
     }
     if (!check_ajax_referer('wcwp_webhook_test', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Bad nonce', 'woochat-pro')], 400);
+        wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
     }
 
     $id = isset($_POST['webhook_id']) ? sanitize_text_field(wp_unslash($_POST['webhook_id'])) : '';
     $webhook = wcwp_get_webhook($id);
     if (!$webhook) {
-        wp_send_json_error(['message' => __('Webhook not found.', 'woochat-pro')], 404);
+        wp_send_json_error(['message' => __('Webhook not found.', 'woochat')], 404);
     }
 
     $result = wcwp_send_webhook($webhook, 'webhook.test', [
-        'note' => 'This is a test event triggered from the WooChat Pro admin.',
+        'note' => 'This is a test event triggered from the WooChat admin.',
     ], 1);
 
     if (!empty($result['ok'])) {
@@ -410,7 +410,7 @@ function wcwp_webhook_test_ajax() {
             'code'    => $result['code'],
             'message' => sprintf(
                 /* translators: %d is the HTTP response code */
-                __('Test fired — receiver responded %d.', 'woochat-pro'),
+                __('Test fired — receiver responded %d.', 'woochat'),
                 (int) $result['code']
             ),
         ]);
@@ -420,7 +420,7 @@ function wcwp_webhook_test_ajax() {
         'code'    => $result['code'],
         'message' => sprintf(
             /* translators: %s is the failure reason (HTTP code or transport error) */
-            __('Test failed: %s', 'woochat-pro'),
+            __('Test failed: %s', 'woochat'),
             $result['error'] !== '' ? $result['error'] : 'unknown'
         ),
     ], 502);

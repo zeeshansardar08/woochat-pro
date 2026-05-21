@@ -14,7 +14,7 @@ function wcwp_update_api_url() {
         $is_local = ($env === 'local') || (strpos($site_url, '.local') !== false);
 
         if ($is_local) {
-            $default = home_url('/woochat-pro-update.json');
+            $default = home_url('/woochat-update.json');
         }
     }
 
@@ -62,7 +62,7 @@ function wcwp_update_check($transient) {
 
     $plugin = plugin_basename(WCWP_PLUGIN_FILE);
     $item = new stdClass();
-    $item->slug = 'woochat-pro';
+    $item->slug = 'woochat';
     $item->plugin = $plugin;
     $item->new_version = $new_version;
     $item->url = isset($info['homepage']) ? $info['homepage'] : '';
@@ -74,14 +74,14 @@ function wcwp_update_check($transient) {
 
 function wcwp_update_plugin_info($result, $action, $args) {
     if ($action !== 'plugin_information') return $result;
-    if (!isset($args->slug) || $args->slug !== 'woochat-pro') return $result;
+    if (!isset($args->slug) || $args->slug !== 'woochat') return $result;
 
     $info = wcwp_fetch_update_info();
     if (!$info) return $result;
 
     $data = new stdClass();
-    $data->name = isset($info['name']) ? $info['name'] : 'WooChat Pro';
-    $data->slug = 'woochat-pro';
+    $data->name = isset($info['name']) ? $info['name'] : 'WooChat';
+    $data->slug = 'woochat';
     $data->version = (string) $info['version'];
     $data->author = isset($info['author']) ? $info['author'] : 'Zignite';
     $data->homepage = isset($info['homepage']) ? $info['homepage'] : '';
@@ -89,7 +89,7 @@ function wcwp_update_plugin_info($result, $action, $args) {
     $data->tested = isset($info['tested']) ? $info['tested'] : '';
     $data->download_link = isset($info['download_url']) ? $info['download_url'] : '';
     $data->sections = isset($info['sections']) && is_array($info['sections']) ? $info['sections'] : [
-        'description' => 'WooChat Pro updates and release details.',
+        'description' => 'WooChat updates and release details.',
     ];
 
     return $data;

@@ -418,7 +418,7 @@ function wcwp_analytics_get_conversions($filters = []) {
 
 function wcwp_analytics_export_csv() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat-pro'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
     }
     check_admin_referer('wcwp_analytics_export', 'wcwp_analytics_export_nonce');
 
@@ -558,12 +558,12 @@ function wcwp_handle_tracking_request() {
 
 function wcwp_track_event_ajax() {
     if ( ! check_ajax_referer( 'wcwp_track_event', 'nonce', false ) ) {
-        wp_send_json_error( [ 'message' => __( 'Invalid nonce', 'woochat-pro' ) ], 403 );
+        wp_send_json_error( [ 'message' => __( 'Invalid nonce', 'woochat' ) ], 403 );
     }
     $type = isset($_REQUEST['type']) ? sanitize_text_field(wp_unslash($_REQUEST['type'])) : '';
     $event_id = isset($_REQUEST['event_id']) ? sanitize_text_field(wp_unslash($_REQUEST['event_id'])) : '';
     if (!$type || !$event_id) {
-        wp_send_json_error(['message' => __('Missing data', 'woochat-pro')], 400);
+        wp_send_json_error(['message' => __('Missing data', 'woochat')], 400);
     }
     if ($type === 'delivered') {
         wcwp_analytics_update_event($event_id, ['status' => 'delivered']);

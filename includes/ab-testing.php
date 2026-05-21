@@ -39,21 +39,21 @@ if (!defined('ABSPATH')) exit;
 function wcwp_ab_kinds() {
     $kinds = [
         'order' => [
-            'label'          => __('Order confirmation', 'woochat-pro'),
+            'label'          => __('Order confirmation', 'woochat'),
             'option_a'       => 'wcwp_order_message_template',
             'option_b'       => 'wcwp_order_message_template_b',
             'option_enabled' => 'wcwp_order_message_ab_enabled',
             'default_a'      => 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.',
         ],
         'cart_recovery' => [
-            'label'          => __('Cart recovery', 'woochat-pro'),
+            'label'          => __('Cart recovery', 'woochat'),
             'option_a'       => 'wcwp_cart_recovery_message',
             'option_b'       => 'wcwp_cart_recovery_message_b',
             'option_enabled' => 'wcwp_cart_recovery_ab_enabled',
             'default_a'      => "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} {currency_symbol}\nClick here to complete your order: {cart_url}",
         ],
         'followup' => [
-            'label'          => __('Follow-up', 'woochat-pro'),
+            'label'          => __('Follow-up', 'woochat'),
             'option_a'       => 'wcwp_followup_template',
             'option_b'       => 'wcwp_followup_template_b',
             'option_enabled' => 'wcwp_followup_ab_enabled',

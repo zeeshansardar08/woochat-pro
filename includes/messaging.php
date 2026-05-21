@@ -76,7 +76,7 @@ function wcwp_send_whatsapp_message( $to, $message, $manual = false, $context = 
     $test_mode   = get_option( 'wcwp_test_mode_enabled', 'no' );
     $provider_id = get_option( 'wcwp_api_provider', 'twilio' );
     $log_file    = wcwp_get_log_file();
-    $log_prefix  = $manual ? '[WooChat Pro - MANUAL]' : '[WooChat Pro]';
+    $log_prefix  = $manual ? '[WooChat - MANUAL]' : '[WooChat]';
     $log_failed  = false;
     $safe_to     = wcwp_mask_phone( $to );
     $safe_msg    = wcwp_redact_message( $message );
@@ -211,9 +211,9 @@ function wcwp_maybe_log_notice( $log_failed ) {
     if ( ! $log_failed ) return;
     add_action( 'admin_notices', function () {
         echo '<div class="notice notice-error is-dismissible"><p><b>'
-            . esc_html__( 'WooChat Pro:', 'woochat-pro' )
+            . esc_html__( 'WooChat:', 'woochat' )
             . '</b> '
-            . esc_html__( 'Unable to write to log file. Please check file permissions for wp-content/uploads/woochat-pro/.', 'woochat-pro' )
+            . esc_html__( 'Unable to write to log file. Please check file permissions for wp-content/uploads/woochat/.', 'woochat' )
             . '</p></div>';
     } );
 }
