@@ -319,9 +319,17 @@ function wcwp_get_log_file() {
     $log_dir    = $upload_dir['basedir'] . '/woochat';
     if ( ! file_exists( $log_dir ) ) {
         wp_mkdir_p( $log_dir );
-        // Protect against direct browsing.
-        @file_put_contents( $log_dir . '/.htaccess', 'deny from all' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-        @file_put_contents( $log_dir . '/index.php', '<?php // Silence is golden.' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+        // Protect against direct browsing — written via WP_Filesystem so the
+        // plugin does not call the raw filesystem functions WordPress.org flags.
+        global $wp_filesystem;
+        if ( empty( $wp_filesystem ) ) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            WP_Filesystem();
+        }
+        if ( ! empty( $wp_filesystem ) ) {
+            $wp_filesystem->put_contents( $log_dir . '/.htaccess', 'deny from all', FS_CHMOD_FILE );
+            $wp_filesystem->put_contents( $log_dir . '/index.php', '<?php // Silence is golden.', FS_CHMOD_FILE );
+        }
     }
     return $log_dir . '/woochat.log';
 }

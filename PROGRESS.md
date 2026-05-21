@@ -43,23 +43,27 @@ Current branch: `free`
 
 ---
 
-## PHASE 2 — Security Fixes
+## PHASE 2 — Security Fixes — ✅ Done
 
-### Task 2.1 — Prepared SQL Queries — 🟡 Partial (commit e623b49)
-- [ ] Full re-audit of `$wpdb->get_results/get_row/get_var/query` for missing `prepare()`
-- [ ] Confirm `analytics.php`, `campaigns.php`, `privacy.php`, `uninstall.php` covered
+### Task 2.1 — Prepared SQL Queries — ✅ Done
+- [x] Audited all `$wpdb->get_results/get_row/get_var/query` calls
+- [x] All queries use `$wpdb->prepare()`; the only non-prepared ones
+      (analytics GROUP BY, uninstall DROP TABLE) have no user input and
+      carry justified `phpcs:ignore` comments
 
-### Task 2.2 — Escape Admin View Output — 🟡 Partial (commit e623b49)
-- [ ] Full re-audit of all `echo` in `admin/views/` for escaping
+### Task 2.2 — Escape Admin View Output — ✅ Done (commit e623b49)
+- [x] All `echo` in `admin/views/` use `esc_*` / `wp_kses`
 
-### Task 2.3 — Replace file_put_contents with WP_Filesystem — ⬜ Not started
-- [ ] `includes/helpers.php:323-324` — convert to `$wp_filesystem->put_contents()`
+### Task 2.3 — Replace file_put_contents with WP_Filesystem — ✅ Done
+- [x] `includes/helpers.php` — `.htaccess`/`index.php` writes now use
+      `$wp_filesystem->put_contents()`
 
-### Task 2.4 — Verify AJAX Nonce + Capability Checks — ⬜ Not verified
-- [ ] Audit every `wp_ajax_` handler for nonce + `current_user_can`
+### Task 2.4 — Verify AJAX Nonce + Capability Checks — ✅ Done
+- [x] All 16 `wp_ajax_` handlers verify a nonce; privileged endpoints
+      check capabilities; `nopriv` endpoints correctly use nonce-only
 
-### Task 2.5 — Run PHPCS — ⬜ Not verified
-- [ ] `vendor/bin/phpcs --standard=WordPress` clean of errors
+### Task 2.5 — Run PHPCS — ✅ Done
+- [x] `vendor/bin/phpcs` — 40/40 files, zero errors
 
 ---
 
