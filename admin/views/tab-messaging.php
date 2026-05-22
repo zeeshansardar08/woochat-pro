@@ -35,7 +35,20 @@ if (!defined('ABSPATH')) exit;
         <?php
         $order_ab_enabled = get_option('wcwp_order_message_ab_enabled', 'no');
         $order_template_b = get_option('wcwp_order_message_template_b', '');
+        $wcwp_msg_pro     = wcwp_is_pro_active();
         ?>
+        <?php if (!$wcwp_msg_pro) : ?>
+        <tr>
+            <th scope="row"><?php esc_html_e('A/B test this message', 'woochat'); ?> <span class="wcwp-pro-tag"><?php esc_html_e('Pro', 'woochat'); ?></span></th>
+            <td>
+                <p class="description"><?php esc_html_e('A/B testing compares two message templates and tracks which converts better. Upgrade to WooChat Pro to split-test your messages.', 'woochat'); ?></p>
+                <p><button type="button" class="button wcwp-open-upgrade-modal"><?php esc_html_e('Learn about Pro', 'woochat'); ?></button></p>
+                <?php // Force A/B off on the free plan and preserve any template B saved while on Pro. ?>
+                <input type="hidden" name="wcwp_order_message_ab_enabled" value="no" />
+                <input type="hidden" name="wcwp_order_message_template_b" value="<?php echo esc_attr($order_template_b); ?>" />
+            </td>
+        </tr>
+        <?php else : ?>
         <tr class="wcwp-ab-row" data-ab-kind="order">
             <th scope="row"><label for="wcwp_order_message_ab_enabled"><?php esc_html_e('A/B test this message', 'woochat'); ?></label><span class="wcwp-help-icon">?<span class="wcwp-tooltip"><?php esc_html_e('Send a 50/50 split between this template and Variant B. Each customer is assigned the same variant deterministically. View results on the Analytics tab.', 'woochat'); ?></span></span></th>
             <td>
@@ -62,4 +75,5 @@ if (!defined('ABSPATH')) exit;
                 </p>
             </td>
         </tr>
+        <?php endif; ?>
     </table>

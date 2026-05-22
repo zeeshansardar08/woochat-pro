@@ -82,11 +82,23 @@ Current branch: `free`
 
 ---
 
-## PHASE 4 — Free Version Preparation — 🟡 Partial
+## PHASE 4 — Free Version Preparation — ✅ Done
 - [x] 4.1 `free` branch created
-- [ ] 4.2 Pro feature gating behind `wcwp_is_pro_active()`
-- [ ] 4.3 In-plugin Pro upsell notices (5 touchpoints)
-- [ ] 4.4 Update upgrade modal comparison table
+- [x] 4.2 Pro feature gating behind `wcwp_is_pro_active()`:
+  - Cart Recovery / Scheduler / Campaigns / Analytics / Webhooks — page-gated (Phase 1)
+  - Chatbot — basic widget + FAQ + single agent are Free; GPT replies,
+    color/icon customizer and multi-agent routing are Pro
+  - A/B testing — gated in the Messaging view and in the `wcwp_ab_get_template`
+    runtime
+  - Logs — Free capped at last 50 entries; download/export is Pro (handler
+    also rejects non-Pro)
+- [x] 4.3 Upsell notices: dismissible post-activation admin notice; Pro cards
+    on gated pages; A/B upsell in the message editor; log-viewer upsell.
+    (Order-list touchpoint skipped — no clean per-edit-screen hook)
+- [x] 4.4 Upgrade modal comparison table rewritten to the final Free/Pro split
+
+> Decision recap: chatbot split = "basic Free, AI Pro"; free-tier caps applied
+> for logs (50, no export), A/B testing, and single-agent routing.
 
 ---
 

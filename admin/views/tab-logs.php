@@ -3,8 +3,14 @@ if (!defined('ABSPATH')) exit;
 
 $wcwp_log_keyword  = isset($_GET['wcwp_log_q'])     ? sanitize_text_field(wp_unslash($_GET['wcwp_log_q']))     : '';
 $wcwp_log_tag      = isset($_GET['wcwp_log_tag'])   ? sanitize_text_field(wp_unslash($_GET['wcwp_log_tag']))   : '';
-$wcwp_log_lines    = isset($_GET['wcwp_log_lines']) ? max(50, min(2000, (int) $_GET['wcwp_log_lines']))        : 200;
 $wcwp_log_message  = isset($_GET['wcwp_log_msg'])   ? sanitize_text_field(wp_unslash($_GET['wcwp_log_msg']))   : '';
+
+// Free plan: last 50 entries only, and no log export. Pro lifts the cap.
+$wcwp_log_pro      = wcwp_is_pro_active();
+$wcwp_log_lines    = isset($_GET['wcwp_log_lines']) ? max(50, min(2000, (int) $_GET['wcwp_log_lines']))        : 200;
+if (!$wcwp_log_pro) {
+    $wcwp_log_lines = 50;
+}
 
 $wcwp_log_file     = wcwp_get_log_file();
 $wcwp_log_exists   = is_file($wcwp_log_file);
@@ -73,6 +79,7 @@ $wcwp_log_clear_url = wp_nonce_url(
                 <?php endforeach; ?>
             </select>
         </div>
+        <?php if ($wcwp_log_pro) : ?>
         <div>
             <label for="wcwp_log_lines"><?php esc_html_e('Lines', 'woochat'); ?></label><br>
             <select id="wcwp_log_lines" name="wcwp_log_lines">
@@ -81,12 +88,15 @@ $wcwp_log_clear_url = wp_nonce_url(
                 <?php endforeach; ?>
             </select>
         </div>
+        <?php endif; ?>
         <div>
             <button type="button" class="button button-primary" id="wcwp-log-filter-button"><?php esc_html_e('Apply', 'woochat'); ?></button>
         </div>
+        <?php if ($wcwp_log_pro) : ?>
         <div>
             <a class="button" href="<?php echo esc_url($wcwp_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Download log', 'woochat'); ?></a>
         </div>
+        <?php endif; ?>
         <div>
             <a class="button" href="<?php echo esc_url($wcwp_log_clear_url); ?>" id="wcwp-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Clear log', 'woochat'); ?></a>
         </div>
@@ -106,7 +116,11 @@ $wcwp_log_clear_url = wp_nonce_url(
         );
         ?>
         <?php if ($wcwp_log_total_shown >= $wcwp_log_lines) : ?>
-            <em><?php esc_html_e('Older entries are not shown — increase "Lines" or download the full log.', 'woochat'); ?></em>
+            <?php if ($wcwp_log_pro) : ?>
+                <em><?php esc_html_e('Older entries are not shown — increase "Lines" or download the full log.', 'woochat'); ?></em>
+            <?php else : ?>
+                <em><?php esc_html_e('The free plan shows the last 50 entries. Upgrade to WooChat Pro for unlimited log history and CSV export.', 'woochat'); ?> <button type="button" class="button-link wcwp-open-upgrade-modal"><?php esc_html_e('Upgrade', 'woochat'); ?></button></em>
+            <?php endif; ?>
         <?php endif; ?>
     </p>
 

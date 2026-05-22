@@ -117,6 +117,15 @@ if (!defined('DAY_IN_SECONDS')) {
     define('DAY_IN_SECONDS', 86400);
 }
 
+// license-manager.php is not loaded in unit tests; stub the Pro gate so
+// feature code under test runs. Defaults to true (Pro behaviour); a test can
+// set $GLOBALS['wcwp_test_is_pro'] = false to exercise the free-tier path.
+if (!function_exists('wcwp_is_pro_active')) {
+    function wcwp_is_pro_active() {
+        return $GLOBALS['wcwp_test_is_pro'] ?? true;
+    }
+}
+
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/cart-recovery.php';
 require_once __DIR__ . '/../includes/campaigns.php';

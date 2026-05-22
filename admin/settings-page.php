@@ -459,15 +459,20 @@ function wcwp_render_upgrade_modal() {
             <p><?php esc_html_e("Unlock all premium features and maximize your store's potential!", 'woochat'); ?></p>
             <table class="wcwp-comparison-table">
                 <tr><th><?php esc_html_e('Feature', 'woochat'); ?></th><th><?php esc_html_e('Free', 'woochat'); ?></th><th class="pro"><?php esc_html_e('Pro', 'woochat'); ?></th></tr>
-                <tr><td><?php esc_html_e('Order Confirmation via WhatsApp', 'woochat'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Order Notifications via WhatsApp', 'woochat'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
                 <tr><td><?php esc_html_e('Manual Message Button', 'woochat'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('WhatsApp Chat Widget', 'woochat'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Gutenberg Blocks', 'woochat'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Twilio &amp; Cloud API', 'woochat'); ?></td><td>✔️</td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Message Logs', 'woochat'); ?></td><td><?php esc_html_e('Last 50', 'woochat'); ?></td><td class="pro"><?php esc_html_e('Unlimited + export', 'woochat'); ?></td></tr>
                 <tr><td><?php esc_html_e('Cart Recovery', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
                 <tr><td><?php esc_html_e('Follow-up Scheduler', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
                 <tr><td><?php esc_html_e('Bulk Campaigns', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
                 <tr><td><?php esc_html_e('Analytics Dashboard', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('Webhooks &amp; Integrations', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
                 <tr><td><?php esc_html_e('A/B Testing', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
-                <tr><td><?php esc_html_e('GPT/AI Auto Replies', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('GPT/AI Chatbot Replies', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Chatbot Customizer &amp; Multi-Agent', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
+                <tr><td><?php esc_html_e('Webhooks &amp; Integrations', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
                 <tr><td><?php esc_html_e('Premium Support', 'woochat'); ?></td><td></td><td class="pro">✔️</td></tr>
             </table>
             <a href="https://zignites.com/woochat" target="_blank" rel="noopener"><button class="wcwp-upgrade-btn"><?php esc_html_e('Upgrade Now', 'woochat'); ?></button></a>
@@ -484,6 +489,53 @@ function wcwp_render_admin_footer_modals() {
         return;
     }
     wcwp_render_upgrade_modal();
+}
+
+/**
+ * One-time, dismissible Pro upsell notice shown after activation.
+ */
+add_action('admin_notices', 'wcwp_pro_upsell_admin_notice');
+function wcwp_pro_upsell_admin_notice() {
+    if (!current_user_can('manage_options') || wcwp_is_pro_active()) {
+        return;
+    }
+    if (get_option('wcwp_pro_notice_dismissed') === 'yes') {
+        return;
+    }
+
+    $dismiss_url = wp_nonce_url(
+        add_query_arg('wcwp_dismiss_pro_notice', '1'),
+        'wcwp_dismiss_pro_notice'
+    );
+    ?>
+    <div class="notice notice-info wcwp-pro-upsell-notice">
+        <p>
+            <strong><?php esc_html_e('WooChat is active.', 'woochat'); ?></strong>
+            <?php esc_html_e('Upgrade to WooChat Pro for cart recovery, analytics, bulk campaigns and A/B testing.', 'woochat'); ?>
+        </p>
+        <p>
+            <a href="https://zignites.com/woochat" class="button button-primary" target="_blank" rel="noopener"><?php esc_html_e('Upgrade Now', 'woochat'); ?></a>
+            <a href="<?php echo esc_url($dismiss_url); ?>" class="button"><?php esc_html_e('Dismiss', 'woochat'); ?></a>
+        </p>
+    </div>
+    <?php
+}
+
+/**
+ * Persist dismissal of the Pro upsell notice.
+ */
+add_action('admin_init', 'wcwp_handle_pro_notice_dismiss');
+function wcwp_handle_pro_notice_dismiss() {
+    if (!isset($_GET['wcwp_dismiss_pro_notice']) || !current_user_can('manage_options')) {
+        return;
+    }
+    $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+    if (!wp_verify_nonce($nonce, 'wcwp_dismiss_pro_notice')) {
+        return;
+    }
+    update_option('wcwp_pro_notice_dismissed', 'yes', false);
+    wp_safe_redirect(remove_query_arg(['wcwp_dismiss_pro_notice', '_wpnonce']));
+    exit;
 }
 
 /**
