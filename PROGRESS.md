@@ -102,11 +102,27 @@ Current branch: `free`
 
 ---
 
-## PHASE 5 — WordPress.org Submission Prep — ⬜ Not started
-- [ ] 5.1 Run official Plugin Check plugin, fix all errors
-- [ ] 5.2 Complete submission checklist
-- [ ] 5.3 Create plugin assets (icon, banner, screenshots)
-- [ ] 5.4 Submit to WordPress.org
+## PHASE 5 — WordPress.org Submission Prep — 🟡 Partial (code-side done)
+- [🟡] 5.1 Plugin Check — code-side audit complete; PHPCS green (39 files,
+      zero errors), 95 PHPUnit tests pass. Running the actual Plugin Check
+      plugin needs a WP admin session (user action).
+- [🟡] 5.2 Submission checklist — code items verified:
+  - ABSPATH guards on every PHP file
+  - All POST/GET/REQUEST/COOKIE/SERVER input sanitized + unslashed
+  - All admin output escaped; all 6 `printf` calls escape args
+  - 18 AJAX/admin-post handlers all verify nonces; privileged ones check caps
+  - Text domain consistently `woochat`; no `woochat-pro` refs; .pot present
+  - Removed self-hosted updater (`update-checker.php` + `docs/`) — .org
+    handles updates; the updater stays only on `master` (Pro)
+  - `uninstall.php` — clears all options (+3 that were missed:
+    `wcwp_test_phone`, `wcwp_test_message`, `wcwp_pro_notice_dismissed`),
+    drops all 4 tables, and now clears all 6 cron hooks
+  - Fixed: daily `wcwp_cleanup_analytics` cron was never unscheduled on
+    deactivation — now cleared in `Plugin::deactivate()`
+  - readme.txt has a Privacy & Data section disclosing Twilio / Meta / OpenAI
+  - Remaining (user action): create PNG icon/banner/screenshots
+- [ ] 5.3 Create plugin assets (icon, banner, screenshots) — user action
+- [ ] 5.4 Submit to WordPress.org — user action
 
 ---
 
