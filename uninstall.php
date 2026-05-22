@@ -34,6 +34,9 @@ $option_keys = [
     'wcwp_license_message',
     'wcwp_license_last_check',
     'wcwp_test_mode_enabled',
+    'wcwp_test_phone',
+    'wcwp_test_message',
+    'wcwp_pro_notice_dismissed',
     'wcwp_api_provider',
     'wcwp_cloud_token',
     'wcwp_cloud_phone_id',
@@ -90,6 +93,19 @@ $wcwp_tables = array(
 );
 foreach ( $wcwp_tables as $wcwp_table ) {
 	$wpdb->query( "DROP TABLE IF EXISTS `{$wcwp_table}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+}
+
+// Clear any scheduled cron events the plugin registered.
+$wcwp_cron_hooks = array(
+	'wcwp_cleanup_analytics',
+	'wcwp_process_cart_recovery_queue',
+	'wcwp_process_campaign',
+	'wcwp_send_order_message',
+	'wcwp_send_followup_message',
+	'wcwp_webhook_retry',
+);
+foreach ($wcwp_cron_hooks as $wcwp_hook) {
+	wp_clear_scheduled_hook($wcwp_hook);
 }
 
 $upload_dir = wp_upload_dir();

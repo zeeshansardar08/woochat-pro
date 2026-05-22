@@ -89,7 +89,6 @@ final class Plugin {
         require_once WCWP_PATH . 'includes/chatbot-engine.php';
         require_once WCWP_PATH . 'includes/license-manager.php';
         require_once WCWP_PATH . 'includes/optout.php';
-        require_once WCWP_PATH . 'includes/update-checker.php';
 
         require_once WCWP_PATH . 'includes/order-hooks.php';
         require_once WCWP_PATH . 'includes/cart-recovery.php';
@@ -123,6 +122,7 @@ final class Plugin {
         if (function_exists('wcwp_unschedule_cart_recovery_cron')) {
             wcwp_unschedule_cart_recovery_cron();
         }
+        wp_clear_scheduled_hook('wcwp_cleanup_analytics');
     }
 
     /**
