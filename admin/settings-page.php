@@ -502,6 +502,12 @@ function zignites_chat_pro_upsell_admin_notice() {
     if (get_option('zignites_chat_pro_notice_dismissed') === 'yes') {
         return;
     }
+    // Keep the upsell on the plugin's own screens instead of following the
+    // admin around every unrelated page.
+    $screen = get_current_screen();
+    if (!$screen || strpos($screen->id, 'zignites-chat') === false) {
+        return;
+    }
 
     $dismiss_url = wp_nonce_url(
         add_query_arg('zignites_chat_dismiss_pro_notice', '1'),

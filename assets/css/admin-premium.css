@@ -31,7 +31,8 @@
 }
 .zignites-chat-pro-upgrade-icon {
   font-size: 2.6rem;
-  margin-bottom: 8px;
+  line-height: 1;
+  margin-bottom: 16px;
 }
 .zignites-chat-pro-upgrade-card h2 {
   font-size: 1.5rem;
@@ -73,14 +74,17 @@
   display: inline-block;
   background: #1c7c54;
   color: #fff;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
+  line-height: 1.4;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 10px;
   vertical-align: middle;
-  margin-left: 4px;
+  margin-left: 8px;
+  position: relative;
+  top: -1px;
 }
 .zignites-chat-pro-locked {
   opacity: 0.5;
@@ -499,7 +503,13 @@
 .zignites-chat-dark-mode select {
   background: #23272b !important;
   color: #e5e5e5 !important;
+  border-color: #3a4248 !important;
+}
+.zignites-chat-dark-mode input:focus,
+.zignites-chat-dark-mode textarea:focus,
+.zignites-chat-dark-mode select:focus {
   border-color: #2ec4b6 !important;
+  box-shadow: 0 0 0 1px #2ec4b6 !important;
 }
 .zignites-chat-dark-mode .zignites-chat-dashboard-widget-stat {
   background: #23272b !important;
@@ -816,4 +826,98 @@ body.zignites-chat-template-library-open {
   background: #181c1f;
   border-color: #2ec4b6;
   color: #e5e5e5;
+}
+
+/* Dark mode — close the white-panel gaps */
+
+/* Pro upsell admin notice (rendered outside the plugin wrap) */
+body.zignites-chat-dark-mode .zignites-chat-pro-upsell-notice {
+  background: #23272b;
+  border-color: #2f3439;
+  border-left-color: #2ec4b6;
+  color: #e5e5e5;
+}
+body.zignites-chat-dark-mode .zignites-chat-pro-upsell-notice strong {
+  color: #ffffff;
+}
+
+/* Dashboard Pro feature teaser cards */
+body.zignites-chat-dark-mode .zignites-chat-dashboard-teaser {
+  background: #23272b;
+  border-color: #2f3439;
+}
+body.zignites-chat-dark-mode .zignites-chat-dashboard-teaser p {
+  color: #b2f7ef;
+}
+
+/* Chatbot customizer preview panel */
+body.zignites-chat-dark-mode .zignites-chat-chatbot-customizer-preview {
+  background: #23272b;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Agents table (WP .widefat list table) */
+body.zignites-chat-dark-mode #zignites-chat-agents-table,
+body.zignites-chat-dark-mode #zignites-chat-agents-table thead th,
+body.zignites-chat-dark-mode #zignites-chat-agents-table tbody td,
+body.zignites-chat-dark-mode #zignites-chat-agents-table tbody tr {
+  background: #23272b;
+  color: #e5e5e5;
+  border-color: #2f3439;
+}
+body.zignites-chat-dark-mode #zignites-chat-agents-table.striped tbody tr:nth-child(odd),
+body.zignites-chat-dark-mode #zignites-chat-agents-table.striped tbody tr:nth-child(odd) td {
+  background: #1f2327;
+}
+
+/* Section headings sit on the dark panel — keep them readable */
+body.zignites-chat-dark-mode .zignites-chat-admin-premium-wrap h2,
+body.zignites-chat-dark-mode .zignites-chat-admin-premium-wrap h3 {
+  color: #e5e5e5 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-dashboard-teaser h3 {
+  color: #2ec4b6 !important;
+}
+
+/* Pro upsell notice — readable body text + compact, consistent buttons.
+   WordPress relocates this notice into the plugin wrap, so without scoping
+   it inherits the wrap's oversized .button-primary styling. */
+body.zignites-chat-dark-mode .zignites-chat-pro-upsell-notice,
+body.zignites-chat-dark-mode .zignites-chat-pro-upsell-notice p {
+  color: #d8dde2;
+}
+.zignites-chat-pro-upsell-notice .button,
+.zignites-chat-pro-upsell-notice .button-primary {
+  font-size: 0.9rem;
+  padding: 5px 16px;
+  height: auto;
+  line-height: 2;
+  border-radius: 5px;
+  box-shadow: none;
+  vertical-align: middle;
+}
+.zignites-chat-pro-upsell-notice .button + .button {
+  margin-left: 8px;
+}
+
+/* Pro upgrade card — dark theming. The card keeps a light surface by
+   default, so in dark mode its heading and copy wash out. */
+body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-card {
+  background: linear-gradient(160deg, #20272c 0%, #181c1f 75%);
+  border-color: #2f3439;
+}
+body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-card h2 {
+  color: #2ec4b6 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-desc {
+  color: #c5ccd2;
+}
+body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-benefits li {
+  color: #d8dde2;
+}
+body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-benefits li::before {
+  color: #2ec4b6;
+}
+body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-price {
+  color: #8a929a;
 }
