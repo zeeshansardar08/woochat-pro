@@ -4,7 +4,7 @@
  *
  * Tests run in isolation — no WordPress install, no database. The minimum WP
  * API surface the helpers under test actually call is stubbed below; tests
- * inject behaviour by writing to `$GLOBALS['wcwp_test_*']` between cases.
+ * inject behaviour by writing to `$GLOBALS['zignites_chat_test_*']` between cases.
  */
 
 declare(strict_types=1);
@@ -26,17 +26,17 @@ if (!function_exists('apply_filters')) {
 }
 if (!function_exists('get_option')) {
     function get_option($key, $default = false) {
-        return $GLOBALS['wcwp_test_options'][$key] ?? $default;
+        return $GLOBALS['zignites_chat_test_options'][$key] ?? $default;
     }
 }
 if (!function_exists('get_woocommerce_currency_symbol')) {
     function get_woocommerce_currency_symbol($currency = '') {
-        return $GLOBALS['wcwp_test_currency_symbol'] ?? '&#36;';
+        return $GLOBALS['zignites_chat_test_currency_symbol'] ?? '&#36;';
     }
 }
 if (!function_exists('get_bloginfo')) {
     function get_bloginfo($key = '') {
-        return $GLOBALS['wcwp_test_bloginfo'][$key] ?? '';
+        return $GLOBALS['zignites_chat_test_bloginfo'][$key] ?? '';
     }
 }
 if (!function_exists('__')) {
@@ -103,7 +103,7 @@ if (!function_exists('wp_generate_password')) {
 }
 if (!function_exists('current_time')) {
     function current_time($type = 'mysql', $gmt = 0) {
-        return $GLOBALS['wcwp_test_current_time'] ?? '2026-05-09 12:34:56';
+        return $GLOBALS['zignites_chat_test_current_time'] ?? '2026-05-09 12:34:56';
     }
 }
 if (!defined('MINUTE_IN_SECONDS')) {
@@ -119,10 +119,10 @@ if (!defined('DAY_IN_SECONDS')) {
 
 // license-manager.php is not loaded in unit tests; stub the Pro gate so
 // feature code under test runs. Defaults to true (Pro behaviour); a test can
-// set $GLOBALS['wcwp_test_is_pro'] = false to exercise the free-tier path.
-if (!function_exists('wcwp_is_pro_active')) {
-    function wcwp_is_pro_active() {
-        return $GLOBALS['wcwp_test_is_pro'] ?? true;
+// set $GLOBALS['zignites_chat_test_is_pro'] = false to exercise the free-tier path.
+if (!function_exists('zignites_chat_is_pro_active')) {
+    function zignites_chat_is_pro_active() {
+        return $GLOBALS['zignites_chat_test_is_pro'] ?? true;
     }
 }
 

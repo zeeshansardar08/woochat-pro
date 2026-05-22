@@ -4,13 +4,13 @@ jQuery(document).ready(function ($) {
 
     // Fetch the current cart from the WooCommerce Store API. Returns a
     // Promise that resolves to an array of {name, price, qty} — the shape
-    // the wcwp_save_cart AJAX endpoint expects. Theme-independent: works on
+    // the zignites_chat_save_cart AJAX endpoint expects. Theme-independent: works on
     // cart, checkout, custom pages, and Block-based templates alike.
     function fetchCartItems() {
-        if (!wcwp_ajax_obj || !wcwp_ajax_obj.cart_url) {
+        if (!zignites_chat_ajax_obj || !zignites_chat_ajax_obj.cart_url) {
             return Promise.resolve([]);
         }
-        return fetch(wcwp_ajax_obj.cart_url, {
+        return fetch(zignites_chat_ajax_obj.cart_url, {
             credentials: 'same-origin',
             headers: { 'Accept': 'application/json' }
         }).then(function (res) {
@@ -36,8 +36,8 @@ jQuery(document).ready(function ($) {
     }
 
     function hasConsent() {
-        if (typeof wcwp_cart_consent_required !== 'undefined' && wcwp_cart_consent_required === 'yes') {
-            const box = $('#wcwp-cart-consent');
+        if (typeof zignites_chat_cart_consent_required !== 'undefined' && zignites_chat_cart_consent_required === 'yes') {
+            const box = $('#zignites-chat-cart-consent');
             if (box.length) return box.is(':checked');
             return false;
         }
@@ -54,9 +54,9 @@ jQuery(document).ready(function ($) {
 
             fetchCartItems().then(function (cart) {
                 if (!cart.length) return;
-                $.post(wcwp_ajax_obj.ajax_url, {
-                    action: 'wcwp_save_cart',
-                    nonce: wcwp_ajax_obj.nonce,
+                $.post(zignites_chat_ajax_obj.ajax_url, {
+                    action: 'zignites_chat_save_cart',
+                    nonce: zignites_chat_ajax_obj.nonce,
                     phone: phone,
                     cart: JSON.stringify(cart),
                     consent: hasConsent() ? 'yes' : 'no'

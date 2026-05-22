@@ -1,19 +1,19 @@
-// WooChat – Campaigns admin tab.
+// Zignites Chat – Campaigns admin tab.
 
 (function () {
     document.addEventListener('DOMContentLoaded', function () {
-        var root = document.getElementById('wcwp-tab-content-campaigns');
+        var root = document.getElementById('zignites-chat-tab-content-campaigns');
         if (!root) return;
-        var config = (typeof wcwpCampaigns !== 'undefined') ? wcwpCampaigns : {};
+        var config = (typeof zignitesChatCampaigns !== 'undefined') ? zignitesChatCampaigns : {};
         var i18n = config.i18n || {};
 
-        var segmentEl = document.getElementById('wcwp-campaign-segment');
-        var daysWrap  = document.getElementById('wcwp-campaign-days-wrap');
-        var nameEl    = document.getElementById('wcwp-campaign-name');
-        var tmplEl    = document.getElementById('wcwp-campaign-template');
-        var daysEl    = document.getElementById('wcwp-campaign-days');
-        var submit    = document.getElementById('wcwp-campaign-submit');
-        var feedback  = document.getElementById('wcwp-campaign-feedback');
+        var segmentEl = document.getElementById('zignites-chat-campaign-segment');
+        var daysWrap  = document.getElementById('zignites-chat-campaign-days-wrap');
+        var nameEl    = document.getElementById('zignites-chat-campaign-name');
+        var tmplEl    = document.getElementById('zignites-chat-campaign-template');
+        var daysEl    = document.getElementById('zignites-chat-campaign-days');
+        var submit    = document.getElementById('zignites-chat-campaign-submit');
+        var feedback  = document.getElementById('zignites-chat-campaign-feedback');
 
         function updateDaysVisibility() {
             if (!segmentEl || !daysWrap) return;
@@ -49,7 +49,7 @@
             submit.textContent = i18n.submitting || 'Creating campaign…';
 
             var body = new URLSearchParams();
-            body.append('action', 'wcwp_create_campaign');
+            body.append('action', 'zignites_chat_create_campaign');
             body.append('nonce', config.nonce);
             body.append('name', name);
             body.append('template', template);
@@ -89,10 +89,10 @@
         // Live-poll any rows that aren't yet completed so the admin sees
         // sent/failed counters tick up without reloading. Stops polling
         // once every visible row reaches a terminal state.
-        var rows = root.querySelectorAll('#wcwp-campaigns-list tbody tr');
+        var rows = root.querySelectorAll('#zignites-chat-campaigns-list tbody tr');
         var active = [];
         rows.forEach(function (row) {
-            var status = (row.querySelector('.wcwp-campaign-status') || {}).textContent || '';
+            var status = (row.querySelector('.zignites-chat-campaign-status') || {}).textContent || '';
             if (/^(queued|running)$/i.test(status.trim())) {
                 active.push(row);
             }
@@ -108,7 +108,7 @@
 
             active.forEach(function (row) {
                 var id = row.getAttribute('data-campaign-id');
-                var url = config.ajaxUrl + '?action=wcwp_campaign_status&nonce=' + encodeURIComponent(config.nonce) + '&campaign_id=' + encodeURIComponent(id);
+                var url = config.ajaxUrl + '?action=zignites_chat_campaign_status&nonce=' + encodeURIComponent(config.nonce) + '&campaign_id=' + encodeURIComponent(id);
                 fetch(url, { credentials: 'same-origin' })
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
@@ -131,7 +131,7 @@
         }
 
         function updateRow(row, data) {
-            var statusCell = row.querySelector('.wcwp-campaign-status');
+            var statusCell = row.querySelector('.zignites-chat-campaign-status');
             if (statusCell) {
                 var label = data.status;
                 if (label === 'completed' && i18n.completed) label = i18n.completed;
@@ -140,10 +140,10 @@
                 else label = label.charAt(0).toUpperCase() + label.slice(1);
                 statusCell.textContent = label;
             }
-            setCell(row, '.wcwp-campaign-sent',    data.sent_count);
-            setCell(row, '.wcwp-campaign-failed',  data.failed_count);
-            setCell(row, '.wcwp-campaign-skipped', data.skipped_count);
-            setCell(row, '.wcwp-campaign-total',   data.total_count);
+            setCell(row, '.zignites-chat-campaign-sent',    data.sent_count);
+            setCell(row, '.zignites-chat-campaign-failed',  data.failed_count);
+            setCell(row, '.zignites-chat-campaign-skipped', data.skipped_count);
+            setCell(row, '.zignites-chat-campaign-total',   data.total_count);
         }
 
         function setCell(row, sel, n) {

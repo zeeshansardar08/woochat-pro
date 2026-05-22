@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace WooChatPro\Tests\Unit;
+namespace ZignitesChat\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
@@ -9,23 +9,23 @@ final class PrivacyTest extends TestCase
 {
     public function test_phone_match_suffix_returns_last_eight_digits(): void
     {
-        $this->assertSame('12345678', \wcwp_privacy_phone_match_suffix('+1 (555) 412-345-678'));
+        $this->assertSame('12345678', \zignites_chat_privacy_phone_match_suffix('+1 (555) 412-345-678'));
     }
 
     public function test_phone_match_suffix_returns_full_string_when_short(): void
     {
-        $this->assertSame('1234567', \wcwp_privacy_phone_match_suffix('1234567'));
+        $this->assertSame('1234567', \zignites_chat_privacy_phone_match_suffix('1234567'));
     }
 
     public function test_phone_match_suffix_strips_non_digits(): void
     {
-        $this->assertSame('23456789', \wcwp_privacy_phone_match_suffix('+92 (300) 123-456-789'));
+        $this->assertSame('23456789', \zignites_chat_privacy_phone_match_suffix('+92 (300) 123-456-789'));
     }
 
     public function test_phone_match_suffix_returns_empty_for_no_digits(): void
     {
-        $this->assertSame('', \wcwp_privacy_phone_match_suffix('abc'));
-        $this->assertSame('', \wcwp_privacy_phone_match_suffix(''));
+        $this->assertSame('', \zignites_chat_privacy_phone_match_suffix('abc'));
+        $this->assertSame('', \zignites_chat_privacy_phone_match_suffix(''));
     }
 
     public function test_format_event_row_returns_well_formed_export_item(): void
@@ -41,10 +41,10 @@ final class PrivacyTest extends TestCase
             'message_id'      => 'SMxxx',
             'created_at'      => '2026-05-09 12:34:56',
         ];
-        $item = \wcwp_privacy_format_event_row($row);
+        $item = \zignites_chat_privacy_format_event_row($row);
 
-        $this->assertSame('woochat-events', $item['group_id']);
-        $this->assertSame('wcwp-event-evt_123', $item['item_id']);
+        $this->assertSame('zignites-chat-events', $item['group_id']);
+        $this->assertSame('zignites-chat-event-evt_123', $item['item_id']);
         $this->assertNotSame('', $item['group_label']);
 
         $byName = [];
@@ -61,9 +61,9 @@ final class PrivacyTest extends TestCase
 
     public function test_format_event_row_handles_missing_fields_gracefully(): void
     {
-        $item = \wcwp_privacy_format_event_row(['event_id' => 'evt_x']);
+        $item = \zignites_chat_privacy_format_event_row(['event_id' => 'evt_x']);
 
-        $this->assertSame('wcwp-event-evt_x', $item['item_id']);
+        $this->assertSame('zignites-chat-event-evt_x', $item['item_id']);
         // All eight fields are present even when source row is sparse —
         // WP privacy export tolerates blank values but expects the schema.
         $this->assertCount(8, $item['data']);
@@ -81,10 +81,10 @@ final class PrivacyTest extends TestCase
             'attempts'   => 1,
             'created_at' => '2026-05-09 12:34:56',
         ];
-        $item = \wcwp_privacy_format_cart_row($row);
+        $item = \zignites_chat_privacy_format_cart_row($row);
 
-        $this->assertSame('woochat-carts', $item['group_id']);
-        $this->assertSame('wcwp-cart-7', $item['item_id']);
+        $this->assertSame('zignites-chat-carts', $item['group_id']);
+        $this->assertSame('zignites-chat-cart-7', $item['item_id']);
 
         $byName = [];
         foreach ($item['data'] as $field) $byName[$field['name']] = $field['value'];
@@ -104,9 +104,9 @@ final class PrivacyTest extends TestCase
             'status'        => 'sent',
             'sent_at'       => '2026-05-09 12:34:56',
         ];
-        $item = \wcwp_privacy_format_campaign_recipient_row($row, 'April promo blast');
+        $item = \zignites_chat_privacy_format_campaign_recipient_row($row, 'April promo blast');
 
-        $this->assertSame('wcwp-campaign-recipient-11', $item['item_id']);
+        $this->assertSame('zignites-chat-campaign-recipient-11', $item['item_id']);
 
         $byName = [];
         foreach ($item['data'] as $field) $byName[$field['name']] = $field['value'];
@@ -121,7 +121,7 @@ final class PrivacyTest extends TestCase
             'campaign_id' => 5,
             'phone'       => '+15551234567',
         ];
-        $item = \wcwp_privacy_format_campaign_recipient_row($row, '');
+        $item = \zignites_chat_privacy_format_campaign_recipient_row($row, '');
 
         $byName = [];
         foreach ($item['data'] as $field) $byName[$field['name']] = $field['value'];
@@ -139,7 +139,7 @@ final class PrivacyTest extends TestCase
         ];
         $lookup = ['15551234567' => true];
 
-        $matched = \wcwp_privacy_filter_rows_by_normalized_phone($rows, $lookup);
+        $matched = \zignites_chat_privacy_filter_rows_by_normalized_phone($rows, $lookup);
 
         $this->assertCount(2, $matched);
         $this->assertSame([1, 3], array_column($matched, 'id'));
@@ -147,7 +147,7 @@ final class PrivacyTest extends TestCase
 
     public function test_filter_rows_by_normalized_phone_returns_empty_for_empty_inputs(): void
     {
-        $this->assertSame([], \wcwp_privacy_filter_rows_by_normalized_phone([], ['x' => true]));
-        $this->assertSame([], \wcwp_privacy_filter_rows_by_normalized_phone([['phone' => 'x']], []));
+        $this->assertSame([], \zignites_chat_privacy_filter_rows_by_normalized_phone([], ['x' => true]));
+        $this->assertSame([], \zignites_chat_privacy_filter_rows_by_normalized_phone([['phone' => 'x']], []));
     }
 }

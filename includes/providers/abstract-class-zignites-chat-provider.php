@@ -1,6 +1,6 @@
 <?php
 /**
- * Abstract base for WooChat WhatsApp providers.
+ * Abstract base for Zignites Chat WhatsApp providers.
  *
  * Each concrete provider speaks one external API (Twilio, Meta Cloud,
  * 360dialog, etc.) and is responsible for: validating its own
@@ -10,13 +10,13 @@
  * through analytics.
  *
  * Adding a new provider is two steps:
- *   1. Subclass WCWP_Provider and implement the abstract methods.
- *   2. add_filter( 'wcwp_providers', fn( $p ) => $p + [ 'foo' => MyClass::class ] );
+ *   1. Subclass ZIGNITES_CHAT_Provider and implement the abstract methods.
+ *   2. add_filter( 'zignites_chat_providers', fn( $p ) => $p + [ 'foo' => MyClass::class ] );
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-abstract class WCWP_Provider {
+abstract class ZIGNITES_CHAT_Provider {
 
     /**
      * Send a WhatsApp message through this provider.

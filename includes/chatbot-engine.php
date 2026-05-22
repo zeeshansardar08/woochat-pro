@@ -2,104 +2,104 @@
 if (!defined('ABSPATH')) exit;
 
 // Load chatbot widget in footer
-add_action('wp_footer', 'wcwp_render_chatbot_widget');
-add_shortcode('woochat_chatbot', 'wcwp_chatbot_shortcode');
-add_action('wp_enqueue_scripts', 'wcwp_enqueue_chatbot_assets');
+add_action('wp_footer', 'zignites_chat_render_chatbot_widget');
+add_shortcode('zignites-chat_chatbot', 'zignites_chat_chatbot_shortcode');
+add_action('wp_enqueue_scripts', 'zignites_chat_enqueue_chatbot_assets');
 
 /**
  * Register the frontend chatbot stylesheet when the widget will render.
  *
  * @since 1.0.0
  */
-function wcwp_enqueue_chatbot_assets() {
+function zignites_chat_enqueue_chatbot_assets() {
     if (is_admin()) {
         return;
     }
-    if (get_option('wcwp_chatbot_enabled', 'yes') !== 'yes') {
+    if (get_option('zignites_chat_chatbot_enabled', 'yes') !== 'yes') {
         return;
     }
-    wp_enqueue_style('wcwp-chatbot-css', WCWP_URL . 'assets/css/chatbot-widget.css', [], WCWP_VERSION);
+    wp_enqueue_style('zignites-chat-chatbot-css', ZIGNITES_CHAT_URL . 'assets/css/chatbot-widget.css', [], ZIGNITES_CHAT_VERSION);
 }
 
-function wcwp_render_chatbot_widget() {
+function zignites_chat_render_chatbot_widget() {
     if (is_admin()) return;
 
     // The basic chat widget is a free feature; GPT replies, the color/icon
     // customizer and multi-agent routing are gated downstream (Pro only).
-    $enabled = get_option('wcwp_chatbot_enabled', 'yes');
+    $enabled = get_option('zignites_chat_chatbot_enabled', 'yes');
     if ($enabled !== 'yes') return;
 
-    $settings = wcwp_get_chatbot_settings();
+    $settings = zignites_chat_get_chatbot_settings();
 
     // Prevent double render if shortcode already printed
-    if (defined('WCWP_CHATBOT_RENDERED') && WCWP_CHATBOT_RENDERED) return;
+    if (defined('ZIGNITES_CHAT_CHATBOT_RENDERED') && ZIGNITES_CHAT_CHATBOT_RENDERED) return;
 
-    include WCWP_PATH . 'templates/chatbot-widget.php';
-    if (!defined('WCWP_CHATBOT_RENDERED')) {
-        define('WCWP_CHATBOT_RENDERED', true);
+    include ZIGNITES_CHAT_PATH . 'templates/chatbot-widget.php';
+    if (!defined('ZIGNITES_CHAT_CHATBOT_RENDERED')) {
+        define('ZIGNITES_CHAT_CHATBOT_RENDERED', true);
     }
 
-    wp_enqueue_script('wcwp-chatbot-js', WCWP_URL . 'assets/js/chatbot.js', ['jquery'], WCWP_VERSION, true);
-    wp_localize_script('wcwp-chatbot-js', 'wcwp_chatbot_obj', wcwp_chatbot_localized_data());
+    wp_enqueue_script('zignites-chat-chatbot-js', ZIGNITES_CHAT_URL . 'assets/js/chatbot.js', ['jquery'], ZIGNITES_CHAT_VERSION, true);
+    wp_localize_script('zignites-chat-chatbot-js', 'zignites_chat_chatbot_obj', zignites_chat_chatbot_localized_data());
 }
 
-function wcwp_chatbot_shortcode() {
-    $enabled = get_option('wcwp_chatbot_enabled', 'yes');
+function zignites_chat_chatbot_shortcode() {
+    $enabled = get_option('zignites_chat_chatbot_enabled', 'yes');
     if ($enabled !== 'yes') return '';
 
     ob_start();
-    $settings = wcwp_get_chatbot_settings();
-    include WCWP_PATH . 'templates/chatbot-widget.php';
-    wp_enqueue_script('wcwp-chatbot-js', WCWP_URL . 'assets/js/chatbot.js', ['jquery'], WCWP_VERSION, true);
-    wp_localize_script('wcwp-chatbot-js', 'wcwp_chatbot_obj', wcwp_chatbot_localized_data());
-    if (!defined('WCWP_CHATBOT_RENDERED')) {
-        define('WCWP_CHATBOT_RENDERED', true);
+    $settings = zignites_chat_get_chatbot_settings();
+    include ZIGNITES_CHAT_PATH . 'templates/chatbot-widget.php';
+    wp_enqueue_script('zignites-chat-chatbot-js', ZIGNITES_CHAT_URL . 'assets/js/chatbot.js', ['jquery'], ZIGNITES_CHAT_VERSION, true);
+    wp_localize_script('zignites-chat-chatbot-js', 'zignites_chat_chatbot_obj', zignites_chat_chatbot_localized_data());
+    if (!defined('ZIGNITES_CHAT_CHATBOT_RENDERED')) {
+        define('ZIGNITES_CHAT_CHATBOT_RENDERED', true);
     }
     return ob_get_clean();
 }
 
 /**
- * Single source of truth for the wcwp_chatbot_obj payload.
+ * Single source of truth for the zignites_chat_chatbot_obj payload.
  *
  * Both the auto-render and shortcode paths call this so a new key
  * (e.g. the GPT-fallback wiring) can't go to one but not the other.
  */
-function wcwp_chatbot_localized_data() {
-    $faq_pairs = json_decode(get_option('wcwp_faq_pairs', '[]'), true);
+function zignites_chat_chatbot_localized_data() {
+    $faq_pairs = json_decode(get_option('zignites_chat_faq_pairs', '[]'), true);
     if (!is_array($faq_pairs)) $faq_pairs = [];
 
-    $is_pro = wcwp_is_pro_active();
+    $is_pro = zignites_chat_is_pro_active();
 
     // Free tier is single-agent: keep only the first agent and force the
     // 'single' routing mode so multi-agent load-balancing stays Pro-only.
-    $agents = wcwp_get_agents();
+    $agents = zignites_chat_get_agents();
     if (!$is_pro) {
         $agents = array_slice($agents, 0, 1);
     }
 
     return [
         'faq_pairs'    => $faq_pairs,
-        'noAnswerText' => __( "Sorry, I don't have an answer for that.", 'woochat' ),
+        'noAnswerText' => __( "Sorry, I don't have an answer for that.", 'zignites-chat' ),
         'gpt'          => [
-            'enabled'  => $is_pro && get_option('wcwp_chatbot_gpt_enabled', 'no') === 'yes',
+            'enabled'  => $is_pro && get_option('zignites_chat_chatbot_gpt_enabled', 'no') === 'yes',
             'url'      => admin_url('admin-ajax.php'),
-            'nonce'    => wp_create_nonce('wcwp_chatbot_gpt'),
-            'action'   => 'wcwp_chatbot_gpt',
-            'thinking' => __('Thinking…', 'woochat'),
+            'nonce'    => wp_create_nonce('zignites_chat_chatbot_gpt'),
+            'action'   => 'zignites_chat_chatbot_gpt',
+            'thinking' => __('Thinking…', 'zignites-chat'),
         ],
         // Agents are picked client-side so a full-page cache can't pin every
         // visitor to the same agent under 'random' mode.
         'agents'        => $agents,
-        'routing_mode'  => ($is_pro && get_option('wcwp_agent_routing_mode', 'single') === 'random') ? 'random' : 'single',
+        'routing_mode'  => ($is_pro && get_option('zignites_chat_agent_routing_mode', 'single') === 'random') ? 'random' : 'single',
     ];
 }
 
-function wcwp_get_chatbot_settings() {
-    $welcome = get_option('wcwp_chatbot_welcome', 'Hi! How can I help you?');
+function zignites_chat_get_chatbot_settings() {
+    $welcome = get_option('zignites_chat_chatbot_welcome', 'Hi! How can I help you?');
 
     // The color/icon customizer is Pro — the free widget always renders with
     // the default palette regardless of any values saved while on Pro.
-    if (!wcwp_is_pro_active()) {
+    if (!zignites_chat_is_pro_active()) {
         return [
             'bubble_color' => '#1c7c54',
             'text_color'   => '#ffffff',
@@ -114,39 +114,39 @@ function wcwp_get_chatbot_settings() {
     // guarantees the chatbot template never sees an invalid color, even
     // for values saved before the validator existed.
     return [
-        'bubble_color' => wcwp_sanitize_hex_color(get_option('wcwp_chatbot_bg', '#1c7c54'), '#1c7c54'),
-        'text_color'   => wcwp_sanitize_hex_color(get_option('wcwp_chatbot_text', '#ffffff'), '#ffffff'),
-        'icon_color'   => wcwp_sanitize_hex_color(get_option('wcwp_chatbot_icon_color', '#2ec4b6'), '#2ec4b6'),
-        'icon'         => get_option('wcwp_chatbot_icon', '💬'),
+        'bubble_color' => zignites_chat_sanitize_hex_color(get_option('zignites_chat_chatbot_bg', '#1c7c54'), '#1c7c54'),
+        'text_color'   => zignites_chat_sanitize_hex_color(get_option('zignites_chat_chatbot_text', '#ffffff'), '#ffffff'),
+        'icon_color'   => zignites_chat_sanitize_hex_color(get_option('zignites_chat_chatbot_icon_color', '#2ec4b6'), '#2ec4b6'),
+        'icon'         => get_option('zignites_chat_chatbot_icon', '💬'),
         'welcome'      => $welcome,
     ];
 }
 
-add_action('wp_ajax_wcwp_chatbot_gpt', 'wcwp_ajax_chatbot_gpt');
-add_action('wp_ajax_nopriv_wcwp_chatbot_gpt', 'wcwp_ajax_chatbot_gpt');
-function wcwp_ajax_chatbot_gpt() {
-    if (!check_ajax_referer('wcwp_chatbot_gpt', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
+add_action('wp_ajax_zignites_chat_chatbot_gpt', 'zignites_chat_ajax_chatbot_gpt');
+add_action('wp_ajax_nopriv_zignites_chat_chatbot_gpt', 'zignites_chat_ajax_chatbot_gpt');
+function zignites_chat_ajax_chatbot_gpt() {
+    if (!check_ajax_referer('zignites_chat_chatbot_gpt', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'zignites-chat')], 400);
     }
 
-    if (get_option('wcwp_chatbot_gpt_enabled', 'no') !== 'yes') {
-        wp_send_json_error(['message' => __('GPT fallback disabled', 'woochat')], 403);
+    if (get_option('zignites_chat_chatbot_gpt_enabled', 'no') !== 'yes') {
+        wp_send_json_error(['message' => __('GPT fallback disabled', 'zignites-chat')], 403);
     }
 
     // Defense in depth: the widget render paths already gate on Pro, but a
     // direct admin-ajax call would otherwise sail past the front-end gate.
-    if (!wcwp_is_pro_active()) {
-        wp_send_json_error(['message' => __('Pro license required', 'woochat')], 403);
+    if (!zignites_chat_is_pro_active()) {
+        wp_send_json_error(['message' => __('Pro license required', 'zignites-chat')], 403);
     }
 
     $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
-    if (!wcwp_chatbot_gpt_rate_limit_ok($ip)) {
-        wp_send_json_error(['message' => __('Too many requests', 'woochat')], 429);
+    if (!zignites_chat_chatbot_gpt_rate_limit_ok($ip)) {
+        wp_send_json_error(['message' => __('Too many requests', 'zignites-chat')], 429);
     }
 
     $question = isset($_POST['question']) ? sanitize_text_field(wp_unslash($_POST['question'])) : '';
     if ($question === '') {
-        wp_send_json_error(['message' => __('Empty question', 'woochat')], 400);
+        wp_send_json_error(['message' => __('Empty question', 'zignites-chat')], 400);
     }
 
     // Cap input length: keeps the upstream prompt bounded and curbs misuse.
@@ -156,9 +156,9 @@ function wcwp_ajax_chatbot_gpt() {
         $question = substr($question, 0, 500);
     }
 
-    $reply = wcwp_generate_chatbot_reply($question);
+    $reply = zignites_chat_generate_chatbot_reply($question);
     if ($reply === '') {
-        wp_send_json_error(['message' => __('No reply available', 'woochat')], 502);
+        wp_send_json_error(['message' => __('No reply available', 'zignites-chat')], 502);
     }
 
     wp_send_json_success(['reply' => $reply]);
@@ -173,15 +173,15 @@ function wcwp_ajax_chatbot_gpt() {
  * @param string $ip Caller's IP.
  * @return bool True if within the limit, false if blocked.
  */
-function wcwp_chatbot_gpt_rate_limit_ok($ip) {
+function zignites_chat_chatbot_gpt_rate_limit_ok($ip) {
     if (!$ip) return true;
 
-    $limit  = (int) apply_filters('wcwp_chatbot_gpt_rate_limit', 10);
-    $window = (int) apply_filters('wcwp_chatbot_gpt_rate_window', HOUR_IN_SECONDS);
+    $limit  = (int) apply_filters('zignites_chat_chatbot_gpt_rate_limit', 10);
+    $window = (int) apply_filters('zignites_chat_chatbot_gpt_rate_window', HOUR_IN_SECONDS);
 
     if ($limit < 1 || $window < 1) return true;
 
-    $key  = 'wcwp_chatbot_gpt_rate_' . md5($ip);
+    $key  = 'zignites_chat_chatbot_gpt_rate_' . md5($ip);
     $data = get_transient($key);
 
     if (!is_array($data) || !isset($data['count'], $data['start'])) {
@@ -206,7 +206,7 @@ function wcwp_chatbot_gpt_rate_limit_ok($ip) {
 /**
  * Single-turn GPT reply for the chatbot.
  *
- * Mirrors the shape of wcwp_generate_gpt_followup() in scheduler.php but
+ * Mirrors the shape of zignites_chat_generate_gpt_followup() in scheduler.php but
  * with a chatbot-appropriate system prompt and a string input rather than
  * a WC_Order. Returns '' on any failure path so the JS can fall back to
  * noAnswerText without the user seeing an error.
@@ -214,16 +214,16 @@ function wcwp_chatbot_gpt_rate_limit_ok($ip) {
  * @param string $user_message
  * @return string
  */
-function wcwp_generate_chatbot_reply($user_message) {
-    $endpoint = trim(get_option('wcwp_gpt_api_endpoint', ''));
-    $api_key  = trim(get_option('wcwp_gpt_api_key', ''));
-    $model    = trim(get_option('wcwp_gpt_model', 'gpt-3.5-turbo'));
+function zignites_chat_generate_chatbot_reply($user_message) {
+    $endpoint = trim(get_option('zignites_chat_gpt_api_endpoint', ''));
+    $api_key  = trim(get_option('zignites_chat_gpt_api_key', ''));
+    $model    = trim(get_option('zignites_chat_gpt_model', 'gpt-3.5-turbo'));
     if ($model === '') $model = 'gpt-3.5-turbo';
 
     if ($endpoint === '' || $api_key === '') return '';
 
     $system_prompt = apply_filters(
-        'wcwp_chatbot_gpt_system_prompt',
+        'zignites_chat_chatbot_gpt_system_prompt',
         "You are a helpful customer-support assistant for an online store. Keep replies under 280 characters, friendly and direct. If the question is outside store/product/order topics or you don't know the answer, say so briefly and suggest the customer contact human support."
     );
 

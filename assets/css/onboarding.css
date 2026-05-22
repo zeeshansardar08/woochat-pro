@@ -1,6 +1,6 @@
-/* WooChat Pro – Onboarding Wizard Styles */
+/* Zignites Chat Pro – Onboarding Wizard Styles */
 
-#wcwp-onboarding-modal {
+#zignites-chat-onboarding-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(44,62,80,0.18);
@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
 }
-.wcwp-onboarding-content {
+.zignites-chat-onboarding-content {
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 8px 32px rgba(44,62,80,0.18);
@@ -19,33 +19,33 @@
   text-align: center;
   position: relative;
 }
-.wcwp-onboarding-progress {
+.zignites-chat-onboarding-progress {
   background: #e5e5e5;
   border-radius: 6px;
   height: 8px;
   margin-bottom: 24px;
   overflow: hidden;
 }
-.wcwp-onboarding-progress-inner {
+.zignites-chat-onboarding-progress-inner {
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
   height: 100%;
   width: 0;
   transition: width 0.3s;
 }
-.wcwp-onboarding-step {
+.zignites-chat-onboarding-step {
   display: none;
   margin-bottom: 18px;
 }
-.wcwp-onboarding-step.active {
+.zignites-chat-onboarding-step.active {
   display: block;
 }
-.wcwp-onboarding-buttons {
+.zignites-chat-onboarding-buttons {
   display: flex;
   justify-content: space-between;
   margin-top: 18px;
   gap: 10px;
 }
-.wcwp-onboarding-next, .wcwp-onboarding-prev, .wcwp-onboarding-skip, .wcwp-onboarding-finish {
+.zignites-chat-onboarding-next, .zignites-chat-onboarding-prev, .zignites-chat-onboarding-skip, .zignites-chat-onboarding-finish {
   background: #1c7c54;
   color: #fff;
   border: none;
@@ -55,30 +55,30 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.wcwp-onboarding-next:hover, .wcwp-onboarding-prev:hover, .wcwp-onboarding-skip:hover, .wcwp-onboarding-finish:hover {
+.zignites-chat-onboarding-next:hover, .zignites-chat-onboarding-prev:hover, .zignites-chat-onboarding-skip:hover, .zignites-chat-onboarding-finish:hover {
   background: #2ec4b6;
 }
-.wcwp-onboarding-skip {
+.zignites-chat-onboarding-skip {
   background: #e5e5e5;
   color: #1c7c54;
 }
-.wcwp-onboarding-skip:hover {
+.zignites-chat-onboarding-skip:hover {
   background: #b2f7ef;
 }
-.wcwp-onboarding-next:disabled,
-.wcwp-onboarding-prev:disabled {
+.zignites-chat-onboarding-next:disabled,
+.zignites-chat-onboarding-prev:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.wcwp-onboarding-provider-choices {
+.zignites-chat-onboarding-provider-choices {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin: 18px 0 6px;
   text-align: left;
 }
-.wcwp-onboarding-provider-choice {
+.zignites-chat-onboarding-provider-choice {
   display: block;
   border: 1px solid #d9dee3;
   border-radius: 8px;
@@ -86,22 +86,22 @@
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.wcwp-onboarding-provider-choice:hover {
+.zignites-chat-onboarding-provider-choice:hover {
   border-color: #1c7c54;
 }
-.wcwp-onboarding-provider-choice input[type="radio"] {
+.zignites-chat-onboarding-provider-choice input[type="radio"] {
   margin-right: 8px;
 }
-.wcwp-onboarding-provider-choice:has(input:checked) {
+.zignites-chat-onboarding-provider-choice:has(input:checked) {
   border-color: #1c7c54;
   box-shadow: 0 0 0 2px rgba(28,124,84,0.12);
 }
-.wcwp-onboarding-provider-title {
+.zignites-chat-onboarding-provider-title {
   font-weight: 600;
   font-size: 1rem;
   display: inline;
 }
-.wcwp-onboarding-provider-desc {
+.zignites-chat-onboarding-provider-desc {
   display: block;
   margin-top: 4px;
   margin-left: 22px;
@@ -109,28 +109,28 @@
   color: #666;
 }
 
-.wcwp-onboarding-step-hint {
+.zignites-chat-onboarding-step-hint {
   color: #555;
   font-size: 0.95rem;
   margin: 4px 0 14px;
 }
-.wcwp-onboarding-fields {
+.zignites-chat-onboarding-fields {
   display: none;
   text-align: left;
   margin-top: 8px;
 }
-.wcwp-onboarding-field {
+.zignites-chat-onboarding-field {
   margin-bottom: 12px;
 }
-.wcwp-onboarding-field label {
+.zignites-chat-onboarding-field label {
   display: block;
   font-weight: 600;
   font-size: 0.92rem;
   margin-bottom: 4px;
   color: #2c3e50;
 }
-.wcwp-onboarding-field input[type="text"],
-.wcwp-onboarding-field input[type="password"] {
+.zignites-chat-onboarding-field input[type="text"],
+.zignites-chat-onboarding-field input[type="password"] {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid #c8ced4;
@@ -138,22 +138,22 @@
   font-size: 0.95rem;
   box-sizing: border-box;
 }
-.wcwp-onboarding-field input:focus {
+.zignites-chat-onboarding-field input:focus {
   border-color: #1c7c54;
   outline: none;
   box-shadow: 0 0 0 2px rgba(28,124,84,0.15);
 }
-.wcwp-onboarding-field.has-error input {
+.zignites-chat-onboarding-field.has-error input {
   border-color: #c0392b;
 }
-.wcwp-onboarding-field-error {
+.zignites-chat-onboarding-field-error {
   display: block;
   margin-top: 4px;
   color: #c0392b;
   font-size: 0.85rem;
   min-height: 1em;
 }
-.wcwp-onboarding-form-error {
+.zignites-chat-onboarding-form-error {
   margin-top: 10px;
   color: #c0392b;
   font-size: 0.9rem;

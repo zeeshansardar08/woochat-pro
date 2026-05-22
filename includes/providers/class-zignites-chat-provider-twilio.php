@@ -11,16 +11,16 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-class WCWP_Provider_Twilio extends WCWP_Provider {
+class ZIGNITES_CHAT_Provider_Twilio extends ZIGNITES_CHAT_Provider {
 
     public function name() {
         return 'twilio';
     }
 
     public function is_configured() {
-        return get_option( 'wcwp_twilio_sid' )
-            && get_option( 'wcwp_twilio_auth_token' )
-            && get_option( 'wcwp_twilio_from' );
+        return get_option( 'zignites_chat_twilio_sid' )
+            && get_option( 'zignites_chat_twilio_auth_token' )
+            && get_option( 'zignites_chat_twilio_from' );
     }
 
     public function missing_credentials_message() {
@@ -28,9 +28,9 @@ class WCWP_Provider_Twilio extends WCWP_Provider {
     }
 
     public function send( $to, $message ) {
-        $sid       = (string) get_option( 'wcwp_twilio_sid' );
-        $token     = (string) get_option( 'wcwp_twilio_auth_token' );
-        $from      = (string) get_option( 'wcwp_twilio_from' );
+        $sid       = (string) get_option( 'zignites_chat_twilio_sid' );
+        $token     = (string) get_option( 'zignites_chat_twilio_auth_token' );
+        $from      = (string) get_option( 'zignites_chat_twilio_from' );
         $to_number = 'whatsapp:+' . preg_replace( '/[^0-9]/', '', (string) $to );
 
         $response = wp_remote_post(

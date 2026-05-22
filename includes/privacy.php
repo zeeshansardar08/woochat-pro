@@ -8,19 +8,19 @@
  * Right-to-Erasure request.
  *
  * Data we own and surface:
- *   - {prefix}wcwp_analytics_events     — per-message log (phone,
+ *   - {prefix}zignites_chat_analytics_events     — per-message log (phone,
  *                                          message_preview, meta).
- *   - {prefix}wcwp_abandoned_carts      — recovery queue (phone, cart
+ *   - {prefix}zignites_chat_abandoned_carts      — recovery queue (phone, cart
  *                                          contents JSON).
- *   - {prefix}wcwp_campaign_recipients  — bulk-campaign recipient list
+ *   - {prefix}zignites_chat_campaign_recipients  — bulk-campaign recipient list
  *                                          (phone, customer_name).
- *   - wcwp_optout_list option            — suppression list of phones
+ *   - zignites_chat_optout_list option            — suppression list of phones
  *                                          that opted out.
  *
  * Email → phone resolution: WP privacy keys everything by email, but
- * our tables store phone numbers. wcwp_privacy_phones_for_email() pulls
+ * our tables store phone numbers. zignites_chat_privacy_phones_for_email() pulls
  * billing_phone from the matching WP user (if any) and from every WC
- * order under that email, normalises each via wcwp_normalize_phone(),
+ * order under that email, normalises each via zignites_chat_normalize_phone(),
  * and dedupes — covers both registered customers and guest checkout.
  *
  * Erasure policy choices:
@@ -36,62 +36,70 @@
 
 if (!defined('ABSPATH')) exit;
 
-add_filter('wp_privacy_personal_data_exporters', 'wcwp_privacy_register_exporters', 20);
-add_filter('wp_privacy_personal_data_erasers', 'wcwp_privacy_register_erasers', 20);
-add_action('admin_init', 'wcwp_privacy_register_policy_content');
+/*
+ * Direct SQL below runs against the plugin's own custom tables. Every
+ * user-supplied value is bound through $wpdb->prepare(); the only values
+ * interpolated into query strings are table names derived from
+ * $wpdb->prefix. This transactional data is not object-cached.
+ */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
-function wcwp_privacy_register_exporters($exporters) {
-    $exporters['woochat-events'] = [
-        'exporter_friendly_name' => __('WooChat – WhatsApp messaging events', 'woochat'),
-        'callback'               => 'wcwp_privacy_export_events',
+add_filter('wp_privacy_personal_data_exporters', 'zignites_chat_privacy_register_exporters', 20);
+add_filter('wp_privacy_personal_data_erasers', 'zignites_chat_privacy_register_erasers', 20);
+add_action('admin_init', 'zignites_chat_privacy_register_policy_content');
+
+function zignites_chat_privacy_register_exporters($exporters) {
+    $exporters['zignites-chat-events'] = [
+        'exporter_friendly_name' => __('Zignites Chat – WhatsApp messaging events', 'zignites-chat'),
+        'callback'               => 'zignites_chat_privacy_export_events',
     ];
-    $exporters['woochat-carts'] = [
-        'exporter_friendly_name' => __('WooChat – Abandoned cart records', 'woochat'),
-        'callback'               => 'wcwp_privacy_export_carts',
+    $exporters['zignites-chat-carts'] = [
+        'exporter_friendly_name' => __('Zignites Chat – Abandoned cart records', 'zignites-chat'),
+        'callback'               => 'zignites_chat_privacy_export_carts',
     ];
-    $exporters['woochat-campaigns'] = [
-        'exporter_friendly_name' => __('WooChat – Bulk campaign recipients', 'woochat'),
-        'callback'               => 'wcwp_privacy_export_campaigns',
+    $exporters['zignites-chat-campaigns'] = [
+        'exporter_friendly_name' => __('Zignites Chat – Bulk campaign recipients', 'zignites-chat'),
+        'callback'               => 'zignites_chat_privacy_export_campaigns',
     ];
-    $exporters['woochat-optout'] = [
-        'exporter_friendly_name' => __('WooChat – Opt-out status', 'woochat'),
-        'callback'               => 'wcwp_privacy_export_optout',
+    $exporters['zignites-chat-optout'] = [
+        'exporter_friendly_name' => __('Zignites Chat – Opt-out status', 'zignites-chat'),
+        'callback'               => 'zignites_chat_privacy_export_optout',
     ];
     return $exporters;
 }
 
-function wcwp_privacy_register_erasers($erasers) {
-    $erasers['woochat-events'] = [
-        'eraser_friendly_name' => __('WooChat – WhatsApp messaging events', 'woochat'),
-        'callback'             => 'wcwp_privacy_erase_events',
+function zignites_chat_privacy_register_erasers($erasers) {
+    $erasers['zignites-chat-events'] = [
+        'eraser_friendly_name' => __('Zignites Chat – WhatsApp messaging events', 'zignites-chat'),
+        'callback'             => 'zignites_chat_privacy_erase_events',
     ];
-    $erasers['woochat-carts'] = [
-        'eraser_friendly_name' => __('WooChat – Abandoned cart records', 'woochat'),
-        'callback'             => 'wcwp_privacy_erase_carts',
+    $erasers['zignites-chat-carts'] = [
+        'eraser_friendly_name' => __('Zignites Chat – Abandoned cart records', 'zignites-chat'),
+        'callback'             => 'zignites_chat_privacy_erase_carts',
     ];
-    $erasers['woochat-campaigns'] = [
-        'eraser_friendly_name' => __('WooChat – Bulk campaign recipients', 'woochat'),
-        'callback'             => 'wcwp_privacy_erase_campaigns',
+    $erasers['zignites-chat-campaigns'] = [
+        'eraser_friendly_name' => __('Zignites Chat – Bulk campaign recipients', 'zignites-chat'),
+        'callback'             => 'zignites_chat_privacy_erase_campaigns',
     ];
-    $erasers['woochat-optout'] = [
-        'eraser_friendly_name' => __('WooChat – Opt-out status', 'woochat'),
-        'callback'             => 'wcwp_privacy_erase_optout',
+    $erasers['zignites-chat-optout'] = [
+        'eraser_friendly_name' => __('Zignites Chat – Opt-out status', 'zignites-chat'),
+        'callback'             => 'zignites_chat_privacy_erase_optout',
     ];
     return $erasers;
 }
 
-function wcwp_privacy_register_policy_content() {
+function zignites_chat_privacy_register_policy_content() {
     if (!function_exists('wp_add_privacy_policy_content')) return;
-    $content  = '<p>' . esc_html__('When WooChat is active, WhatsApp messages sent on your behalf are recorded for analytics, retry, and compliance reasons.', 'woochat') . '</p>';
-    $content .= '<p><strong>' . esc_html__('What is stored:', 'woochat') . '</strong></p>';
+    $content  = '<p>' . esc_html__('When Zignites Chat is active, WhatsApp messages sent on your behalf are recorded for analytics, retry, and compliance reasons.', 'zignites-chat') . '</p>';
+    $content .= '<p><strong>' . esc_html__('What is stored:', 'zignites-chat') . '</strong></p>';
     $content .= '<ul>';
-    $content .= '<li>' . esc_html__('Per-message events: timestamp, message type, status, phone number, order id (if any), provider id, message id, and a redacted preview of the message body.', 'woochat') . '</li>';
-    $content .= '<li>' . esc_html__('Abandoned cart records: phone number, cart contents, and timestamps used to schedule recovery messages.', 'woochat') . '</li>';
-    $content .= '<li>' . esc_html__('Bulk campaign recipients: phone number and first name, scoped to the campaign that targeted them.', 'woochat') . '</li>';
-    $content .= '<li>' . esc_html__('Suppression list: phone numbers that opted out of further messages. Retained for compliance even after a personal-data erasure request, to keep the opt-out honoured.', 'woochat') . '</li>';
+    $content .= '<li>' . esc_html__('Per-message events: timestamp, message type, status, phone number, order id (if any), provider id, message id, and a redacted preview of the message body.', 'zignites-chat') . '</li>';
+    $content .= '<li>' . esc_html__('Abandoned cart records: phone number, cart contents, and timestamps used to schedule recovery messages.', 'zignites-chat') . '</li>';
+    $content .= '<li>' . esc_html__('Bulk campaign recipients: phone number and first name, scoped to the campaign that targeted them.', 'zignites-chat') . '</li>';
+    $content .= '<li>' . esc_html__('Suppression list: phone numbers that opted out of further messages. Retained for compliance even after a personal-data erasure request, to keep the opt-out honoured.', 'zignites-chat') . '</li>';
     $content .= '</ul>';
-    $content .= '<p>' . esc_html__('Customers can request export or erasure of this data via Tools → Export Personal Data and Tools → Erase Personal Data, keyed on the email address they used at checkout.', 'woochat') . '</p>';
-    wp_add_privacy_policy_content('WooChat', $content);
+    $content .= '<p>' . esc_html__('Customers can request export or erasure of this data via Tools → Export Personal Data and Tools → Erase Personal Data, keyed on the email address they used at checkout.', 'zignites-chat') . '</p>';
+    wp_add_privacy_policy_content('Zignites Chat', $content);
 }
 
 /**
@@ -110,7 +118,7 @@ function wcwp_privacy_register_policy_content() {
  * @param string $email
  * @return string[]
  */
-function wcwp_privacy_phones_for_email($email) {
+function zignites_chat_privacy_phones_for_email($email) {
     $email = is_string($email) ? sanitize_email($email) : '';
     if ($email === '') return [];
 
@@ -119,7 +127,7 @@ function wcwp_privacy_phones_for_email($email) {
     $user = get_user_by('email', $email);
     if ($user) {
         $meta_phone = get_user_meta($user->ID, 'billing_phone', true);
-        $norm = wcwp_normalize_phone($meta_phone);
+        $norm = zignites_chat_normalize_phone($meta_phone);
         if ($norm !== '') $phones[$norm] = true;
     }
 
@@ -132,7 +140,7 @@ function wcwp_privacy_phones_for_email($email) {
         if (is_array($orders)) {
             foreach ($orders as $order) {
                 if (!is_object($order) || !method_exists($order, 'get_billing_phone')) continue;
-                $norm = wcwp_normalize_phone($order->get_billing_phone());
+                $norm = zignites_chat_normalize_phone($order->get_billing_phone());
                 if ($norm !== '') $phones[$norm] = true;
             }
         }
@@ -154,7 +162,7 @@ function wcwp_privacy_phones_for_email($email) {
  * @param string $normalized_phone
  * @return string Substring (no wildcards) — caller composes the LIKE.
  */
-function wcwp_privacy_phone_match_suffix($normalized_phone) {
+function zignites_chat_privacy_phone_match_suffix($normalized_phone) {
     $digits = preg_replace('/\D+/', '', (string) $normalized_phone);
     if ($digits === '') return '';
     return strlen($digits) > 8 ? substr($digits, -8) : $digits;
@@ -166,56 +174,56 @@ function wcwp_privacy_phone_match_suffix($normalized_phone) {
  * Pure: no DB, no globals. Extracted so the field-name labels and
  * masking choices are unit-testable.
  *
- * @param array $row Row from wcwp_analytics_events (associative).
+ * @param array $row Row from zignites_chat_analytics_events (associative).
  * @return array{group_id:string,group_label:string,item_id:string,data:array}
  */
-function wcwp_privacy_format_event_row($row) {
+function zignites_chat_privacy_format_event_row($row) {
     $event_id = isset($row['event_id']) ? (string) $row['event_id'] : (isset($row['id']) ? (string) $row['id'] : '');
     return [
-        'group_id'    => 'woochat-events',
-        'group_label' => __('WooChat – WhatsApp messaging events', 'woochat'),
-        'item_id'     => 'wcwp-event-' . $event_id,
+        'group_id'    => 'zignites-chat-events',
+        'group_label' => __('Zignites Chat – WhatsApp messaging events', 'zignites-chat'),
+        'item_id'     => 'zignites-chat-event-' . $event_id,
         'data'        => [
-            ['name' => __('Date',       'woochat'), 'value' => $row['created_at'] ?? ($row['time'] ?? '')],
-            ['name' => __('Type',       'woochat'), 'value' => $row['type'] ?? ''],
-            ['name' => __('Status',     'woochat'), 'value' => $row['status'] ?? ''],
-            ['name' => __('Phone',      'woochat'), 'value' => $row['phone'] ?? ''],
-            ['name' => __('Order ID',   'woochat'), 'value' => isset($row['order_id']) ? (string) (int) $row['order_id'] : ''],
-            ['name' => __('Provider',   'woochat'), 'value' => $row['provider'] ?? ''],
-            ['name' => __('Message ID', 'woochat'), 'value' => $row['message_id'] ?? ''],
-            ['name' => __('Preview',    'woochat'), 'value' => $row['message_preview'] ?? ''],
+            ['name' => __('Date',       'zignites-chat'), 'value' => $row['created_at'] ?? ($row['time'] ?? '')],
+            ['name' => __('Type',       'zignites-chat'), 'value' => $row['type'] ?? ''],
+            ['name' => __('Status',     'zignites-chat'), 'value' => $row['status'] ?? ''],
+            ['name' => __('Phone',      'zignites-chat'), 'value' => $row['phone'] ?? ''],
+            ['name' => __('Order ID',   'zignites-chat'), 'value' => isset($row['order_id']) ? (string) (int) $row['order_id'] : ''],
+            ['name' => __('Provider',   'zignites-chat'), 'value' => $row['provider'] ?? ''],
+            ['name' => __('Message ID', 'zignites-chat'), 'value' => $row['message_id'] ?? ''],
+            ['name' => __('Preview',    'zignites-chat'), 'value' => $row['message_preview'] ?? ''],
         ],
     ];
 }
 
-function wcwp_privacy_format_cart_row($row) {
+function zignites_chat_privacy_format_cart_row($row) {
     return [
-        'group_id'    => 'woochat-carts',
-        'group_label' => __('WooChat – Abandoned cart records', 'woochat'),
-        'item_id'     => 'wcwp-cart-' . (isset($row['id']) ? (int) $row['id'] : 0),
+        'group_id'    => 'zignites-chat-carts',
+        'group_label' => __('Zignites Chat – Abandoned cart records', 'zignites-chat'),
+        'item_id'     => 'zignites-chat-cart-' . (isset($row['id']) ? (int) $row['id'] : 0),
         'data'        => [
-            ['name' => __('Created',  'woochat'), 'value' => $row['created_at'] ?? ''],
-            ['name' => __('Phone',    'woochat'), 'value' => $row['phone'] ?? ''],
-            ['name' => __('Total',    'woochat'), 'value' => isset($row['total']) ? (string) $row['total'] : ''],
-            ['name' => __('Items',    'woochat'), 'value' => $row['cart_json'] ?? ''],
-            ['name' => __('Status',   'woochat'), 'value' => $row['status'] ?? ''],
-            ['name' => __('Consent',  'woochat'), 'value' => $row['consent'] ?? ''],
-            ['name' => __('Attempts', 'woochat'), 'value' => isset($row['attempts']) ? (string) (int) $row['attempts'] : '0'],
+            ['name' => __('Created',  'zignites-chat'), 'value' => $row['created_at'] ?? ''],
+            ['name' => __('Phone',    'zignites-chat'), 'value' => $row['phone'] ?? ''],
+            ['name' => __('Total',    'zignites-chat'), 'value' => isset($row['total']) ? (string) $row['total'] : ''],
+            ['name' => __('Items',    'zignites-chat'), 'value' => $row['cart_json'] ?? ''],
+            ['name' => __('Status',   'zignites-chat'), 'value' => $row['status'] ?? ''],
+            ['name' => __('Consent',  'zignites-chat'), 'value' => $row['consent'] ?? ''],
+            ['name' => __('Attempts', 'zignites-chat'), 'value' => isset($row['attempts']) ? (string) (int) $row['attempts'] : '0'],
         ],
     ];
 }
 
-function wcwp_privacy_format_campaign_recipient_row($row, $campaign_name = '') {
+function zignites_chat_privacy_format_campaign_recipient_row($row, $campaign_name = '') {
     return [
-        'group_id'    => 'woochat-campaigns',
-        'group_label' => __('WooChat – Bulk campaign recipients', 'woochat'),
-        'item_id'     => 'wcwp-campaign-recipient-' . (isset($row['id']) ? (int) $row['id'] : 0),
+        'group_id'    => 'zignites-chat-campaigns',
+        'group_label' => __('Zignites Chat – Bulk campaign recipients', 'zignites-chat'),
+        'item_id'     => 'zignites-chat-campaign-recipient-' . (isset($row['id']) ? (int) $row['id'] : 0),
         'data'        => [
-            ['name' => __('Campaign',      'woochat'), 'value' => $campaign_name !== '' ? $campaign_name : (isset($row['campaign_id']) ? '#' . (int) $row['campaign_id'] : '')],
-            ['name' => __('Phone',         'woochat'), 'value' => $row['phone'] ?? ''],
-            ['name' => __('Customer name', 'woochat'), 'value' => $row['customer_name'] ?? ''],
-            ['name' => __('Status',        'woochat'), 'value' => $row['status'] ?? ''],
-            ['name' => __('Sent at',       'woochat'), 'value' => $row['sent_at'] ?? ''],
+            ['name' => __('Campaign',      'zignites-chat'), 'value' => $campaign_name !== '' ? $campaign_name : (isset($row['campaign_id']) ? '#' . (int) $row['campaign_id'] : '')],
+            ['name' => __('Phone',         'zignites-chat'), 'value' => $row['phone'] ?? ''],
+            ['name' => __('Customer name', 'zignites-chat'), 'value' => $row['customer_name'] ?? ''],
+            ['name' => __('Status',        'zignites-chat'), 'value' => $row['status'] ?? ''],
+            ['name' => __('Sent at',       'zignites-chat'), 'value' => $row['sent_at'] ?? ''],
         ],
     ];
 }
@@ -233,12 +241,12 @@ function wcwp_privacy_format_campaign_recipient_row($row, $campaign_name = '') {
  * @param array<string, true> $phone_lookup Normalised phones indexed for O(1) check.
  * @return array<int, array> Rows in original order whose phone matches.
  */
-function wcwp_privacy_filter_rows_by_normalized_phone($rows, $phone_lookup) {
+function zignites_chat_privacy_filter_rows_by_normalized_phone($rows, $phone_lookup) {
     if (!is_array($rows) || empty($rows) || empty($phone_lookup)) return [];
     $out = [];
     foreach ($rows as $row) {
         if (!isset($row['phone'])) continue;
-        $norm = wcwp_normalize_phone($row['phone']);
+        $norm = zignites_chat_normalize_phone($row['phone']);
         if ($norm === '') continue;
         if (isset($phone_lookup[$norm])) $out[] = $row;
     }
@@ -249,16 +257,16 @@ function wcwp_privacy_filter_rows_by_normalized_phone($rows, $phone_lookup) {
  * Exporters
  * ----------------------------------------------------------------------- */
 
-function wcwp_privacy_export_events($email_address, $page = 1) {
-    $phones = wcwp_privacy_phones_for_email($email_address);
+function zignites_chat_privacy_export_events($email_address, $page = 1) {
+    $phones = zignites_chat_privacy_phones_for_email($email_address);
     $items = [];
     if (!empty($phones)) {
         global $wpdb;
-        $table = wcwp_get_analytics_table_name();
+        $table = zignites_chat_get_analytics_table_name();
         $lookup = array_flip($phones);
         $candidates = [];
         foreach ($phones as $phone) {
-            $suffix = wcwp_privacy_phone_match_suffix($phone);
+            $suffix = zignites_chat_privacy_phone_match_suffix($phone);
             if ($suffix === '') continue;
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
@@ -271,24 +279,24 @@ function wcwp_privacy_export_events($email_address, $page = 1) {
                 foreach ($rows as $row) $candidates[$row['event_id']] = $row;
             }
         }
-        $matched = wcwp_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
+        $matched = zignites_chat_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
         foreach ($matched as $row) {
-            $items[] = wcwp_privacy_format_event_row($row);
+            $items[] = zignites_chat_privacy_format_event_row($row);
         }
     }
     return ['data' => $items, 'done' => true];
 }
 
-function wcwp_privacy_export_carts($email_address, $page = 1) {
-    $phones = wcwp_privacy_phones_for_email($email_address);
+function zignites_chat_privacy_export_carts($email_address, $page = 1) {
+    $phones = zignites_chat_privacy_phones_for_email($email_address);
     $items = [];
     if (!empty($phones)) {
         global $wpdb;
-        $table = wcwp_get_cart_table_name();
+        $table = zignites_chat_get_cart_table_name();
         $lookup = array_flip($phones);
         $candidates = [];
         foreach ($phones as $phone) {
-            $suffix = wcwp_privacy_phone_match_suffix($phone);
+            $suffix = zignites_chat_privacy_phone_match_suffix($phone);
             if ($suffix === '') continue;
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
@@ -301,25 +309,25 @@ function wcwp_privacy_export_carts($email_address, $page = 1) {
                 foreach ($rows as $row) $candidates[(int) $row['id']] = $row;
             }
         }
-        $matched = wcwp_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
+        $matched = zignites_chat_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
         foreach ($matched as $row) {
-            $items[] = wcwp_privacy_format_cart_row($row);
+            $items[] = zignites_chat_privacy_format_cart_row($row);
         }
     }
     return ['data' => $items, 'done' => true];
 }
 
-function wcwp_privacy_export_campaigns($email_address, $page = 1) {
-    $phones = wcwp_privacy_phones_for_email($email_address);
+function zignites_chat_privacy_export_campaigns($email_address, $page = 1) {
+    $phones = zignites_chat_privacy_phones_for_email($email_address);
     $items = [];
     if (!empty($phones)) {
         global $wpdb;
-        $recipients_table = wcwp_campaign_recipients_table_name();
-        $campaigns_table  = wcwp_campaigns_table_name();
+        $recipients_table = zignites_chat_campaign_recipients_table_name();
+        $campaigns_table  = zignites_chat_campaigns_table_name();
         $lookup = array_flip($phones);
         $candidates = [];
         foreach ($phones as $phone) {
-            $suffix = wcwp_privacy_phone_match_suffix($phone);
+            $suffix = zignites_chat_privacy_phone_match_suffix($phone);
             if ($suffix === '') continue;
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
@@ -335,29 +343,29 @@ function wcwp_privacy_export_campaigns($email_address, $page = 1) {
                 foreach ($rows as $row) $candidates[(int) $row['id']] = $row;
             }
         }
-        $matched = wcwp_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
+        $matched = zignites_chat_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
         foreach ($matched as $row) {
             $campaign_name = isset($row['campaign_name']) ? (string) $row['campaign_name'] : '';
-            $items[] = wcwp_privacy_format_campaign_recipient_row($row, $campaign_name);
+            $items[] = zignites_chat_privacy_format_campaign_recipient_row($row, $campaign_name);
         }
     }
     return ['data' => $items, 'done' => true];
 }
 
-function wcwp_privacy_export_optout($email_address, $page = 1) {
-    $phones = wcwp_privacy_phones_for_email($email_address);
+function zignites_chat_privacy_export_optout($email_address, $page = 1) {
+    $phones = zignites_chat_privacy_phones_for_email($email_address);
     $items = [];
     if (!empty($phones)) {
-        $optout = wcwp_get_optout_list();
+        $optout = zignites_chat_get_optout_list();
         foreach ($phones as $phone) {
             if (!in_array($phone, $optout, true)) continue;
             $items[] = [
-                'group_id'    => 'woochat-optout',
-                'group_label' => __('WooChat – Opt-out status', 'woochat'),
-                'item_id'     => 'wcwp-optout-' . md5($phone),
+                'group_id'    => 'zignites-chat-optout',
+                'group_label' => __('Zignites Chat – Opt-out status', 'zignites-chat'),
+                'item_id'     => 'zignites-chat-optout-' . md5($phone),
                 'data'        => [
-                    ['name' => __('Phone',  'woochat'), 'value' => $phone],
-                    ['name' => __('Status', 'woochat'), 'value' => __('Opted out of further messages', 'woochat')],
+                    ['name' => __('Phone',  'zignites-chat'), 'value' => $phone],
+                    ['name' => __('Status', 'zignites-chat'), 'value' => __('Opted out of further messages', 'zignites-chat')],
                 ],
             ];
         }
@@ -369,17 +377,17 @@ function wcwp_privacy_export_optout($email_address, $page = 1) {
  * Erasers
  * ----------------------------------------------------------------------- */
 
-function wcwp_privacy_erase_events($email_address, $page = 1) {
-    $phones = wcwp_privacy_phones_for_email($email_address);
+function zignites_chat_privacy_erase_events($email_address, $page = 1) {
+    $phones = zignites_chat_privacy_phones_for_email($email_address);
     $removed = 0;
     $messages = [];
     if (!empty($phones)) {
         global $wpdb;
-        $table = wcwp_get_analytics_table_name();
+        $table = zignites_chat_get_analytics_table_name();
         $lookup = array_flip($phones);
         $candidates = [];
         foreach ($phones as $phone) {
-            $suffix = wcwp_privacy_phone_match_suffix($phone);
+            $suffix = zignites_chat_privacy_phone_match_suffix($phone);
             if ($suffix === '') continue;
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
@@ -392,7 +400,7 @@ function wcwp_privacy_erase_events($email_address, $page = 1) {
                 foreach ($rows as $row) $candidates[(int) $row['id']] = $row;
             }
         }
-        $matched = wcwp_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
+        $matched = zignites_chat_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
         if (!empty($matched)) {
             $ids = array_map('intval', array_column($matched, 'id'));
             $placeholders = implode(',', array_fill(0, count($ids), '%d'));
@@ -406,7 +414,7 @@ function wcwp_privacy_erase_events($email_address, $page = 1) {
                 )
             );
             $removed = count($ids);
-            $messages[] = __('WhatsApp messaging events were anonymised. Aggregate counts are preserved.', 'woochat');
+            $messages[] = __('WhatsApp messaging events were anonymised. Aggregate counts are preserved.', 'zignites-chat');
         }
     }
     return [
@@ -417,16 +425,16 @@ function wcwp_privacy_erase_events($email_address, $page = 1) {
     ];
 }
 
-function wcwp_privacy_erase_carts($email_address, $page = 1) {
-    $phones = wcwp_privacy_phones_for_email($email_address);
+function zignites_chat_privacy_erase_carts($email_address, $page = 1) {
+    $phones = zignites_chat_privacy_phones_for_email($email_address);
     $removed = 0;
     if (!empty($phones)) {
         global $wpdb;
-        $table = wcwp_get_cart_table_name();
+        $table = zignites_chat_get_cart_table_name();
         $lookup = array_flip($phones);
         $candidates = [];
         foreach ($phones as $phone) {
-            $suffix = wcwp_privacy_phone_match_suffix($phone);
+            $suffix = zignites_chat_privacy_phone_match_suffix($phone);
             if ($suffix === '') continue;
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
@@ -439,7 +447,7 @@ function wcwp_privacy_erase_carts($email_address, $page = 1) {
                 foreach ($rows as $row) $candidates[(int) $row['id']] = $row;
             }
         }
-        $matched = wcwp_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
+        $matched = zignites_chat_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
         if (!empty($matched)) {
             $ids = array_map('intval', array_column($matched, 'id'));
             $placeholders = implode(',', array_fill(0, count($ids), '%d'));
@@ -455,16 +463,16 @@ function wcwp_privacy_erase_carts($email_address, $page = 1) {
     ];
 }
 
-function wcwp_privacy_erase_campaigns($email_address, $page = 1) {
-    $phones = wcwp_privacy_phones_for_email($email_address);
+function zignites_chat_privacy_erase_campaigns($email_address, $page = 1) {
+    $phones = zignites_chat_privacy_phones_for_email($email_address);
     $removed = 0;
     if (!empty($phones)) {
         global $wpdb;
-        $table = wcwp_campaign_recipients_table_name();
+        $table = zignites_chat_campaign_recipients_table_name();
         $lookup = array_flip($phones);
         $candidates = [];
         foreach ($phones as $phone) {
-            $suffix = wcwp_privacy_phone_match_suffix($phone);
+            $suffix = zignites_chat_privacy_phone_match_suffix($phone);
             if ($suffix === '') continue;
             $rows = $wpdb->get_results(
                 $wpdb->prepare(
@@ -477,7 +485,7 @@ function wcwp_privacy_erase_campaigns($email_address, $page = 1) {
                 foreach ($rows as $row) $candidates[(int) $row['id']] = $row;
             }
         }
-        $matched = wcwp_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
+        $matched = zignites_chat_privacy_filter_rows_by_normalized_phone(array_values($candidates), $lookup);
         if (!empty($matched)) {
             $ids = array_map('intval', array_column($matched, 'id'));
             $placeholders = implode(',', array_fill(0, count($ids), '%d'));
@@ -493,19 +501,19 @@ function wcwp_privacy_erase_campaigns($email_address, $page = 1) {
     ];
 }
 
-function wcwp_privacy_erase_optout($email_address, $page = 1) {
-    $phones = wcwp_privacy_phones_for_email($email_address);
+function zignites_chat_privacy_erase_optout($email_address, $page = 1) {
+    $phones = zignites_chat_privacy_phones_for_email($email_address);
     $retained = 0;
     $messages = [];
     if (!empty($phones)) {
-        $optout = wcwp_get_optout_list();
+        $optout = zignites_chat_get_optout_list();
         foreach ($phones as $phone) {
             if (in_array($phone, $optout, true)) {
                 $retained++;
             }
         }
         if ($retained > 0) {
-            $messages[] = __('Suppression list entries are retained to keep your prior opt-out request honoured. They will not be used to contact you.', 'woochat');
+            $messages[] = __('Suppression list entries are retained to keep your prior opt-out request honoured. They will not be used to contact you.', 'zignites-chat');
         }
     }
     return [

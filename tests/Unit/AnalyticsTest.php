@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace WooChatPro\Tests\Unit;
+namespace ZignitesChat\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
@@ -23,7 +23,7 @@ final class AnalyticsTest extends TestCase
         $events = [$this->event('e1', '15551234567', $t)];
         $orders = [$this->order(101, '15551234567', $t + (2 * DAY_IN_SECONDS), 49.99)];
 
-        $result = \wcwp_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
+        $result = \zignites_chat_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
 
         $this->assertSame(1, $result['conversions']);
         $this->assertEqualsWithDelta(49.99, $result['revenue'], 0.0001);
@@ -36,7 +36,7 @@ final class AnalyticsTest extends TestCase
         $events = [$this->event('e1', '15551234567', $t)];
         $orders = [$this->order(101, '15551234567', $t + (8 * DAY_IN_SECONDS), 49.99)];
 
-        $result = \wcwp_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
+        $result = \zignites_chat_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
 
         $this->assertSame(0, $result['conversions']);
         $this->assertSame(0.0, $result['revenue']);
@@ -49,7 +49,7 @@ final class AnalyticsTest extends TestCase
         // Pre-existing customer history — must not be attributed.
         $orders = [$this->order(101, '15551234567', $t - 3600, 49.99)];
 
-        $result = \wcwp_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
+        $result = \zignites_chat_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
 
         $this->assertSame(0, $result['conversions']);
     }
@@ -64,7 +64,7 @@ final class AnalyticsTest extends TestCase
         ];
         $orders = [$this->order(101, '15551234567', $t + 7200, 25.0)];
 
-        $result = \wcwp_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
+        $result = \zignites_chat_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
 
         $this->assertSame(1, $result['conversions']);
         $this->assertSame(['early'], array_values($result['matched']));
@@ -79,7 +79,7 @@ final class AnalyticsTest extends TestCase
         ];
         $orders = [$this->order(101, '15551234567', $t + 3600, 30.0)];
 
-        $result = \wcwp_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
+        $result = \zignites_chat_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
 
         $this->assertSame(1, $result['conversions']);
         $this->assertEqualsWithDelta(30.0, $result['revenue'], 0.0001);
@@ -97,7 +97,7 @@ final class AnalyticsTest extends TestCase
             $this->order(102, '15552222222', $t + 7200, 20.0),
         ];
 
-        $result = \wcwp_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
+        $result = \zignites_chat_analytics_match_conversions($events, $orders, 7 * DAY_IN_SECONDS);
 
         $this->assertSame(2, $result['conversions']);
         $this->assertEqualsWithDelta(30.0, $result['revenue'], 0.0001);
@@ -109,7 +109,7 @@ final class AnalyticsTest extends TestCase
         $events = [$this->event('e1', '15551234567', $t)];
         $orders = [$this->order(101, '15551234567', $t + 60, 5.0)];
 
-        $result = \wcwp_analytics_match_conversions($events, $orders, 0);
+        $result = \zignites_chat_analytics_match_conversions($events, $orders, 0);
 
         $this->assertSame(0, $result['conversions']);
         $this->assertSame(0.0, $result['revenue']);
@@ -121,7 +121,7 @@ final class AnalyticsTest extends TestCase
         $events = [$this->event('e1', '', $t)];
         $orders = [$this->order(101, '15551234567', $t + 60, 5.0)];
 
-        $result = \wcwp_analytics_match_conversions($events, $orders, DAY_IN_SECONDS);
+        $result = \zignites_chat_analytics_match_conversions($events, $orders, DAY_IN_SECONDS);
 
         $this->assertSame(0, $result['conversions']);
     }
