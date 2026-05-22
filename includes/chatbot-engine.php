@@ -12,7 +12,7 @@ add_action('wp_enqueue_scripts', 'wcwp_enqueue_chatbot_assets');
  * @since 1.0.0
  */
 function wcwp_enqueue_chatbot_assets() {
-    if (is_admin() || !wcwp_is_pro_active()) {
+    if (is_admin()) {
         return;
     }
     if (get_option('wcwp_chatbot_enabled', 'yes') !== 'yes') {
@@ -24,8 +24,8 @@ function wcwp_enqueue_chatbot_assets() {
 function wcwp_render_chatbot_widget() {
     if (is_admin()) return;
 
-    if (!wcwp_is_pro_active()) return;
-
+    // The basic chat widget is a free feature; GPT replies, the color/icon
+    // customizer and multi-agent routing are gated downstream (Pro only).
     $enabled = get_option('wcwp_chatbot_enabled', 'yes');
     if ($enabled !== 'yes') return;
 
@@ -44,7 +44,6 @@ function wcwp_render_chatbot_widget() {
 }
 
 function wcwp_chatbot_shortcode() {
-    if (!wcwp_is_pro_active()) return '';
     $enabled = get_option('wcwp_chatbot_enabled', 'yes');
     if ($enabled !== 'yes') return '';
 
@@ -69,11 +68,20 @@ function wcwp_chatbot_localized_data() {
     $faq_pairs = json_decode(get_option('wcwp_faq_pairs', '[]'), true);
     if (!is_array($faq_pairs)) $faq_pairs = [];
 
+    $is_pro = wcwp_is_pro_active();
+
+    // Free tier is single-agent: keep only the first agent and force the
+    // 'single' routing mode so multi-agent load-balancing stays Pro-only.
+    $agents = wcwp_get_agents();
+    if (!$is_pro) {
+        $agents = array_slice($agents, 0, 1);
+    }
+
     return [
         'faq_pairs'    => $faq_pairs,
         'noAnswerText' => __( "Sorry, I don't have an answer for that.", 'woochat' ),
         'gpt'          => [
-            'enabled'  => get_option('wcwp_chatbot_gpt_enabled', 'no') === 'yes',
+            'enabled'  => $is_pro && get_option('wcwp_chatbot_gpt_enabled', 'no') === 'yes',
             'url'      => admin_url('admin-ajax.php'),
             'nonce'    => wp_create_nonce('wcwp_chatbot_gpt'),
             'action'   => 'wcwp_chatbot_gpt',
@@ -81,12 +89,26 @@ function wcwp_chatbot_localized_data() {
         ],
         // Agents are picked client-side so a full-page cache can't pin every
         // visitor to the same agent under 'random' mode.
-        'agents'        => wcwp_get_agents(),
-        'routing_mode'  => get_option('wcwp_agent_routing_mode', 'single') === 'random' ? 'random' : 'single',
+        'agents'        => $agents,
+        'routing_mode'  => ($is_pro && get_option('wcwp_agent_routing_mode', 'single') === 'random') ? 'random' : 'single',
     ];
 }
 
 function wcwp_get_chatbot_settings() {
+    $welcome = get_option('wcwp_chatbot_welcome', 'Hi! How can I help you?');
+
+    // The color/icon customizer is Pro — the free widget always renders with
+    // the default palette regardless of any values saved while on Pro.
+    if (!wcwp_is_pro_active()) {
+        return [
+            'bubble_color' => '#1c7c54',
+            'text_color'   => '#ffffff',
+            'icon_color'   => '#2ec4b6',
+            'icon'         => '💬',
+            'welcome'      => $welcome,
+        ];
+    }
+
     // Hex colors are also validated at write-time via the register_setting
     // sanitize_callback; this is the read-time defense-in-depth that
     // guarantees the chatbot template never sees an invalid color, even
@@ -96,7 +118,7 @@ function wcwp_get_chatbot_settings() {
         'text_color'   => wcwp_sanitize_hex_color(get_option('wcwp_chatbot_text', '#ffffff'), '#ffffff'),
         'icon_color'   => wcwp_sanitize_hex_color(get_option('wcwp_chatbot_icon_color', '#2ec4b6'), '#2ec4b6'),
         'icon'         => get_option('wcwp_chatbot_icon', '💬'),
-        'welcome'      => get_option('wcwp_chatbot_welcome', 'Hi! How can I help you?'),
+        'welcome'      => $welcome,
     ];
 }
 

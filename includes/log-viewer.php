@@ -183,6 +183,10 @@ function wcwp_log_download_handler() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
     }
+    // Log export is a Pro feature.
+    if (!wcwp_is_pro_active()) {
+        wp_die(esc_html__('Log export is a WooChat Pro feature.', 'woochat'), '', ['response' => 403]);
+    }
     check_admin_referer('wcwp_log_download', 'wcwp_log_download_nonce');
 
     $file = wcwp_get_log_file();

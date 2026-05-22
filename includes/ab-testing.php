@@ -109,7 +109,9 @@ function wcwp_ab_get_template($kind, $stable_key) {
     $cfg = $kinds[$kind];
 
     $a_template = (string) get_option($cfg['option_a'], $cfg['default_a']);
-    $enabled    = get_option($cfg['option_enabled'], 'no') === 'yes';
+    // A/B testing is a Pro feature — never split-test on the free plan,
+    // regardless of any option values left over from a prior Pro license.
+    $enabled    = wcwp_is_pro_active() && get_option($cfg['option_enabled'], 'no') === 'yes';
     $b_template = $enabled ? (string) get_option($cfg['option_b'], '') : '';
 
     if (!$enabled || trim($b_template) === '') {

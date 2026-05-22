@@ -68,6 +68,25 @@
   margin-top: 12px;
 }
 
+/* Inline "Pro" tag on gated controls + locked control styling */
+.wcwp-pro-tag {
+  display: inline-block;
+  background: #1c7c54;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+.wcwp-pro-locked {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 /* Dashboard Pro feature teasers */
 .wcwp-dashboard-teasers {
   display: flex;
