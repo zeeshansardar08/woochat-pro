@@ -1,17 +1,17 @@
-// WooChat – Admin orders list: manual "Send WhatsApp" button.
+// Zignites Chat – Admin orders list: manual "Send WhatsApp" button.
 // Submits via POST + nonce so the action is no longer a GET side-effect.
 
 (function () {
     'use strict';
 
     function getAjaxUrl() {
-        return (window.wcwpManualSend && window.wcwpManualSend.ajaxUrl)
-            ? window.wcwpManualSend.ajaxUrl
+        return (window.zignitesChatManualSend && window.zignitesChatManualSend.ajaxUrl)
+            ? window.zignitesChatManualSend.ajaxUrl
             : '';
     }
 
     document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.wcwp-send-whatsapp');
+        var btn = e.target.closest('.zignites-chat-send-whatsapp');
         if (!btn) return;
 
         e.preventDefault();
@@ -25,7 +25,7 @@
         btn.disabled = true;
 
         var form = new FormData();
-        form.append('action', 'wcwp_send_manual_whatsapp');
+        form.append('action', 'zignites_chat_send_manual_whatsapp');
         form.append('order_id', orderId);
         form.append('nonce', nonce);
 

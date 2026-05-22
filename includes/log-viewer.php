@@ -2,8 +2,8 @@
 /**
  * Admin-side log viewer.
  *
- * Surfaces the plugin's log file (`wp-content/uploads/woochat/
- * woochat.log` — see wcwp_get_log_file()) inside the WooChat
+ * Surfaces the plugin's log file (`wp-content/uploads/zignites-chat/
+ * zignites-chat.log` — see zignites_chat_get_log_file()) inside the Zignites Chat
  * Settings page so admins don't have to SFTP into uploads/ to debug a
  * failed send. Every write into that file already goes through the
  * shared `error_log($msg, 3, $log_file)` pattern in messaging.php and
@@ -12,20 +12,20 @@
  * Provides three operations:
  *   1. Tail-and-display: read the last N lines, parse each into
  *      tag/message, render as a filterable table. The reverse-chunk
- *      reader (`wcwp_log_tail_lines()`) avoids loading the whole file
+ *      reader (`zignites_chat_log_tail_lines()`) avoids loading the whole file
  *      into memory.
  *   2. Download: stream the raw file as text/plain to the admin so they
  *      can attach it to a support ticket. Capability + nonce gated.
  *   3. Clear: truncate the file in place. Capability + nonce gated.
  *      Truncation (vs. unlink) keeps the existing fd's of any
  *      concurrent writers valid and preserves the .htaccess/index.php
- *      siblings that wcwp_get_log_file() set up.
+ *      siblings that zignites_chat_get_log_file() set up.
  */
 
 if (!defined('ABSPATH')) exit;
 
-add_action('admin_post_wcwp_log_download', 'wcwp_log_download_handler');
-add_action('admin_post_wcwp_log_clear', 'wcwp_log_clear_handler');
+add_action('admin_post_zignites_chat_log_download', 'zignites_chat_log_download_handler');
+add_action('admin_post_zignites_chat_log_clear', 'zignites_chat_log_clear_handler');
 
 /**
  * Read the last N lines of a file by reverse-chunking from EOF.
@@ -42,10 +42,11 @@ add_action('admin_post_wcwp_log_clear', 'wcwp_log_clear_handler');
  * @param int    $chunk_size Chunk read size in bytes (defaults to 4096).
  * @return string[] Lines, oldest first.
  */
-function wcwp_log_tail_lines($file, $max_lines = 200, $chunk_size = 4096) {
+function zignites_chat_log_tail_lines($file, $max_lines = 200, $chunk_size = 4096) {
     if ($max_lines < 1) return [];
     if (!is_string($file) || !is_file($file) || !is_readable($file)) return [];
 
+    // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Reverse-chunk tail read of the plugin's own log file in uploads/; WP_Filesystem has no random-access/seek API and reading the whole file would defeat the memory bound.
     $fp = @fopen($file, 'rb');
     if (!$fp) return [];
 
@@ -70,6 +71,7 @@ function wcwp_log_tail_lines($file, $max_lines = 200, $chunk_size = 4096) {
         $line_count = substr_count($buffer, "\n");
     }
     fclose($fp);
+    // phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 
     $lines = preg_split('/\r?\n/', $buffer);
     if (!is_array($lines)) return [];
@@ -94,9 +96,9 @@ function wcwp_log_tail_lines($file, $max_lines = 200, $chunk_size = 4096) {
  * Parse one log line into [tag, message, raw].
  *
  * Lines written by messaging.php / cart-recovery.php look like:
- *   [WooChat] message text
- *   [WooChat - Cart Recovery] message text
- *   [WooChat - MANUAL] message text
+ *   [Zignites Chat] message text
+ *   [Zignites Chat - Cart Recovery] message text
+ *   [Zignites Chat - MANUAL] message text
  *
  * The bracketed prefix is the "tag" we surface in the filter dropdown.
  * Lines without a recognised prefix get an empty tag and the whole
@@ -107,12 +109,12 @@ function wcwp_log_tail_lines($file, $max_lines = 200, $chunk_size = 4096) {
  * @param string $line Raw log line (no trailing newline).
  * @return array{tag:string, message:string, raw:string}
  */
-function wcwp_log_parse_line($line) {
+function zignites_chat_log_parse_line($line) {
     $line = (string) $line;
     if ($line === '') {
         return ['tag' => '', 'message' => '', 'raw' => ''];
     }
-    if (preg_match('/^\[(WooChat(?: - [^\]]+)?)\]\s*(.*)$/', $line, $matches)) {
+    if (preg_match('/^\[(Zignites Chat(?: - [^\]]+)?)\]\s*(.*)$/', $line, $matches)) {
         return [
             'tag'     => $matches[1],
             'message' => $matches[2],
@@ -125,7 +127,7 @@ function wcwp_log_parse_line($line) {
 /**
  * Return parsed log entries, optionally filtered by tag and keyword.
  *
- * Pure-ish: pulls the raw lines via wcwp_log_tail_lines() then runs
+ * Pure-ish: pulls the raw lines via zignites_chat_log_tail_lines() then runs
  * everything else in PHP so the filter logic itself is testable
  * (caller can pass already-parsed lines via the alt arg).
  *
@@ -134,7 +136,7 @@ function wcwp_log_parse_line($line) {
  * @param string   $tag      Exact tag match. Empty = no tag filter.
  * @return array<int, array{tag:string, message:string, raw:string}>
  */
-function wcwp_log_filter_lines($lines, $keyword = '', $tag = '') {
+function zignites_chat_log_filter_lines($lines, $keyword = '', $tag = '') {
     if (!is_array($lines)) return [];
 
     $keyword = is_string($keyword) ? trim($keyword) : '';
@@ -142,7 +144,7 @@ function wcwp_log_filter_lines($lines, $keyword = '', $tag = '') {
 
     $out = [];
     foreach ($lines as $line) {
-        $parsed = wcwp_log_parse_line($line);
+        $parsed = zignites_chat_log_parse_line($line);
         if ($tag !== '' && $parsed['tag'] !== $tag) continue;
         if ($keyword !== '' && stripos($parsed['raw'], $keyword) === false) continue;
         $out[] = $parsed;
@@ -159,7 +161,7 @@ function wcwp_log_filter_lines($lines, $keyword = '', $tag = '') {
  * @param array<int, array{tag:string}> $entries
  * @return string[]
  */
-function wcwp_log_tags_present($entries) {
+function zignites_chat_log_tags_present($entries) {
     if (!is_array($entries)) return [];
     $seen = [];
     foreach ($entries as $entry) {
@@ -172,62 +174,62 @@ function wcwp_log_tags_present($entries) {
     return $out;
 }
 
-function wcwp_log_size_bytes() {
-    $file = wcwp_get_log_file();
+function zignites_chat_log_size_bytes() {
+    $file = zignites_chat_get_log_file();
     if (!is_file($file)) return 0;
     $size = @filesize($file);
     return $size === false ? 0 : (int) $size;
 }
 
-function wcwp_log_download_handler() {
+function zignites_chat_log_download_handler() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'), '', ['response' => 403]);
     }
     // Log export is a Pro feature.
-    if (!wcwp_is_pro_active()) {
-        wp_die(esc_html__('Log export is a WooChat Pro feature.', 'woochat'), '', ['response' => 403]);
+    if (!zignites_chat_is_pro_active()) {
+        wp_die(esc_html__('Log export is a Zignites Chat Pro feature.', 'zignites-chat'), '', ['response' => 403]);
     }
-    check_admin_referer('wcwp_log_download', 'wcwp_log_download_nonce');
+    check_admin_referer('zignites_chat_log_download', 'zignites_chat_log_download_nonce');
 
-    $file = wcwp_get_log_file();
+    $file = zignites_chat_get_log_file();
     if (!is_file($file) || !is_readable($file)) {
-        wp_safe_redirect(add_query_arg(['page' => 'wcwp-logs', 'wcwp_log_msg' => 'empty'], admin_url('admin.php')));
+        wp_safe_redirect(add_query_arg(['page' => 'zignites-chat-logs', 'zignites_chat_log_msg' => 'empty'], admin_url('admin.php')));
         exit;
     }
 
-    $filename = 'woochat-' . gmdate('Ymd-His') . '.log';
+    $filename = 'zignites-chat-' . gmdate('Ymd-His') . '.log';
     nocache_headers();
     header('Content-Type: text/plain; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
     header('Content-Length: ' . (string) filesize($file));
-    @readfile($file); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_readfile -- streaming a controlled path inside uploads/, capability + nonce gated.
+    @readfile($file); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Streaming a controlled path inside uploads/ as a file download; capability + nonce gated. WP_Filesystem has no streaming API.
     exit;
 }
 
-function wcwp_log_clear_handler() {
+function zignites_chat_log_clear_handler() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'), '', ['response' => 403]);
     }
-    check_admin_referer('wcwp_log_clear', 'wcwp_log_clear_nonce');
+    check_admin_referer('zignites_chat_log_clear', 'zignites_chat_log_clear_nonce');
 
-    $file = wcwp_get_log_file();
+    $file = zignites_chat_get_log_file();
     $msg  = 'cleared';
     if (is_file($file)) {
-        // Truncate in place (vs. unlink) so concurrent fds in messaging.php
-        // / cart-recovery.php stay valid and the .htaccess/index.php
-        // siblings created by wcwp_get_log_file() are preserved.
-        $fp = @fopen($file, 'wb');
-        if ($fp) {
-            @ftruncate($fp, 0);
-            fclose($fp);
-        } else {
+        // Empty the file in place (vs. unlink) so the .htaccess/index.php
+        // siblings created by zignites_chat_get_log_file() are preserved.
+        global $wp_filesystem;
+        if (empty($wp_filesystem)) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            WP_Filesystem();
+        }
+        if (empty($wp_filesystem) || !$wp_filesystem->put_contents($file, '', FS_CHMOD_FILE)) {
             $msg = 'fail';
         }
     }
 
     wp_safe_redirect(add_query_arg([
-        'page'         => 'wcwp-logs',
-        'wcwp_log_msg' => $msg,
+        'page'         => 'zignites-chat-logs',
+        'zignites_chat_log_msg' => $msg,
     ], admin_url('admin.php')));
     exit;
 }

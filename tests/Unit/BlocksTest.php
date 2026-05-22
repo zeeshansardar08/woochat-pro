@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace WooChatPro\Tests\Unit;
+namespace ZignitesChat\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
@@ -9,7 +9,7 @@ final class BlocksTest extends TestCase
 {
     public function test_button_renders_normalized_phone_and_default_label(): void
     {
-        $html = \wcwp_render_whatsapp_button_block([
+        $html = \zignites_chat_render_whatsapp_button_block([
             'phone' => '+1 (415) 555-0100',
         ]);
 
@@ -21,7 +21,7 @@ final class BlocksTest extends TestCase
 
     public function test_button_appends_preset_message_as_text_query(): void
     {
-        $html = \wcwp_render_whatsapp_button_block([
+        $html = \zignites_chat_render_whatsapp_button_block([
             'phone'   => '14155550100',
             'message' => 'Hi! I have a question.',
             'text'    => 'Talk to us',
@@ -36,18 +36,18 @@ final class BlocksTest extends TestCase
         // Empty phone should still produce a clickable wa.me link rather
         // than rendering nothing — useful while authoring before the admin
         // has plugged in a number.
-        $html = \wcwp_render_whatsapp_button_block(['phone' => '']);
+        $html = \zignites_chat_render_whatsapp_button_block(['phone' => '']);
 
         $this->assertStringContainsString('href="https://wa.me/"', $html);
     }
 
     public function test_button_carries_alignment_class(): void
     {
-        $html = \wcwp_render_whatsapp_button_block([
+        $html = \zignites_chat_render_whatsapp_button_block([
             'phone' => '14155550100',
             'align' => 'center',
         ]);
 
-        $this->assertStringContainsString('class="wcwp-whatsapp-button-block aligncenter"', $html);
+        $this->assertStringContainsString('class="zignites-chat-whatsapp-button-block aligncenter"', $html);
     }
 }

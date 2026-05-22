@@ -1,25 +1,25 @@
-// WooChat – Premium Admin UI
+// Zignites Chat – Premium Admin UI
 
 // Chatbot Customizer Live Preview
 
 document.addEventListener('DOMContentLoaded', function () {
-    const bgColor = document.getElementById('wcwp-chatbot-bg');
-    const textColor = document.getElementById('wcwp-chatbot-color');
-    const iconColor = document.getElementById('wcwp-chatbot-icon');
-    const iconOptions = document.querySelectorAll('.wcwp-icon-option');
-    const previewBubble = document.querySelector('.wcwp-chatbot-preview-bubble');
-    const previewIcon = document.querySelector('.wcwp-chatbot-preview-icon');
-    const welcomeInput = document.getElementById('wcwp-chatbot-welcome');
-    const previewWelcome = document.getElementById('wcwp-chatbot-preview-welcome');
-    const iconHidden = document.getElementById('wcwp-chatbot-icon-value');
+    const bgColor = document.getElementById('zignites-chat-chatbot-bg');
+    const textColor = document.getElementById('zignites-chat-chatbot-color');
+    const iconColor = document.getElementById('zignites-chat-chatbot-icon');
+    const iconOptions = document.querySelectorAll('.zignites-chat-icon-option');
+    const previewBubble = document.querySelector('.zignites-chat-chatbot-preview-bubble');
+    const previewIcon = document.querySelector('.zignites-chat-chatbot-preview-icon');
+    const welcomeInput = document.getElementById('zignites-chat-chatbot-welcome');
+    const previewWelcome = document.getElementById('zignites-chat-chatbot-preview-welcome');
+    const iconHidden = document.getElementById('zignites-chat-chatbot-icon-value');
 
     function updatePreview() {
         if (previewBubble && bgColor && textColor) {
-            previewBubble.style.setProperty('--wcwp-chatbot-bg', bgColor.value);
-            previewBubble.style.setProperty('--wcwp-chatbot-color', textColor.value);
+            previewBubble.style.setProperty('--zignites-chat-chatbot-bg', bgColor.value);
+            previewBubble.style.setProperty('--zignites-chat-chatbot-color', textColor.value);
         }
         if (previewIcon && iconColor) {
-            previewIcon.style.setProperty('--wcwp-chatbot-icon', iconColor.value);
+            previewIcon.style.setProperty('--zignites-chat-chatbot-icon', iconColor.value);
         }
         if (welcomeInput && previewWelcome) {
             previewWelcome.textContent = welcomeInput.value;
@@ -45,19 +45,19 @@ document.addEventListener('DOMContentLoaded', function () {
 // Multi-agent routing: agents table add/remove + serialize-on-change
 
 document.addEventListener('DOMContentLoaded', function () {
-    const table = document.getElementById('wcwp-agents-table');
-    const hidden = document.getElementById('wcwp_agents_input');
-    const addBtn = document.getElementById('wcwp-agent-add');
+    const table = document.getElementById('zignites-chat-agents-table');
+    const hidden = document.getElementById('zignites_chat_agents_input');
+    const addBtn = document.getElementById('zignites-chat-agent-add');
     if (!table || !hidden) return;
 
     const tbody = table.querySelector('tbody');
 
     function serialize() {
-        const rows = tbody.querySelectorAll('.wcwp-agent-row');
+        const rows = tbody.querySelectorAll('.zignites-chat-agent-row');
         const list = [];
         rows.forEach(function (row) {
-            const name  = (row.querySelector('.wcwp-agent-name')  || {}).value || '';
-            const phone = (row.querySelector('.wcwp-agent-phone') || {}).value || '';
+            const name  = (row.querySelector('.zignites-chat-agent-name')  || {}).value || '';
+            const phone = (row.querySelector('.zignites-chat-agent-phone') || {}).value || '';
             if (!name.trim() || !phone.trim()) return;
             list.push({ name: name.trim(), phone: phone.trim() });
         });
@@ -66,11 +66,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function newRow() {
         const tr = document.createElement('tr');
-        tr.className = 'wcwp-agent-row';
+        tr.className = 'zignites-chat-agent-row';
         tr.innerHTML =
-            '<td><input type="text" class="wcwp-agent-name regular-text" /></td>' +
-            '<td><input type="text" class="wcwp-agent-phone regular-text" /></td>' +
-            '<td><button type="button" class="button-link wcwp-agent-remove" aria-label="Remove agent">&times;</button></td>';
+            '<td><input type="text" class="zignites-chat-agent-name regular-text" /></td>' +
+            '<td><input type="text" class="zignites-chat-agent-phone regular-text" /></td>' +
+            '<td><button type="button" class="button-link zignites-chat-agent-remove" aria-label="Remove agent">&times;</button></td>';
         tbody.appendChild(tr);
     }
 
@@ -83,16 +83,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Event delegation: input change anywhere in the table re-serializes;
     // remove-button clicks delete the row then re-serialize.
     table.addEventListener('input', function (e) {
-        if (e.target.classList.contains('wcwp-agent-name') || e.target.classList.contains('wcwp-agent-phone')) {
+        if (e.target.classList.contains('zignites-chat-agent-name') || e.target.classList.contains('zignites-chat-agent-phone')) {
             serialize();
         }
     });
     table.addEventListener('click', function (e) {
-        if (e.target.classList.contains('wcwp-agent-remove')) {
-            const row = e.target.closest('.wcwp-agent-row');
+        if (e.target.classList.contains('zignites-chat-agent-remove')) {
+            const row = e.target.closest('.zignites-chat-agent-row');
             if (row) row.parentNode.removeChild(row);
             // Always keep at least one empty row visible so the admin can re-add.
-            if (!tbody.querySelector('.wcwp-agent-row')) newRow();
+            if (!tbody.querySelector('.zignites-chat-agent-row')) newRow();
             serialize();
         }
     });
@@ -106,9 +106,9 @@ document.addEventListener('DOMContentLoaded', function () {
 // Upgrade Modal Logic
 
 document.addEventListener('DOMContentLoaded', function () {
-    const upgradeModal = document.getElementById('wcwp-upgrade-modal');
-    const openUpgradeBtns = document.querySelectorAll('.wcwp-open-upgrade-modal');
-    const closeUpgradeBtn = document.querySelector('.wcwp-upgrade-modal-close');
+    const upgradeModal = document.getElementById('zignites-chat-upgrade-modal');
+    const openUpgradeBtns = document.querySelectorAll('.zignites-chat-open-upgrade-modal');
+    const closeUpgradeBtn = document.querySelector('.zignites-chat-upgrade-modal-close');
     openUpgradeBtns.forEach(btn => {
         btn.addEventListener('click', function () {
             if (upgradeModal) upgradeModal.style.display = 'flex';
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Resend cart recovery attempts from admin table
 document.addEventListener('DOMContentLoaded', function () {
-    const resendButtons = document.querySelectorAll('.wcwp-resend-cart');
+    const resendButtons = document.querySelectorAll('.zignites-chat-resend-cart');
     if (!resendButtons.length) return;
 
     resendButtons.forEach(btn => {
@@ -140,11 +140,11 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.textContent = 'Resending...';
 
             const formData = new FormData();
-            formData.append('action', 'wcwp_resend_cart_recovery');
+            formData.append('action', 'zignites_chat_resend_cart_recovery');
             formData.append('attempt_id', attempt);
-            formData.append('nonce', (window.wcwpAdminData && wcwpAdminData.resendNonce) ? wcwpAdminData.resendNonce : '');
+            formData.append('nonce', (window.zignitesChatAdminData && zignitesChatAdminData.resendNonce) ? zignitesChatAdminData.resendNonce : '');
 
-            fetch((window.wcwpAdminData && wcwpAdminData.ajaxUrl) ? wcwpAdminData.ajaxUrl : '', {
+            fetch((window.zignitesChatAdminData && zignitesChatAdminData.ajaxUrl) ? zignitesChatAdminData.ajaxUrl : '', {
                 method: 'POST',
                 credentials: 'same-origin',
                 body: formData
@@ -165,25 +165,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // License activation/deactivation
 document.addEventListener('DOMContentLoaded', function () {
-    const activateBtn = document.getElementById('wcwp-activate-license');
-    const deactivateBtn = document.getElementById('wcwp-deactivate-license');
-    const statusBadge = document.getElementById('wcwp-license-status');
-    const keyField = document.getElementById('wcwp_license_key');
+    const activateBtn = document.getElementById('zignites-chat-activate-license');
+    const deactivateBtn = document.getElementById('zignites-chat-deactivate-license');
+    const statusBadge = document.getElementById('zignites-chat-license-status');
+    const keyField = document.getElementById('zignites_chat_license_key');
 
     function setStatus(text, success) {
         if (!statusBadge) return;
         statusBadge.textContent = text;
-        statusBadge.classList.remove('wcwp-badge-success', 'wcwp-badge-muted');
-        statusBadge.classList.add(success ? 'wcwp-badge-success' : 'wcwp-badge-muted');
+        statusBadge.classList.remove('zignites-chat-badge-success', 'zignites-chat-badge-muted');
+        statusBadge.classList.add(success ? 'zignites-chat-badge-success' : 'zignites-chat-badge-muted');
     }
 
     function postLicense(action, key) {
         const formData = new FormData();
         formData.append('action', action);
-        formData.append('nonce', (window.wcwpAdminData && wcwpAdminData.licenseNonce) ? wcwpAdminData.licenseNonce : '');
+        formData.append('nonce', (window.zignitesChatAdminData && zignitesChatAdminData.licenseNonce) ? zignitesChatAdminData.licenseNonce : '');
         if (key) formData.append('license_key', key);
 
-        return fetch((window.wcwpAdminData && wcwpAdminData.ajaxUrl) ? wcwpAdminData.ajaxUrl : '', {
+        return fetch((window.zignitesChatAdminData && zignitesChatAdminData.ajaxUrl) ? zignitesChatAdminData.ajaxUrl : '', {
             method: 'POST',
             credentials: 'same-origin',
             body: formData
@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // English fallbacks keep the UI working if the localization payload is
     // ever missing — degrades to English instead of "undefined".
-    const labels = (window.wcwpAdminData && wcwpAdminData.licenseLabels) || {};
+    const labels = (window.zignitesChatAdminData && zignitesChatAdminData.licenseLabels) || {};
     const t = (key, fallback) => labels[key] || fallback;
 
     if (activateBtn) {
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             setStatus(t('activating', 'Activating…'), false);
             activateBtn.disabled = true;
-            postLicense('wcwp_activate_license', keyField.value).then(data => {
+            postLicense('zignites_chat_activate_license', keyField.value).then(data => {
                 if (data && data.success) {
                     setStatus(t('active', 'Active'), true);
                 } else {
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
         deactivateBtn.addEventListener('click', function () {
             setStatus(t('deactivating', 'Deactivating…'), false);
             deactivateBtn.disabled = true;
-            postLicense('wcwp_deactivate_license').then(data => {
+            postLicense('zignites_chat_deactivate_license').then(data => {
                 if (data && data.success) {
                     setStatus(t('inactive', 'Inactive'), false);
                 } else {
@@ -235,38 +235,38 @@ document.addEventListener('DOMContentLoaded', function () {
 // Dark Mode Toggle
 
 document.addEventListener('DOMContentLoaded', function () {
-    const wrapper = document.querySelector('.wcwp-admin-premium-wrap');
-    let darkMode = localStorage.getItem('wcwp-dark-mode') === 'true';
+    const wrapper = document.querySelector('.zignites-chat-admin-premium-wrap');
+    let darkMode = localStorage.getItem('zignites-chat-dark-mode') === 'true';
     function applyDarkMode(on) {
         if (on) {
-            document.body.classList.add('wcwp-dark-mode');
-            if (wrapper) wrapper.classList.add('wcwp-dark-mode');
+            document.body.classList.add('zignites-chat-dark-mode');
+            if (wrapper) wrapper.classList.add('zignites-chat-dark-mode');
         } else {
-            document.body.classList.remove('wcwp-dark-mode');
-            if (wrapper) wrapper.classList.remove('wcwp-dark-mode');
+            document.body.classList.remove('zignites-chat-dark-mode');
+            if (wrapper) wrapper.classList.remove('zignites-chat-dark-mode');
         }
     }
     // Add toggle button
     let toggle = document.createElement('button');
-    toggle.className = 'wcwp-dark-toggle';
+    toggle.className = 'zignites-chat-dark-toggle';
     toggle.setAttribute('type', 'button');
     toggle.setAttribute('aria-label', 'Toggle dark mode');
-    toggle.innerHTML = '<span class="wcwp-dark-icon">' + (darkMode ? '🌙' : '☀️') + '</span>';
+    toggle.innerHTML = '<span class="zignites-chat-dark-icon">' + (darkMode ? '🌙' : '☀️') + '</span>';
     if (wrapper) wrapper.prepend(toggle);
     applyDarkMode(darkMode);
     toggle.addEventListener('click', function () {
         darkMode = !darkMode;
-        localStorage.setItem('wcwp-dark-mode', darkMode);
+        localStorage.setItem('zignites-chat-dark-mode', darkMode);
         applyDarkMode(darkMode);
         // Animate icon and swap sun/moon
-        const icon = toggle.querySelector('.wcwp-dark-icon');
+        const icon = toggle.querySelector('.zignites-chat-dark-icon');
         if (icon) icon.textContent = darkMode ? '🌙' : '☀️';
     });
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    const apiProvider = document.getElementById('wcwp_api_provider');
-    const cloudFields = document.querySelectorAll('.wcwp-cloud-fields');
+    const apiProvider = document.getElementById('zignites_chat_api_provider');
+    const cloudFields = document.querySelectorAll('.zignites-chat-cloud-fields');
     function toggleCloudFields() {
         if (!apiProvider) return;
         const show = apiProvider.value === 'cloud';
@@ -279,9 +279,9 @@ document.addEventListener('DOMContentLoaded', function () {
 }); 
 
 document.addEventListener('DOMContentLoaded', function () {
-    const testMode = document.getElementById('wcwp_test_mode_enabled');
-    const hint = document.getElementById('wcwp-test-log-hint');
-    const badge = document.getElementById('wcwp-test-mode-badge');
+    const testMode = document.getElementById('zignites_chat_test_mode_enabled');
+    const hint = document.getElementById('zignites-chat-test-log-hint');
+    const badge = document.getElementById('zignites-chat-test-mode-badge');
     if (!testMode || !hint) return;
 
     function toggleHint() {
@@ -294,20 +294,20 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    const filterBtn = document.getElementById('wcwp-analytics-filter-button');
+    const filterBtn = document.getElementById('zignites-chat-analytics-filter-button');
     if (!filterBtn) return;
 
     filterBtn.addEventListener('click', function () {
         const params = new URLSearchParams(window.location.search);
-        params.set('page', 'wcwp-analytics');
+        params.set('page', 'zignites-chat-analytics');
         params.delete('tab');
 
         const fields = [
-            { id: 'wcwp_type', key: 'wcwp_type' },
-            { id: 'wcwp_status', key: 'wcwp_status' },
-            { id: 'wcwp_phone', key: 'wcwp_phone' },
-            { id: 'wcwp_date_from', key: 'wcwp_date_from' },
-            { id: 'wcwp_date_to', key: 'wcwp_date_to' }
+            { id: 'zignites_chat_type', key: 'zignites_chat_type' },
+            { id: 'zignites_chat_status', key: 'zignites_chat_status' },
+            { id: 'zignites_chat_phone', key: 'zignites_chat_phone' },
+            { id: 'zignites_chat_date_from', key: 'zignites_chat_date_from' },
+            { id: 'zignites_chat_date_to', key: 'zignites_chat_date_to' }
         ];
 
         fields.forEach(field => {
@@ -326,20 +326,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Webhooks tab — confirm-on-delete + AJAX test-fire button.
 document.addEventListener('DOMContentLoaded', function () {
-    const data = window.wcwpAdminData || {};
+    const data = window.zignitesChatAdminData || {};
 
-    document.querySelectorAll('.wcwp-webhook-delete').forEach(function (a) {
+    document.querySelectorAll('.zignites-chat-webhook-delete').forEach(function (a) {
         a.addEventListener('click', function (e) {
             const msg = data.webhookDeleteConfirm || 'Delete this webhook?';
             if (!window.confirm(msg)) e.preventDefault();
         });
     });
 
-    document.querySelectorAll('.wcwp-webhook-test').forEach(function (btn) {
+    document.querySelectorAll('.zignites-chat-webhook-test').forEach(function (btn) {
         btn.addEventListener('click', function () {
             const row = btn.closest('tr');
             const id = btn.getAttribute('data-webhook-id') || '';
-            const result = row ? row.querySelector('.wcwp-webhook-test-result') : null;
+            const result = row ? row.querySelector('.zignites-chat-webhook-test-result') : null;
             if (!id || !data.ajaxUrl || !data.webhookTestNonce) return;
 
             const originalLabel = btn.textContent;
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (result) { result.textContent = ''; result.style.color = ''; }
 
             const form = new FormData();
-            form.append('action', 'wcwp_webhook_test');
+            form.append('action', 'zignites_chat_webhook_test');
             form.append('nonce', data.webhookTestNonce);
             form.append('webhook_id', id);
 
@@ -381,16 +381,16 @@ document.addEventListener('DOMContentLoaded', function () {
 // Logs tab — Apply button rebuilds the URL with current filter values,
 // Clear button asks for explicit confirmation before destructive action.
 document.addEventListener('DOMContentLoaded', function () {
-    const applyBtn = document.getElementById('wcwp-log-filter-button');
+    const applyBtn = document.getElementById('zignites-chat-log-filter-button');
     if (applyBtn) {
         applyBtn.addEventListener('click', function () {
             const params = new URLSearchParams(window.location.search);
-            params.set('page', 'wcwp-logs');
+            params.set('page', 'zignites-chat-logs');
             params.delete('tab');
             const fields = [
-                { id: 'wcwp_log_q',     key: 'wcwp_log_q' },
-                { id: 'wcwp_log_tag',   key: 'wcwp_log_tag' },
-                { id: 'wcwp_log_lines', key: 'wcwp_log_lines' }
+                { id: 'zignites_chat_log_q',     key: 'zignites_chat_log_q' },
+                { id: 'zignites_chat_log_tag',   key: 'zignites_chat_log_tag' },
+                { id: 'zignites_chat_log_lines', key: 'zignites_chat_log_lines' }
             ];
             fields.forEach(function (field) {
                 const el = document.getElementById(field.id);
@@ -403,16 +403,16 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             // The previous run may have left a status message in the URL —
             // strip it so the redirect view doesn't show a stale notice.
-            params.delete('wcwp_log_msg');
+            params.delete('zignites_chat_log_msg');
             window.location.search = params.toString();
         });
     }
 
-    const clearBtn = document.getElementById('wcwp-log-clear-button');
+    const clearBtn = document.getElementById('zignites-chat-log-clear-button');
     if (clearBtn) {
         clearBtn.addEventListener('click', function (e) {
-            const confirmMsg = (window.wcwpAdminData && wcwpAdminData.logClearConfirm)
-                ? wcwpAdminData.logClearConfirm
+            const confirmMsg = (window.zignitesChatAdminData && zignitesChatAdminData.logClearConfirm)
+                ? zignitesChatAdminData.logClearConfirm
                 : 'Clear the log file? This cannot be undone.';
             if (!window.confirm(confirmMsg)) {
                 e.preventDefault();
@@ -425,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // admin flips the per-kind toggle. Persisting still requires WP's
 // Save Changes; this is just live UI state.
 document.addEventListener('DOMContentLoaded', function () {
-    const toggles = document.querySelectorAll('.wcwp-ab-toggle');
+    const toggles = document.querySelectorAll('.zignites-chat-ab-toggle');
     if (!toggles.length) return;
     toggles.forEach(function (sel) {
         const targetId = sel.getAttribute('data-ab-target');
@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Date-range preset buttons (Today / Last 7 / Last 30 / This month / All time)
 document.addEventListener('DOMContentLoaded', function () {
-    const presets = document.querySelectorAll('.wcwp-analytics-preset');
+    const presets = document.querySelectorAll('.zignites-chat-analytics-preset');
     if (!presets.length) return;
 
     function fmt(d) {
@@ -454,8 +454,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setRange(range) {
-        const fromInput = document.getElementById('wcwp_date_from');
-        const toInput   = document.getElementById('wcwp_date_to');
+        const fromInput = document.getElementById('zignites_chat_date_from');
+        const toInput   = document.getElementById('zignites_chat_date_to');
         if (!fromInput || !toInput) return;
 
         const today = new Date();
@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fromInput.value = from;
         toInput.value   = to;
 
-        const filterBtn = document.getElementById('wcwp-analytics-filter-button');
+        const filterBtn = document.getElementById('zignites-chat-analytics-filter-button');
         if (filterBtn) filterBtn.click();
     }
 
@@ -502,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // whatever filters were already in the URL; this rebuild syncs it with
 // the live form values + presets.
 document.addEventListener('DOMContentLoaded', function () {
-    const exportLink = document.getElementById('wcwp-analytics-export-csv');
+    const exportLink = document.getElementById('zignites-chat-analytics-export-csv');
     if (!exportLink) return;
 
     exportLink.addEventListener('click', function (e) {
@@ -511,11 +511,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const url = new URL(href, window.location.origin);
         const fields = [
-            { id: 'wcwp_type', key: 'wcwp_type' },
-            { id: 'wcwp_status', key: 'wcwp_status' },
-            { id: 'wcwp_phone', key: 'wcwp_phone' },
-            { id: 'wcwp_date_from', key: 'wcwp_date_from' },
-            { id: 'wcwp_date_to', key: 'wcwp_date_to' }
+            { id: 'zignites_chat_type', key: 'zignites_chat_type' },
+            { id: 'zignites_chat_status', key: 'zignites_chat_status' },
+            { id: 'zignites_chat_phone', key: 'zignites_chat_phone' },
+            { id: 'zignites_chat_date_from', key: 'zignites_chat_date_from' },
+            { id: 'zignites_chat_date_to', key: 'zignites_chat_date_to' }
         ];
         fields.forEach(field => {
             const el = document.getElementById(field.id);
@@ -532,10 +532,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Send test WhatsApp message
 document.addEventListener('DOMContentLoaded', function () {
-    const sendBtn = document.getElementById('wcwp-send-test-message');
-    const phoneField = document.getElementById('wcwp_test_phone');
-    const messageField = document.getElementById('wcwp_test_message');
-    const statusEl = document.getElementById('wcwp-test-status');
+    const sendBtn = document.getElementById('zignites-chat-send-test-message');
+    const phoneField = document.getElementById('zignites_chat_test_phone');
+    const messageField = document.getElementById('zignites_chat_test_message');
+    const statusEl = document.getElementById('zignites-chat-test-status');
     if (!sendBtn || !phoneField || !messageField) return;
 
     function setStatus(text, ok) {
@@ -556,12 +556,12 @@ document.addEventListener('DOMContentLoaded', function () {
         sendBtn.disabled = true;
 
         const formData = new FormData();
-        formData.append('action', 'wcwp_send_test_whatsapp');
-        formData.append('nonce', (window.wcwpAdminData && wcwpAdminData.testNonce) ? wcwpAdminData.testNonce : '');
+        formData.append('action', 'zignites_chat_send_test_whatsapp');
+        formData.append('nonce', (window.zignitesChatAdminData && zignitesChatAdminData.testNonce) ? zignitesChatAdminData.testNonce : '');
         formData.append('phone', phone);
         formData.append('message', message);
 
-        fetch((window.wcwpAdminData && wcwpAdminData.ajaxUrl) ? wcwpAdminData.ajaxUrl : '', {
+        fetch((window.zignitesChatAdminData && zignitesChatAdminData.ajaxUrl) ? zignitesChatAdminData.ajaxUrl : '', {
             method: 'POST',
             credentials: 'same-origin',
             body: formData

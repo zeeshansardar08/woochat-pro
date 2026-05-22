@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset name="WooChat">
+<ruleset name="Zignites Chat">
     <description>
         Pragmatic coding-standards lint for CI. Focus is real bugs:
         PHP-version compatibility, output escaping, input sanitization,
@@ -12,7 +12,7 @@
     <file>./admin</file>
     <file>./blocks</file>
     <file>./templates</file>
-    <file>./woochat.php</file>
+    <file>./zignites-chat.php</file>
     <file>./uninstall.php</file>
 
     <exclude-pattern>*/vendor/*</exclude-pattern>
@@ -41,24 +41,24 @@
     <!--
         Sanitization on $_POST/$_GET/$_REQUEST/$_SERVER reads. Custom plugin
         sanitizers are listed so PHPCS does not flag inputs that pass through
-        e.g. wcwp_sanitize_text(wp_unslash($_POST['x'])).
+        e.g. zignites_chat_sanitize_text(wp_unslash($_POST['x'])).
     -->
     <rule ref="WordPress.Security.ValidatedSanitizedInput">
         <properties>
             <property name="customSanitizingFunctions" type="array">
-                <element value="wcwp_sanitize_text"/>
-                <element value="wcwp_sanitize_textarea"/>
-                <element value="wcwp_sanitize_provider"/>
-                <element value="wcwp_sanitize_int"/>
-                <element value="wcwp_sanitize_yes_no"/>
-                <element value="wcwp_sanitize_url"/>
-                <element value="wcwp_sanitize_hex_color"/>
-                <element value="wcwp_sanitize_optout_keywords"/>
-                <element value="wcwp_parse_optout_list"/>
-                <element value="wcwp_sanitize_json_faq"/>
-                <element value="wcwp_sanitize_agents_json"/>
-                <element value="wcwp_sanitize_agent_routing_mode"/>
-                <element value="wcwp_normalize_phone"/>
+                <element value="zignites_chat_sanitize_text"/>
+                <element value="zignites_chat_sanitize_textarea"/>
+                <element value="zignites_chat_sanitize_provider"/>
+                <element value="zignites_chat_sanitize_int"/>
+                <element value="zignites_chat_sanitize_yes_no"/>
+                <element value="zignites_chat_sanitize_url"/>
+                <element value="zignites_chat_sanitize_hex_color"/>
+                <element value="zignites_chat_sanitize_optout_keywords"/>
+                <element value="zignites_chat_parse_optout_list"/>
+                <element value="zignites_chat_sanitize_json_faq"/>
+                <element value="zignites_chat_sanitize_agents_json"/>
+                <element value="zignites_chat_sanitize_agent_routing_mode"/>
+                <element value="zignites_chat_normalize_phone"/>
             </property>
         </properties>
     </rule>

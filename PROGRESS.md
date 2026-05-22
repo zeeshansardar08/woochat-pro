@@ -1,6 +1,6 @@
-# WooChat — Development Progress Tracker
+# Zignites Chat — Development Progress Tracker
 
-Tracks execution of `WooChat-Master-Development-Prompt.md`. Work the phases **in order**.
+Tracks execution of `Zignites Chat-Master-Development-Prompt.md`. Work the phases **in order**.
 Each task must be verified before the next begins.
 
 **Status legend:** ✅ Done · 🟡 Partial · ⬜ Not started · ⏭️ Skipped
@@ -12,12 +12,12 @@ Current branch: `free`
 ## PHASE 1 — Rename & Restructure
 
 ### Task 1.1 — Rename Core Files — ✅ Done (commit 64080b7 + author fix)
-- [x] `woochat-pro.php` → `woochat.php`
+- [x] `zignites-chat-pro.php` → `zignites-chat.php`
 - [x] Plugin header updated, version `1.0.0`
-- [x] Text domain `woochat-pro` → `woochat` (no PHP refs remain)
-- [x] `WooChat Pro` → `WooChat` brand strings (upsell strings kept)
-- [x] `languages/woochat-pro.pot` → `woochat.pot`
-- [x] `class-wcwp-plugin.php` + `WCWP_PLUGIN_FILE` updated
+- [x] Text domain `zignites-chat-pro` → `zignites-chat` (no PHP refs remain)
+- [x] `Zignites Chat Pro` → `Zignites Chat` brand strings (upsell strings kept)
+- [x] `languages/zignites-chat-pro.pot` → `zignites-chat.pot`
+- [x] `class-zignites-chat-plugin.php` + `ZIGNITES_CHAT_PLUGIN_FILE` updated
 - [x] `composer.json` name updated
 - [x] `Author: Zignite` → `Zignites`
 
@@ -26,7 +26,7 @@ Current branch: `free`
 - [x] Per-page render functions (Dashboard, General, Messaging, Chatbot,
       Cart Recovery, Scheduler, Campaigns, Analytics, Logs, Webhooks, License)
 - [x] New Dashboard page (`admin/views/dashboard.php`) — stats, quick links, Pro teasers
-- [x] `wcwp_render_pro_upgrade_notice()` reusable function
+- [x] `zignites_chat_render_pro_upgrade_notice()` reusable function
 - [x] Strip tab switcher from `admin-premium.js`, tab CSS from `admin-premium.css`
 - [x] Per-page conditional `admin_enqueue_scripts` (hook checks)
 - [x] Strip tab wrapper divs from each `admin/views/tab-*.php`
@@ -34,7 +34,7 @@ Current branch: `free`
 - [x] Pro-gated pages render upgrade card when no license active
 - [x] Fixed analytics/logs filter URLs + redirect URLs in log-viewer.php / webhooks.php
 
-> Note: `tab-scheduler.php` / `tab-analytics.php` still carry inline `wcwp-pro-banner`
+> Note: `tab-scheduler.php` / `tab-analytics.php` still carry inline `zignites-chat-pro-banner`
 > markup — now dead code (pages gate before the view loads). Clean up in Phase 4.
 
 ### Task 1.3 — Update readme.txt — 🟡 Partial
@@ -84,11 +84,11 @@ Current branch: `free`
 
 ## PHASE 4 — Free Version Preparation — ✅ Done
 - [x] 4.1 `free` branch created
-- [x] 4.2 Pro feature gating behind `wcwp_is_pro_active()`:
+- [x] 4.2 Pro feature gating behind `zignites_chat_is_pro_active()`:
   - Cart Recovery / Scheduler / Campaigns / Analytics / Webhooks — page-gated (Phase 1)
   - Chatbot — basic widget + FAQ + single agent are Free; GPT replies,
     color/icon customizer and multi-agent routing are Pro
-  - A/B testing — gated in the Messaging view and in the `wcwp_ab_get_template`
+  - A/B testing — gated in the Messaging view and in the `zignites_chat_ab_get_template`
     runtime
   - Logs — Free capped at last 50 entries; download/export is Pro (handler
     also rejects non-Pro)
@@ -103,21 +103,36 @@ Current branch: `free`
 ---
 
 ## PHASE 5 — WordPress.org Submission Prep — 🟡 Partial (code-side done)
-- [🟡] 5.1 Plugin Check — code-side audit complete; PHPCS green (39 files,
-      zero errors), 95 PHPUnit tests pass. Running the actual Plugin Check
-      plugin needs a WP admin session (user action).
+- [✅] 5.1 Plugin Check — ran the official Plugin Check; worked through every
+      finding:
+  - **Renamed plugin** (trademark blocker): "WhatsApp" and "Woo" are
+    restricted. New name "Zignites Chat – Order Notifications & Customer Chat
+    for WooCommerce", slug/text-domain `zignites-chat`, code prefix
+    `wcwp_`/`WCWP_` → `zignites_chat_`/`ZIGNITES_CHAT_`. Main file, class
+    file, provider files and `.pot` renamed to match.
+  - ERRORs fixed: block `apiVersion` 3, `date()`→`gmdate()`, i18n
+    translators-comment placement, `Tested up to` 7.0, file ops → WP_Filesystem
+    / justified `phpcs:ignore`, removed dead `uuid-polyfill.js`
+    (`library_core_files`).
+  - WARNINGs fixed: dropped `load_plugin_textdomain` / `print_r`, swapped
+    custom sanitizer wrappers for core fns, prefixed `uninstall.php` globals,
+    file-level `phpcs:disable` for custom-table DB sniffs and display-filter
+    NonceVerification (with justifications).
+  - Dev-only files (`.github`, `phpcs.xml.dist`, `tests/`, `PROGRESS.md`,
+    `.claude`) stay out of the free build — handled by the separate clean repo.
+  - PHPCS green (39 files), 95 PHPUnit tests pass.
 - [🟡] 5.2 Submission checklist — code items verified:
   - ABSPATH guards on every PHP file
   - All POST/GET/REQUEST/COOKIE/SERVER input sanitized + unslashed
   - All admin output escaped; all 6 `printf` calls escape args
   - 18 AJAX/admin-post handlers all verify nonces; privileged ones check caps
-  - Text domain consistently `woochat`; no `woochat-pro` refs; .pot present
+  - Text domain consistently `zignites-chat`; no `zignites-chat-pro` refs; .pot present
   - Removed self-hosted updater (`update-checker.php` + `docs/`) — .org
     handles updates; the updater stays only on `master` (Pro)
   - `uninstall.php` — clears all options (+3 that were missed:
-    `wcwp_test_phone`, `wcwp_test_message`, `wcwp_pro_notice_dismissed`),
+    `zignites_chat_test_phone`, `zignites_chat_test_message`, `zignites_chat_pro_notice_dismissed`),
     drops all 4 tables, and now clears all 6 cron hooks
-  - Fixed: daily `wcwp_cleanup_analytics` cron was never unscheduled on
+  - Fixed: daily `zignites_chat_cleanup_analytics` cron was never unscheduled on
     deactivation — now cleared in `Plugin::deactivate()`
   - readme.txt has a Privacy & Data section disclosing Twilio / Meta / OpenAI
   - Remaining (user action): create PNG icon/banner/screenshots

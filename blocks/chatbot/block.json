@@ -1,12 +1,12 @@
 {
     "$schema": "https://schemas.wp.org/trunk/block.json",
-    "apiVersion": 2,
-    "name": "woochat/chatbot",
-    "title": "WooChat Chatbot",
+    "apiVersion": 3,
+    "name": "zignites-chat/chatbot",
+    "title": "Zignites Chat Chatbot",
     "category": "widgets",
     "icon": "format-chat",
-    "description": "Embeds the WooChat floating chatbot widget on this page. The widget is also available globally via the site footer.",
-    "textdomain": "woochat",
+    "description": "Embeds the Zignites Chat floating chatbot widget on this page. The widget is also available globally via the site footer.",
+    "textdomain": "zignites-chat",
     "supports": {
         "html": false,
         "multiple": false,

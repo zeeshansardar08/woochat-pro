@@ -1,17 +1,17 @@
-// WooChat – Onboarding Wizard
+// Zignites Chat – Onboarding Wizard
 
 document.addEventListener('DOMContentLoaded', function () {
-    const wizard = document.getElementById('wcwp-onboarding-modal');
+    const wizard = document.getElementById('zignites-chat-onboarding-modal');
     if (!wizard) return;
 
-    const steps     = Array.from(wizard.querySelectorAll('.wcwp-onboarding-step'));
-    const progress  = wizard.querySelector('.wcwp-onboarding-progress-inner');
-    const nextBtn   = wizard.querySelector('.wcwp-onboarding-next');
-    const prevBtn   = wizard.querySelector('.wcwp-onboarding-prev');
-    const skipBtn   = wizard.querySelector('.wcwp-onboarding-skip');
-    const finishBtn = wizard.querySelector('.wcwp-onboarding-finish');
+    const steps     = Array.from(wizard.querySelectorAll('.zignites-chat-onboarding-step'));
+    const progress  = wizard.querySelector('.zignites-chat-onboarding-progress-inner');
+    const nextBtn   = wizard.querySelector('.zignites-chat-onboarding-next');
+    const prevBtn   = wizard.querySelector('.zignites-chat-onboarding-prev');
+    const skipBtn   = wizard.querySelector('.zignites-chat-onboarding-skip');
+    const finishBtn = wizard.querySelector('.zignites-chat-onboarding-finish');
 
-    const config = (typeof wcwpOnboarding !== 'undefined') ? wcwpOnboarding : {};
+    const config = (typeof zignitesChatOnboarding !== 'undefined') ? zignitesChatOnboarding : {};
     const i18n = config.i18n || {};
     const defaultNextLabel = nextBtn ? nextBtn.textContent : 'Next';
 
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function selectedProvider() {
-        const checked = wizard.querySelector('input[name="wcwp_ob_provider"]:checked');
+        const checked = wizard.querySelector('input[name="zignites_chat_ob_provider"]:checked');
         return checked ? checked.value : 'twilio';
     }
 
@@ -50,14 +50,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    wizard.querySelectorAll('input[name="wcwp_ob_provider"]').forEach(function (radio) {
+    wizard.querySelectorAll('input[name="zignites_chat_ob_provider"]').forEach(function (radio) {
         radio.addEventListener('change', applyProviderVisibility);
     });
 
     function clearFieldErrors() {
-        wizard.querySelectorAll('.wcwp-onboarding-field-error').forEach(function (el) { el.textContent = ''; });
-        wizard.querySelectorAll('.wcwp-onboarding-field.has-error').forEach(function (el) { el.classList.remove('has-error'); });
-        const formErr = wizard.querySelector('.wcwp-onboarding-form-error');
+        wizard.querySelectorAll('.zignites-chat-onboarding-field-error').forEach(function (el) { el.textContent = ''; });
+        wizard.querySelectorAll('.zignites-chat-onboarding-field.has-error').forEach(function (el) { el.classList.remove('has-error'); });
+        const formErr = wizard.querySelector('.zignites-chat-onboarding-form-error');
         if (formErr) formErr.textContent = '';
     }
 
@@ -66,16 +66,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const errEl = wizard.querySelector('[data-error-for="' + key + '"]');
             if (errEl) {
                 errEl.textContent = fields[key];
-                const wrap = errEl.closest('.wcwp-onboarding-field');
+                const wrap = errEl.closest('.zignites-chat-onboarding-field');
                 if (wrap) wrap.classList.add('has-error');
             }
         });
-        const formErr = wizard.querySelector('.wcwp-onboarding-form-error');
+        const formErr = wizard.querySelector('.zignites-chat-onboarding-form-error');
         if (formErr) formErr.textContent = i18n.saveError || 'Could not save. Please check the highlighted fields.';
     }
 
     function showFormError(message) {
-        const formErr = wizard.querySelector('.wcwp-onboarding-form-error');
+        const formErr = wizard.querySelector('.zignites-chat-onboarding-form-error');
         if (formErr) formErr.textContent = message;
     }
 
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const provider = selectedProvider();
         const body = new URLSearchParams();
-        body.append('action', 'wcwp_save_onboarding_credentials');
+        body.append('action', 'zignites_chat_save_onboarding_credentials');
         body.append('nonce', config.saveNonce);
         body.append('provider', provider);
 
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function persistDismissal() {
         if (!config.ajaxUrl || !config.dismissNonce) return;
         const body = new URLSearchParams();
-        body.append('action', 'wcwp_dismiss_onboarding');
+        body.append('action', 'zignites_chat_dismiss_onboarding');
         body.append('nonce', config.dismissNonce);
         fetch(config.ajaxUrl, {
             method: 'POST',

@@ -4,28 +4,36 @@
  *
  * One-shot bulk WhatsApp send to a customer segment, throttled via
  * WP-Cron. Each recipient is persisted as its own row in
- * {prefix}wcwp_campaign_recipients so progress survives crashes,
+ * {prefix}zignites_chat_campaign_recipients so progress survives crashes,
  * page reloads, and concurrent admin sessions. The dispatcher
- * (wcwp_send_whatsapp_message) is reused per recipient so opt-out,
+ * (zignites_chat_send_whatsapp_message) is reused per recipient so opt-out,
  * test mode, analytics, and provider routing are handled centrally.
  */
 
 if (!defined('ABSPATH')) exit;
 
-add_action('wcwp_process_campaign', 'wcwp_campaign_process_chunk');
+/*
+ * Direct SQL below runs against the plugin's own custom tables. Every
+ * user-supplied value is bound through $wpdb->prepare(); the only values
+ * interpolated into query strings are table names derived from
+ * $wpdb->prefix. This transactional data is not object-cached.
+ */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+add_action('zignites_chat_process_campaign', 'zignites_chat_campaign_process_chunk');
 
 /* -------------------------------------------------------------------------
  * Schema
  * ----------------------------------------------------------------------- */
 
-function wcwp_campaigns_table_name() {
+function zignites_chat_campaigns_table_name() {
     global $wpdb;
-    return $wpdb->prefix . 'wcwp_campaigns';
+    return $wpdb->prefix . 'zignites_chat_campaigns';
 }
 
-function wcwp_campaign_recipients_table_name() {
+function zignites_chat_campaign_recipients_table_name() {
     global $wpdb;
-    return $wpdb->prefix . 'wcwp_campaign_recipients';
+    return $wpdb->prefix . 'zignites_chat_campaign_recipients';
 }
 
 /**
@@ -33,11 +41,11 @@ function wcwp_campaign_recipients_table_name() {
  * activation hook so a fresh install lands the tables before the first
  * admin_init migration tick.
  */
-function wcwp_create_campaign_tables() {
+function zignites_chat_create_campaign_tables() {
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
-    $campaigns       = wcwp_campaigns_table_name();
-    $recipients      = wcwp_campaign_recipients_table_name();
+    $campaigns       = zignites_chat_campaigns_table_name();
+    $recipients      = zignites_chat_campaign_recipients_table_name();
 
     $sql_campaigns = "CREATE TABLE {$campaigns} (
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -84,32 +92,32 @@ function wcwp_create_campaign_tables() {
  * @param array $args {
  *   @type string $name         Required.
  *   @type string $template     Required. Body with {name}/{site}/{currency_symbol} placeholders.
- *   @type string $segment_type Required. One of the keys returned by wcwp_campaign_segment_types().
+ *   @type string $segment_type Required. One of the keys returned by zignites_chat_campaign_segment_types().
  *   @type array  $segment_meta Optional. Segment-specific filters (e.g. {days: 30}).
  * }
  * @return int|WP_Error Campaign id, or WP_Error on validation failure.
  */
-function wcwp_campaign_create($args) {
+function zignites_chat_campaign_create($args) {
     global $wpdb;
 
     $name         = isset($args['name']) ? sanitize_text_field($args['name']) : '';
-    $template     = isset($args['template']) ? wcwp_sanitize_textarea($args['template']) : '';
+    $template     = isset($args['template']) ? zignites_chat_sanitize_textarea($args['template']) : '';
     $segment_type = isset($args['segment_type']) ? sanitize_key($args['segment_type']) : '';
     $segment_meta = isset($args['segment_meta']) && is_array($args['segment_meta']) ? $args['segment_meta'] : [];
 
-    if ($name === '')     return new WP_Error('wcwp_campaign_name_required', __('Campaign name is required.', 'woochat'));
-    if ($template === '') return new WP_Error('wcwp_campaign_template_required', __('Message template is required.', 'woochat'));
-    if (!array_key_exists($segment_type, wcwp_campaign_segment_types())) {
-        return new WP_Error('wcwp_campaign_segment_invalid', __('Unknown segment.', 'woochat'));
+    if ($name === '')     return new WP_Error('zignites_chat_campaign_name_required', __('Campaign name is required.', 'zignites-chat'));
+    if ($template === '') return new WP_Error('zignites_chat_campaign_template_required', __('Message template is required.', 'zignites-chat'));
+    if (!array_key_exists($segment_type, zignites_chat_campaign_segment_types())) {
+        return new WP_Error('zignites_chat_campaign_segment_invalid', __('Unknown segment.', 'zignites-chat'));
     }
 
-    $recipients = wcwp_campaign_resolve_segment($segment_type, $segment_meta);
+    $recipients = zignites_chat_campaign_resolve_segment($segment_type, $segment_meta);
     if (empty($recipients)) {
-        return new WP_Error('wcwp_campaign_no_recipients', __('No matching customers — campaign not created.', 'woochat'));
+        return new WP_Error('zignites_chat_campaign_no_recipients', __('No matching customers — campaign not created.', 'zignites-chat'));
     }
 
     $now = current_time('mysql');
-    $wpdb->insert(wcwp_campaigns_table_name(), [
+    $wpdb->insert(zignites_chat_campaigns_table_name(), [
         'name'         => $name,
         'template'     => $template,
         'segment_type' => $segment_type,
@@ -121,10 +129,10 @@ function wcwp_campaign_create($args) {
 
     $campaign_id = (int) $wpdb->insert_id;
     if ($campaign_id <= 0) {
-        return new WP_Error('wcwp_campaign_insert_failed', __('Could not create campaign.', 'woochat'));
+        return new WP_Error('zignites_chat_campaign_insert_failed', __('Could not create campaign.', 'zignites-chat'));
     }
 
-    $rt = wcwp_campaign_recipients_table_name();
+    $rt = zignites_chat_campaign_recipients_table_name();
     foreach ($recipients as $r) {
         $wpdb->insert($rt, [
             'campaign_id'   => $campaign_id,
@@ -137,7 +145,7 @@ function wcwp_campaign_create($args) {
 
     // Kick off the first chunk shortly after return so the admin sees
     // immediate progress without sitting through an HTTP fan-out.
-    wp_schedule_single_event(time() + 5, 'wcwp_process_campaign', [$campaign_id]);
+    wp_schedule_single_event(time() + 5, 'zignites_chat_process_campaign', [$campaign_id]);
 
     return $campaign_id;
 }
@@ -148,12 +156,12 @@ function wcwp_campaign_create($args) {
  * @param int $campaign_id
  * @return array|null Campaign row, or null when not found.
  */
-function wcwp_campaign_get($campaign_id) {
+function zignites_chat_campaign_get($campaign_id) {
     global $wpdb;
     $campaign_id = (int) $campaign_id;
     if ($campaign_id <= 0) return null;
     $row = $wpdb->get_row(
-        $wpdb->prepare("SELECT * FROM " . wcwp_campaigns_table_name() . " WHERE id = %d", $campaign_id),
+        $wpdb->prepare("SELECT * FROM " . zignites_chat_campaigns_table_name() . " WHERE id = %d", $campaign_id),
         ARRAY_A
     );
     return $row ?: null;
@@ -165,12 +173,12 @@ function wcwp_campaign_get($campaign_id) {
  * @param int $limit Maximum rows to return (clamped 1-200). Default 20.
  * @return array<int, array> Campaign rows.
  */
-function wcwp_campaign_list($limit = 20) {
+function zignites_chat_campaign_list($limit = 20) {
     global $wpdb;
     $limit = max(1, min(200, (int) $limit));
     return $wpdb->get_results(
         $wpdb->prepare(
-            'SELECT * FROM ' . wcwp_campaigns_table_name() . ' ORDER BY id DESC LIMIT %d',
+            'SELECT * FROM ' . zignites_chat_campaigns_table_name() . ' ORDER BY id DESC LIMIT %d',
             $limit
         ),
         ARRAY_A
@@ -181,10 +189,10 @@ function wcwp_campaign_list($limit = 20) {
  * Segments
  * ----------------------------------------------------------------------- */
 
-function wcwp_campaign_segment_types() {
+function zignites_chat_campaign_segment_types() {
     return [
-        'all_customers' => __('All customers with phone', 'woochat'),
-        'recent_orders' => __('Customers who ordered recently', 'woochat'),
+        'all_customers' => __('All customers with phone', 'zignites-chat'),
+        'recent_orders' => __('Customers who ordered recently', 'zignites-chat'),
     ];
 }
 
@@ -193,7 +201,7 @@ function wcwp_campaign_segment_types() {
  *
  * @return array<int, array{phone:string, name:string}>
  */
-function wcwp_campaign_resolve_segment($segment_type, $segment_meta = []) {
+function zignites_chat_campaign_resolve_segment($segment_type, $segment_meta = []) {
     if (!function_exists('wc_get_orders')) return [];
 
     $query = [
@@ -215,9 +223,9 @@ function wcwp_campaign_resolve_segment($segment_type, $segment_meta = []) {
         if (empty($orders) || !is_array($orders)) break;
 
         foreach ($orders as $order) {
-            $phone = wcwp_normalize_phone($order->get_billing_phone());
+            $phone = zignites_chat_normalize_phone($order->get_billing_phone());
             if (!$phone || isset($seen[$phone])) continue;
-            if (wcwp_is_opted_out($phone)) continue;
+            if (zignites_chat_is_opted_out($phone)) continue;
             $seen[$phone] = true;
             $recipients[] = [
                 'phone' => $phone,
@@ -247,9 +255,9 @@ function wcwp_campaign_resolve_segment($segment_type, $segment_meta = []) {
  * is available for bulk sends, so the order-related placeholders that
  * scheduler.php and cart-recovery.php support are deliberately absent.
  */
-function wcwp_campaign_render_message($template, $name = '') {
+function zignites_chat_campaign_render_message($template, $name = '') {
     $site = function_exists('get_bloginfo') ? get_bloginfo('name') : '';
-    $currency = function_exists('wcwp_currency_symbol_text') ? wcwp_currency_symbol_text() : '';
+    $currency = function_exists('zignites_chat_currency_symbol_text') ? zignites_chat_currency_symbol_text() : '';
     return str_replace(
         ['{name}', '{site}', '{currency_symbol}'],
         [(string) $name, (string) $site, (string) $currency],
@@ -271,19 +279,19 @@ function wcwp_campaign_render_message($template, $name = '') {
  *
  * @param int $campaign_id
  */
-function wcwp_campaign_process_chunk($campaign_id) {
+function zignites_chat_campaign_process_chunk($campaign_id) {
     global $wpdb;
     $campaign_id = (int) $campaign_id;
     if ($campaign_id <= 0) return;
 
-    $campaign = wcwp_campaign_get($campaign_id);
+    $campaign = zignites_chat_campaign_get($campaign_id);
     if (!$campaign) return;
     if (in_array($campaign['status'], ['completed', 'failed'], true)) return;
 
-    $chunk_size = (int) apply_filters('wcwp_campaign_chunk_size', 10);
+    $chunk_size = (int) apply_filters('zignites_chat_campaign_chunk_size', 10);
     $chunk_size = max(1, min(100, $chunk_size));
 
-    $rt = wcwp_campaign_recipients_table_name();
+    $rt = zignites_chat_campaign_recipients_table_name();
     $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT id, phone, customer_name FROM {$rt} WHERE campaign_id = %d AND status = 'pending' ORDER BY id ASC LIMIT %d",
         $campaign_id,
@@ -291,13 +299,13 @@ function wcwp_campaign_process_chunk($campaign_id) {
     ), ARRAY_A);
 
     if (!$rows) {
-        wcwp_campaign_finalize($campaign_id);
+        zignites_chat_campaign_finalize($campaign_id);
         return;
     }
 
     if ($campaign['status'] !== 'running') {
         $wpdb->update(
-            wcwp_campaigns_table_name(),
+            zignites_chat_campaigns_table_name(),
             ['status' => 'running'],
             ['id' => $campaign_id],
             ['%s'], ['%d']
@@ -308,7 +316,7 @@ function wcwp_campaign_process_chunk($campaign_id) {
     foreach ($rows as $row) {
         $phone = $row['phone'];
 
-        if (wcwp_is_opted_out($phone)) {
+        if (zignites_chat_is_opted_out($phone)) {
             $wpdb->update($rt, [
                 'status'  => 'skipped',
                 'sent_at' => current_time('mysql'),
@@ -317,9 +325,9 @@ function wcwp_campaign_process_chunk($campaign_id) {
             continue;
         }
 
-        $message = wcwp_campaign_render_message($campaign['template'], $row['customer_name']);
+        $message = zignites_chat_campaign_render_message($campaign['template'], $row['customer_name']);
 
-        $ok = wcwp_send_whatsapp_message($phone, $message, false, [
+        $ok = zignites_chat_send_whatsapp_message($phone, $message, false, [
             'type' => 'bulk',
             'campaign_id' => $campaign_id,
         ]);
@@ -335,7 +343,7 @@ function wcwp_campaign_process_chunk($campaign_id) {
             $wpdb->update($rt, [
                 'status'        => 'failed',
                 'attempt_count' => (int) $row['attempt_count'] + 1,
-                'last_error'    => __('Provider returned failure.', 'woochat'),
+                'last_error'    => __('Provider returned failure.', 'zignites-chat'),
             ], ['id' => $row['id']], ['%s', '%d', '%s'], ['%d']);
             $failed++;
         }
@@ -343,7 +351,7 @@ function wcwp_campaign_process_chunk($campaign_id) {
 
     if ($sent || $failed || $skipped) {
         $wpdb->query($wpdb->prepare(
-            "UPDATE " . wcwp_campaigns_table_name() . "
+            "UPDATE " . zignites_chat_campaigns_table_name() . "
              SET sent_count = sent_count + %d,
                  failed_count = failed_count + %d,
                  skipped_count = skipped_count + %d
@@ -358,11 +366,11 @@ function wcwp_campaign_process_chunk($campaign_id) {
     ));
 
     if ($remaining > 0) {
-        $delay = (int) apply_filters('wcwp_campaign_chunk_interval', MINUTE_IN_SECONDS);
+        $delay = (int) apply_filters('zignites_chat_campaign_chunk_interval', MINUTE_IN_SECONDS);
         $delay = max(10, min(HOUR_IN_SECONDS, $delay));
-        wp_schedule_single_event(time() + $delay, 'wcwp_process_campaign', [$campaign_id]);
+        wp_schedule_single_event(time() + $delay, 'zignites_chat_process_campaign', [$campaign_id]);
     } else {
-        wcwp_campaign_finalize($campaign_id);
+        zignites_chat_campaign_finalize($campaign_id);
     }
 }
 
@@ -371,10 +379,10 @@ function wcwp_campaign_process_chunk($campaign_id) {
  *
  * @param int $campaign_id
  */
-function wcwp_campaign_finalize($campaign_id) {
+function zignites_chat_campaign_finalize($campaign_id) {
     global $wpdb;
     $wpdb->update(
-        wcwp_campaigns_table_name(),
+        zignites_chat_campaigns_table_name(),
         [
             'status'       => 'completed',
             'completed_at' => current_time('mysql'),

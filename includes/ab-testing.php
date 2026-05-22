@@ -7,7 +7,7 @@
  * which one converts better. Reuses the analytics events table — the
  * variant id is written into the event's `meta.ab_variant` field at
  * send time, then the results helper joins those events to subsequent
- * WC orders via the existing wcwp_analytics_match_conversions() pure
+ * WC orders via the existing zignites_chat_analytics_match_conversions() pure
  * matcher (PR #49).
  *
  * Variant assignment is deterministic per recipient: the same phone (or
@@ -18,9 +18,9 @@
  * both 32-bit and 64-bit PHP.
  *
  * Storage:
- *   - wcwp_{kind}_template       — variant A (existing option, untouched).
- *   - wcwp_{kind}_template_b     — variant B (new option, autoload off).
- *   - wcwp_{kind}_ab_enabled     — yes/no master toggle (new, default 'no').
+ *   - zignites_chat_{kind}_template       — variant A (existing option, untouched).
+ *   - zignites_chat_{kind}_template_b     — variant B (new option, autoload off).
+ *   - zignites_chat_{kind}_ab_enabled     — yes/no master toggle (new, default 'no').
  *
  * When the toggle is OFF, or B is empty, every send falls through to
  * variant A — behavior is byte-identical to a pre-PR install.
@@ -36,27 +36,27 @@ if (!defined('ABSPATH')) exit;
  *
  * @return array<string, array{label:string, option_a:string, option_b:string, option_enabled:string, default_a:string}>
  */
-function wcwp_ab_kinds() {
+function zignites_chat_ab_kinds() {
     $kinds = [
         'order' => [
-            'label'          => __('Order confirmation', 'woochat'),
-            'option_a'       => 'wcwp_order_message_template',
-            'option_b'       => 'wcwp_order_message_template_b',
-            'option_enabled' => 'wcwp_order_message_ab_enabled',
+            'label'          => __('Order confirmation', 'zignites-chat'),
+            'option_a'       => 'zignites_chat_order_message_template',
+            'option_b'       => 'zignites_chat_order_message_template_b',
+            'option_enabled' => 'zignites_chat_order_message_ab_enabled',
             'default_a'      => 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.',
         ],
         'cart_recovery' => [
-            'label'          => __('Cart recovery', 'woochat'),
-            'option_a'       => 'wcwp_cart_recovery_message',
-            'option_b'       => 'wcwp_cart_recovery_message_b',
-            'option_enabled' => 'wcwp_cart_recovery_ab_enabled',
+            'label'          => __('Cart recovery', 'zignites-chat'),
+            'option_a'       => 'zignites_chat_cart_recovery_message',
+            'option_b'       => 'zignites_chat_cart_recovery_message_b',
+            'option_enabled' => 'zignites_chat_cart_recovery_ab_enabled',
             'default_a'      => "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} {currency_symbol}\nClick here to complete your order: {cart_url}",
         ],
         'followup' => [
-            'label'          => __('Follow-up', 'woochat'),
-            'option_a'       => 'wcwp_followup_template',
-            'option_b'       => 'wcwp_followup_template_b',
-            'option_enabled' => 'wcwp_followup_ab_enabled',
+            'label'          => __('Follow-up', 'zignites-chat'),
+            'option_a'       => 'zignites_chat_followup_template',
+            'option_b'       => 'zignites_chat_followup_template_b',
+            'option_enabled' => 'zignites_chat_followup_ab_enabled',
             'default_a'      => 'Hi {name}, thanks again for your order #{order_id}! Reply if you have any questions.',
         ],
     ];
@@ -66,7 +66,7 @@ function wcwp_ab_kinds() {
      *
      * @param array $kinds Kind-keyed config map.
      */
-    return (array) apply_filters('wcwp_ab_kinds', $kinds);
+    return (array) apply_filters('zignites_chat_ab_kinds', $kinds);
 }
 
 /**
@@ -77,11 +77,11 @@ function wcwp_ab_kinds() {
  * both 32-bit and 64-bit PHP because we mask with 1 instead of using
  * modulo on a possibly-signed int.
  *
- * @param string     $kind One of the kinds returned by wcwp_ab_kinds().
+ * @param string     $kind One of the kinds returned by zignites_chat_ab_kinds().
  * @param string|int $key  Stable per-recipient key (phone or order id).
  * @return string 'a' or 'b'.
  */
-function wcwp_ab_pick_variant($kind, $key) {
+function zignites_chat_ab_pick_variant($kind, $key) {
     $kind = (string) $kind;
     $key  = (string) $key;
     if ($kind === '' || $key === '') return 'a';
@@ -96,13 +96,13 @@ function wcwp_ab_pick_variant($kind, $key) {
  * empty, or the kind is unknown — so callers can pass the result
  * straight through without an extra null check.
  *
- * @param string     $kind       Kind id from wcwp_ab_kinds().
+ * @param string     $kind       Kind id from zignites_chat_ab_kinds().
  * @param string|int $stable_key Per-recipient key — phone for cart
  *                               recovery, order id for orders/followups.
  * @return array{variant:string, template:string}
  */
-function wcwp_ab_get_template($kind, $stable_key) {
-    $kinds = wcwp_ab_kinds();
+function zignites_chat_ab_get_template($kind, $stable_key) {
+    $kinds = zignites_chat_ab_kinds();
     if (!isset($kinds[$kind])) {
         return ['variant' => 'a', 'template' => ''];
     }
@@ -111,14 +111,14 @@ function wcwp_ab_get_template($kind, $stable_key) {
     $a_template = (string) get_option($cfg['option_a'], $cfg['default_a']);
     // A/B testing is a Pro feature — never split-test on the free plan,
     // regardless of any option values left over from a prior Pro license.
-    $enabled    = wcwp_is_pro_active() && get_option($cfg['option_enabled'], 'no') === 'yes';
+    $enabled    = zignites_chat_is_pro_active() && get_option($cfg['option_enabled'], 'no') === 'yes';
     $b_template = $enabled ? (string) get_option($cfg['option_b'], '') : '';
 
     if (!$enabled || trim($b_template) === '') {
         return ['variant' => 'a', 'template' => $a_template];
     }
 
-    $variant  = wcwp_ab_pick_variant($kind, $stable_key);
+    $variant  = zignites_chat_ab_pick_variant($kind, $stable_key);
     $template = $variant === 'b' ? $b_template : $a_template;
     return ['variant' => $variant, 'template' => $template];
 }
@@ -130,10 +130,10 @@ function wcwp_ab_get_template($kind, $stable_key) {
  * without DB or option fixtures. Events without a recognised variant
  * are dropped (they predate A/B or were sent with the toggle off).
  *
- * @param array $events Analytics event rows from wcwp_analytics_get_events().
+ * @param array $events Analytics event rows from zignites_chat_analytics_get_events().
  * @return array{a: array<int, array>, b: array<int, array>}
  */
-function wcwp_ab_partition_events_by_variant($events) {
+function zignites_chat_ab_partition_events_by_variant($events) {
     $out = ['a' => [], 'b' => []];
     if (!is_array($events)) return $out;
 
@@ -166,18 +166,18 @@ function wcwp_ab_partition_events_by_variant($events) {
  * sample size (default 30 each, filterable) so admins don't crown a
  * winner off three sends.
  *
- * @param string $kind    Kind id from wcwp_ab_kinds().
- * @param array  $filters Same shape as wcwp_analytics_get_events() filters
+ * @param string $kind    Kind id from zignites_chat_ab_kinds().
+ * @param array  $filters Same shape as zignites_chat_analytics_get_events() filters
  *                        (date_from, date_to). The type filter is forced
  *                        to $kind here.
  * @return array
  */
-function wcwp_ab_get_results($kind, $filters = []) {
-    $window_days = (int) apply_filters('wcwp_analytics_attribution_window_days', 7);
+function zignites_chat_ab_get_results($kind, $filters = []) {
+    $window_days = (int) apply_filters('zignites_chat_analytics_attribution_window_days', 7);
     if ($window_days < 1) $window_days = 7;
     $window_seconds = $window_days * DAY_IN_SECONDS;
 
-    $min_sample = (int) apply_filters('wcwp_ab_min_sample_size', 30);
+    $min_sample = (int) apply_filters('zignites_chat_ab_min_sample_size', 30);
     if ($min_sample < 1) $min_sample = 30;
 
     $blank = [
@@ -194,7 +194,7 @@ function wcwp_ab_get_results($kind, $filters = []) {
         'total_sent'  => 0,
     ];
 
-    $kinds = wcwp_ab_kinds();
+    $kinds = zignites_chat_ab_kinds();
     if (!isset($kinds[$kind])) {
         return $base;
     }
@@ -202,9 +202,9 @@ function wcwp_ab_get_results($kind, $filters = []) {
     $event_filters = is_array($filters) ? $filters : [];
     $event_filters['type'] = $kind;
     unset($event_filters['status']);
-    $events = wcwp_analytics_get_events(5000, $event_filters);
+    $events = zignites_chat_analytics_get_events(5000, $event_filters);
 
-    $partitioned = wcwp_ab_partition_events_by_variant($events);
+    $partitioned = zignites_chat_ab_partition_events_by_variant($events);
 
     // Build the eligible-event lists (sent/delivered/clicked + phone) per
     // variant, plus the combined time window for one shared order fetch.
@@ -223,7 +223,7 @@ function wcwp_ab_get_results($kind, $filters = []) {
             if (!$time) continue;
             $eligible_by_variant[$variant][] = [
                 'event_id'   => (string) ($e['id'] ?? ''),
-                'phone_norm' => wcwp_normalize_phone($e['phone']),
+                'phone_norm' => zignites_chat_normalize_phone($e['phone']),
                 'time'       => $time,
             ];
             if ($time < $earliest) $earliest = $time;
@@ -248,7 +248,7 @@ function wcwp_ab_get_results($kind, $filters = []) {
         if (is_array($orders)) {
             foreach ($orders as $order) {
                 if (!is_object($order) || !method_exists($order, 'get_billing_phone')) continue;
-                $phone_norm = wcwp_normalize_phone($order->get_billing_phone());
+                $phone_norm = zignites_chat_normalize_phone($order->get_billing_phone());
                 if ($phone_norm === '') continue;
                 $created = $order->get_date_created();
                 if (!$created) continue;
@@ -266,7 +266,7 @@ function wcwp_ab_get_results($kind, $filters = []) {
     foreach (['a', 'b'] as $variant) {
         $sent = $sent_counts[$variant];
         if (!empty($eligible_by_variant[$variant]) && !empty($order_records)) {
-            $match = wcwp_analytics_match_conversions($eligible_by_variant[$variant], $order_records, $window_seconds);
+            $match = zignites_chat_analytics_match_conversions($eligible_by_variant[$variant], $order_records, $window_seconds);
             $conversions = (int) $match['conversions'];
             $revenue     = (float) $match['revenue'];
         } else {

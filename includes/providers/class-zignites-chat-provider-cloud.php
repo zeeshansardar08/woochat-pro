@@ -10,16 +10,16 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-class WCWP_Provider_Cloud extends WCWP_Provider {
+class ZIGNITES_CHAT_Provider_Cloud extends ZIGNITES_CHAT_Provider {
 
     public function name() {
         return 'cloud';
     }
 
     public function is_configured() {
-        return get_option( 'wcwp_cloud_token' )
-            && get_option( 'wcwp_cloud_phone_id' )
-            && get_option( 'wcwp_cloud_from' );
+        return get_option( 'zignites_chat_cloud_token' )
+            && get_option( 'zignites_chat_cloud_phone_id' )
+            && get_option( 'zignites_chat_cloud_from' );
     }
 
     public function missing_credentials_message() {
@@ -27,8 +27,8 @@ class WCWP_Provider_Cloud extends WCWP_Provider {
     }
 
     public function send( $to, $message ) {
-        $token     = (string) get_option( 'wcwp_cloud_token' );
-        $phone_id  = (string) get_option( 'wcwp_cloud_phone_id' );
+        $token     = (string) get_option( 'zignites_chat_cloud_token' );
+        $phone_id  = (string) get_option( 'zignites_chat_cloud_phone_id' );
         $to_number = preg_replace( '/[^0-9]/', '', (string) $to );
 
         $response = wp_remote_post(
@@ -60,7 +60,7 @@ class WCWP_Provider_Cloud extends WCWP_Provider {
         if ( isset( $data['error'] ) ) {
             return [
                 'ok'    => false,
-                'error' => 'WhatsApp Cloud API Error: ' . print_r( $data['error'], true ),
+                'error' => 'WhatsApp Cloud API Error: ' . wp_json_encode( $data['error'] ),
             ];
         }
 

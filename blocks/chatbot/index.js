@@ -1,5 +1,5 @@
 /**
- * WooChat Chatbot block.
+ * Zignites Chat Chatbot block.
  *
  * Server-rendered (PHP render_callback in includes/blocks.php), so save()
  * returns null. The editor preview is a static placeholder card — calling
@@ -11,24 +11,24 @@
     var el = element.createElement;
     var __ = i18n.__;
 
-    blocks.registerBlockType( 'woochat/chatbot', {
+    blocks.registerBlockType( 'zignites-chat/chatbot', {
         edit: function () {
             return el(
                 'div',
-                { className: 'wcwp-block-placeholder' },
+                { className: 'zignites-chat-block-placeholder' },
                 el(
                     'span',
-                    { className: 'wcwp-block-placeholder-icon', 'aria-hidden': 'true' },
+                    { className: 'zignites-chat-block-placeholder-icon', 'aria-hidden': 'true' },
                     '💬'
                 ),
                 el(
                     'div',
                     null,
-                    el( 'strong', null, __( 'WooChat Chatbot', 'woochat' ) ),
+                    el( 'strong', null, __( 'Zignites Chat Chatbot', 'zignites-chat' ) ),
                     el(
                         'p',
-                        { className: 'wcwp-block-placeholder-help' },
-                        __( 'The floating chatbot widget will render on the published page when the chatbot is enabled and a Pro license is active.', 'woochat' )
+                        { className: 'zignites-chat-block-placeholder-help' },
+                        __( 'The floating chatbot widget will render on the published page when the chatbot is enabled and a Pro license is active.', 'zignites-chat' )
                     )
                 )
             );

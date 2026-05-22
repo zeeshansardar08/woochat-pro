@@ -7,21 +7,21 @@
  * receives a signed JSON POST whenever one of its subscribed events
  * fires:
  *
- *   - message.sent          — wcwp_send_whatsapp_message succeeded.
+ *   - message.sent          — zignites_chat_send_whatsapp_message succeeded.
  *   - message.delivered     — provider webhook flipped status to
  *                             delivered (currently surfaced via the
- *                             wcwp_track_event AJAX endpoint).
+ *                             zignites_chat_track_event AJAX endpoint).
  *   - message.clicked       — recipient clicked the tracked link.
  *   - message.failed        — provider returned an error or send was
  *                             rejected before reaching the provider.
  *   - customer.opted_out    — a phone number was added to the
  *                             suppression list.
  *
- * Storage: option `wcwp_webhooks` (autoload off — contains secrets).
+ * Storage: option `zignites_chat_webhooks` (autoload off — contains secrets).
  * Each entry is `{id, url, secret, events[], active, created_at}`.
  *
- * Signing: each request carries `X-WCWP-Event` plus
- * `X-WCWP-Signature: sha256=<hmac>` where the HMAC is over the raw
+ * Signing: each request carries `X-Zignites-Chat-Event` plus
+ * `X-Zignites-Chat-Signature: sha256=<hmac>` where the HMAC is over the raw
  * request body using the per-webhook secret. Receivers verify by
  * recomputing — same scheme as GitHub / Stripe.
  *
@@ -31,7 +31,7 @@
  * primitive used for follow-up retries (PR #36) and order-confirmation
  * retries (PR #37). Backoff [5min, 15min], cap at 3 attempts.
  *
- * Logging: a 100-entry FIFO under `wcwp_webhook_log` (autoload off)
+ * Logging: a 100-entry FIFO under `zignites_chat_webhook_log` (autoload off)
  * captures recent dispatches with timestamp / webhook_id / event /
  * status / HTTP code / attempt — surfaced on the Webhooks tab so admins
  * can see what fired without standing up an external listener.
@@ -39,10 +39,10 @@
 
 if (!defined('ABSPATH')) exit;
 
-add_action('wcwp_webhook_retry', 'wcwp_webhook_retry_handler', 10, 4);
-add_action('admin_post_wcwp_webhook_add', 'wcwp_webhook_add_handler');
-add_action('admin_post_wcwp_webhook_delete', 'wcwp_webhook_delete_handler');
-add_action('wp_ajax_wcwp_webhook_test', 'wcwp_webhook_test_ajax');
+add_action('zignites_chat_webhook_retry', 'zignites_chat_webhook_retry_handler', 10, 4);
+add_action('admin_post_zignites_chat_webhook_add', 'zignites_chat_webhook_add_handler');
+add_action('admin_post_zignites_chat_webhook_delete', 'zignites_chat_webhook_delete_handler');
+add_action('wp_ajax_zignites_chat_webhook_test', 'zignites_chat_webhook_test_ajax');
 
 /**
  * Registry of supported event keys → human labels.
@@ -52,15 +52,15 @@ add_action('wp_ajax_wcwp_webhook_test', 'wcwp_webhook_test_ajax');
  *
  * @return array<string, string>
  */
-function wcwp_webhook_event_keys() {
+function zignites_chat_webhook_event_keys() {
     $keys = [
-        'message.sent'        => __('Message sent', 'woochat'),
-        'message.delivered'   => __('Message delivered', 'woochat'),
-        'message.clicked'     => __('Tracked link clicked', 'woochat'),
-        'message.failed'      => __('Message send failed', 'woochat'),
-        'customer.opted_out'  => __('Customer opted out', 'woochat'),
+        'message.sent'        => __('Message sent', 'zignites-chat'),
+        'message.delivered'   => __('Message delivered', 'zignites-chat'),
+        'message.clicked'     => __('Tracked link clicked', 'zignites-chat'),
+        'message.failed'      => __('Message send failed', 'zignites-chat'),
+        'customer.opted_out'  => __('Customer opted out', 'zignites-chat'),
     ];
-    return (array) apply_filters('wcwp_webhook_event_keys', $keys);
+    return (array) apply_filters('zignites_chat_webhook_event_keys', $keys);
 }
 
 /**
@@ -74,7 +74,7 @@ function wcwp_webhook_event_keys() {
  * @param string $secret The per-webhook secret.
  * @return string `sha256=<hexdigest>`, or '' if either input is empty.
  */
-function wcwp_webhook_signature($body, $secret) {
+function zignites_chat_webhook_signature($body, $secret) {
     $body   = (string) $body;
     $secret = (string) $secret;
     if ($body === '' || $secret === '') return '';
@@ -89,13 +89,13 @@ function wcwp_webhook_signature($body, $secret) {
  * unusable.
  *
  * Pure-ish: uses esc_url_raw / wp_generate_password / current_time but
- * has no DB or option access. Tests set $GLOBALS['wcwp_test_*'] to
+ * has no DB or option access. Tests set $GLOBALS['zignites_chat_test_*'] to
  * make those deterministic where needed.
  *
  * @param array $args Caller-supplied values (`url`, `events`, etc.).
  * @return array|null Sanitised webhook, or null when the URL is invalid.
  */
-function wcwp_sanitize_webhook($args) {
+function zignites_chat_sanitize_webhook($args) {
     if (!is_array($args)) return null;
 
     $url = isset($args['url']) ? esc_url_raw(trim((string) $args['url'])) : '';
@@ -104,7 +104,7 @@ function wcwp_sanitize_webhook($args) {
     if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) return null;
     if (!in_array(strtolower($parts['scheme']), ['http', 'https'], true)) return null;
 
-    $valid_events = array_keys(wcwp_webhook_event_keys());
+    $valid_events = array_keys(zignites_chat_webhook_event_keys());
     $requested = isset($args['events']) && is_array($args['events']) ? $args['events'] : [];
     $events = [];
     foreach ($requested as $e) {
@@ -129,39 +129,39 @@ function wcwp_sanitize_webhook($args) {
     ];
 }
 
-function wcwp_get_webhooks() {
-    $list = get_option('wcwp_webhooks', []);
+function zignites_chat_get_webhooks() {
+    $list = get_option('zignites_chat_webhooks', []);
     if (!is_array($list)) return [];
     return array_values($list);
 }
 
-function wcwp_save_webhooks($list) {
+function zignites_chat_save_webhooks($list) {
     if (!is_array($list)) $list = [];
-    update_option('wcwp_webhooks', array_values($list), false);
+    update_option('zignites_chat_webhooks', array_values($list), false);
 }
 
-function wcwp_get_webhook($id) {
+function zignites_chat_get_webhook($id) {
     $id = (string) $id;
     if ($id === '') return null;
-    foreach (wcwp_get_webhooks() as $wh) {
+    foreach (zignites_chat_get_webhooks() as $wh) {
         if (isset($wh['id']) && $wh['id'] === $id) return $wh;
     }
     return null;
 }
 
-function wcwp_add_webhook($args) {
-    $sanitized = wcwp_sanitize_webhook($args);
+function zignites_chat_add_webhook($args) {
+    $sanitized = zignites_chat_sanitize_webhook($args);
     if (!$sanitized) return null;
-    $list = wcwp_get_webhooks();
+    $list = zignites_chat_get_webhooks();
     $list[] = $sanitized;
-    wcwp_save_webhooks($list);
+    zignites_chat_save_webhooks($list);
     return $sanitized;
 }
 
-function wcwp_delete_webhook($id) {
+function zignites_chat_delete_webhook($id) {
     $id = (string) $id;
     if ($id === '') return false;
-    $list = wcwp_get_webhooks();
+    $list = zignites_chat_get_webhooks();
     $kept = [];
     $found = false;
     foreach ($list as $wh) {
@@ -171,7 +171,7 @@ function wcwp_delete_webhook($id) {
         }
         $kept[] = $wh;
     }
-    if ($found) wcwp_save_webhooks($kept);
+    if ($found) zignites_chat_save_webhooks($kept);
     return $found;
 }
 
@@ -185,7 +185,7 @@ function wcwp_delete_webhook($id) {
  * @param string $event_name Event key.
  * @return array<int, array> Active webhooks subscribed to $event_name.
  */
-function wcwp_filter_webhooks_for_event($webhooks, $event_name) {
+function zignites_chat_filter_webhooks_for_event($webhooks, $event_name) {
     if (!is_array($webhooks) || $event_name === '') return [];
     $out = [];
     foreach ($webhooks as $wh) {
@@ -203,16 +203,16 @@ function wcwp_filter_webhooks_for_event($webhooks, $event_name) {
  * lifecycle touch points. No-op when no webhooks are subscribed —
  * cheap to call from hot paths.
  *
- * @param string $event_name One of wcwp_webhook_event_keys() keys.
+ * @param string $event_name One of zignites_chat_webhook_event_keys() keys.
  * @param array  $data       Event-specific payload.
  */
-function wcwp_dispatch_webhook($event_name, $data = []) {
+function zignites_chat_dispatch_webhook($event_name, $data = []) {
     $event_name = (string) $event_name;
     if ($event_name === '') return;
-    $matches = wcwp_filter_webhooks_for_event(wcwp_get_webhooks(), $event_name);
+    $matches = zignites_chat_filter_webhooks_for_event(zignites_chat_get_webhooks(), $event_name);
     if (empty($matches)) return;
     foreach ($matches as $wh) {
-        wcwp_send_webhook($wh, $event_name, $data, 1);
+        zignites_chat_send_webhook($wh, $event_name, $data, 1);
     }
 }
 
@@ -226,7 +226,7 @@ function wcwp_dispatch_webhook($event_name, $data = []) {
  * @param array  $data
  * @return array{event:string, fired_at:string, data:array}
  */
-function wcwp_webhook_payload($event_name, $data) {
+function zignites_chat_webhook_payload($event_name, $data) {
     return [
         'event'    => (string) $event_name,
         'fired_at' => gmdate('Y-m-d\TH:i:s\Z'),
@@ -245,67 +245,67 @@ function wcwp_webhook_payload($event_name, $data) {
  * @param int    $attempt 1-indexed.
  * @return array{ok:bool, code:int, error:string}
  */
-function wcwp_send_webhook($webhook, $event_name, $data, $attempt = 1) {
+function zignites_chat_send_webhook($webhook, $event_name, $data, $attempt = 1) {
     $url    = isset($webhook['url']) ? (string) $webhook['url'] : '';
     $secret = isset($webhook['secret']) ? (string) $webhook['secret'] : '';
     $id     = isset($webhook['id']) ? (string) $webhook['id'] : '';
     if ($url === '') return ['ok' => false, 'code' => 0, 'error' => 'missing url'];
 
-    $payload = wcwp_webhook_payload($event_name, $data);
+    $payload = zignites_chat_webhook_payload($event_name, $data);
     $body    = wp_json_encode($payload);
     if ($body === false) $body = '{}';
 
-    $signature = wcwp_webhook_signature($body, $secret);
+    $signature = zignites_chat_webhook_signature($body, $secret);
 
     $response = wp_remote_post($url, [
-        'timeout' => (int) apply_filters('wcwp_webhook_timeout', 8),
+        'timeout' => (int) apply_filters('zignites_chat_webhook_timeout', 8),
         'headers' => [
             'Content-Type'    => 'application/json',
-            'User-Agent'      => 'WooChatPro/' . (defined('WCWP_VERSION') ? WCWP_VERSION : 'dev'),
-            'X-WCWP-Event'    => $event_name,
-            'X-WCWP-Signature' => $signature,
+            'User-Agent'      => 'ZignitesChat/' . (defined('ZIGNITES_CHAT_VERSION') ? ZIGNITES_CHAT_VERSION : 'dev'),
+            'X-Zignites-Chat-Event'    => $event_name,
+            'X-Zignites-Chat-Signature' => $signature,
         ],
         'body'    => $body,
     ]);
 
     if (is_wp_error($response)) {
         $error = $response->get_error_message();
-        wcwp_webhook_log_dispatch($id, $event_name, 'failed', 0, $attempt, $error);
-        wcwp_maybe_schedule_webhook_retry($id, $event_name, $data, $attempt);
+        zignites_chat_webhook_log_dispatch($id, $event_name, 'failed', 0, $attempt, $error);
+        zignites_chat_maybe_schedule_webhook_retry($id, $event_name, $data, $attempt);
         return ['ok' => false, 'code' => 0, 'error' => $error];
     }
 
     $code = (int) wp_remote_retrieve_response_code($response);
     if ($code >= 200 && $code < 300) {
-        wcwp_webhook_log_dispatch($id, $event_name, 'sent', $code, $attempt, '');
+        zignites_chat_webhook_log_dispatch($id, $event_name, 'sent', $code, $attempt, '');
         return ['ok' => true, 'code' => $code, 'error' => ''];
     }
 
-    wcwp_webhook_log_dispatch($id, $event_name, 'failed', $code, $attempt, '');
-    wcwp_maybe_schedule_webhook_retry($id, $event_name, $data, $attempt);
+    zignites_chat_webhook_log_dispatch($id, $event_name, 'failed', $code, $attempt, '');
+    zignites_chat_maybe_schedule_webhook_retry($id, $event_name, $data, $attempt);
     return ['ok' => false, 'code' => $code, 'error' => 'http ' . $code];
 }
 
-function wcwp_maybe_schedule_webhook_retry($webhook_id, $event_name, $data, $attempt) {
-    $max_attempts = (int) apply_filters('wcwp_webhook_max_attempts', 3);
+function zignites_chat_maybe_schedule_webhook_retry($webhook_id, $event_name, $data, $attempt) {
+    $max_attempts = (int) apply_filters('zignites_chat_webhook_max_attempts', 3);
     if ($attempt >= $max_attempts) return;
 
-    $backoffs = (array) apply_filters('wcwp_webhook_backoff_minutes', [5, 15]);
+    $backoffs = (array) apply_filters('zignites_chat_webhook_backoff_minutes', [5, 15]);
     $idx = max(0, $attempt - 1);
     $delay = isset($backoffs[$idx]) ? (int) $backoffs[$idx] : (int) end($backoffs);
     if ($delay < 1) $delay = 5;
 
     wp_schedule_single_event(
         time() + ($delay * MINUTE_IN_SECONDS),
-        'wcwp_webhook_retry',
+        'zignites_chat_webhook_retry',
         [(string) $webhook_id, (string) $event_name, $data, $attempt + 1]
     );
 }
 
-function wcwp_webhook_retry_handler($webhook_id, $event_name, $data, $attempt) {
-    $webhook = wcwp_get_webhook($webhook_id);
+function zignites_chat_webhook_retry_handler($webhook_id, $event_name, $data, $attempt) {
+    $webhook = zignites_chat_get_webhook($webhook_id);
     if (!$webhook || empty($webhook['active'])) return;
-    wcwp_send_webhook($webhook, $event_name, $data, (int) $attempt);
+    zignites_chat_send_webhook($webhook, $event_name, $data, (int) $attempt);
 }
 
 /**
@@ -313,10 +313,10 @@ function wcwp_webhook_retry_handler($webhook_id, $event_name, $data, $attempt) {
  *
  * @return void
  */
-function wcwp_webhook_log_dispatch($webhook_id, $event_name, $status, $code, $attempt, $error = '') {
-    $cap = (int) apply_filters('wcwp_webhook_log_cap', 100);
+function zignites_chat_webhook_log_dispatch($webhook_id, $event_name, $status, $code, $attempt, $error = '') {
+    $cap = (int) apply_filters('zignites_chat_webhook_log_cap', 100);
     if ($cap < 1) $cap = 100;
-    $log = get_option('wcwp_webhook_log', []);
+    $log = get_option('zignites_chat_webhook_log', []);
     if (!is_array($log)) $log = [];
     $log[] = [
         'ts'         => current_time('mysql'),
@@ -330,11 +330,11 @@ function wcwp_webhook_log_dispatch($webhook_id, $event_name, $status, $code, $at
     if (count($log) > $cap) {
         $log = array_slice($log, -$cap);
     }
-    update_option('wcwp_webhook_log', $log, false);
+    update_option('zignites_chat_webhook_log', $log, false);
 }
 
-function wcwp_webhook_log_recent($webhook_id = '', $limit = 20) {
-    $log = get_option('wcwp_webhook_log', []);
+function zignites_chat_webhook_log_recent($webhook_id = '', $limit = 20) {
+    $log = get_option('zignites_chat_webhook_log', []);
     if (!is_array($log)) return [];
     if ($webhook_id !== '') {
         $log = array_values(array_filter($log, static function ($row) use ($webhook_id) {
@@ -352,56 +352,56 @@ function wcwp_webhook_log_recent($webhook_id = '', $limit = 20) {
  * Admin handlers
  * ----------------------------------------------------------------------- */
 
-function wcwp_webhook_add_handler() {
+function zignites_chat_webhook_add_handler() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'), '', ['response' => 403]);
     }
-    check_admin_referer('wcwp_webhook_add', 'wcwp_webhook_add_nonce');
+    check_admin_referer('zignites_chat_webhook_add', 'zignites_chat_webhook_add_nonce');
 
-    $url    = isset($_POST['wcwp_webhook_url']) ? sanitize_text_field(wp_unslash($_POST['wcwp_webhook_url'])) : '';
-    $events = isset($_POST['wcwp_webhook_events']) && is_array($_POST['wcwp_webhook_events'])
-        ? array_map('sanitize_text_field', wp_unslash($_POST['wcwp_webhook_events']))
+    $url    = isset($_POST['zignites_chat_webhook_url']) ? sanitize_text_field(wp_unslash($_POST['zignites_chat_webhook_url'])) : '';
+    $events = isset($_POST['zignites_chat_webhook_events']) && is_array($_POST['zignites_chat_webhook_events'])
+        ? array_map('sanitize_text_field', wp_unslash($_POST['zignites_chat_webhook_events']))
         : [];
 
-    $created = wcwp_add_webhook(['url' => $url, 'events' => $events]);
+    $created = zignites_chat_add_webhook(['url' => $url, 'events' => $events]);
 
     $msg = $created ? 'added' : 'invalid';
-    wp_safe_redirect(add_query_arg(['page' => 'wcwp-webhooks', 'wcwp_webhook_msg' => $msg], admin_url('admin.php')));
+    wp_safe_redirect(add_query_arg(['page' => 'zignites-chat-webhooks', 'zignites_chat_webhook_msg' => $msg], admin_url('admin.php')));
     exit;
 }
 
-function wcwp_webhook_delete_handler() {
+function zignites_chat_webhook_delete_handler() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'), '', ['response' => 403]);
     }
-    check_admin_referer('wcwp_webhook_delete', 'wcwp_webhook_delete_nonce');
+    check_admin_referer('zignites_chat_webhook_delete', 'zignites_chat_webhook_delete_nonce');
 
     $id = isset($_REQUEST['webhook_id']) ? sanitize_text_field(wp_unslash($_REQUEST['webhook_id'])) : '';
-    $deleted = wcwp_delete_webhook($id);
+    $deleted = zignites_chat_delete_webhook($id);
 
     wp_safe_redirect(add_query_arg([
-        'page'              => 'wcwp-webhooks',
-        'wcwp_webhook_msg'  => $deleted ? 'deleted' : 'invalid',
+        'page'              => 'zignites-chat-webhooks',
+        'zignites_chat_webhook_msg'  => $deleted ? 'deleted' : 'invalid',
     ], admin_url('admin.php')));
     exit;
 }
 
-function wcwp_webhook_test_ajax() {
+function zignites_chat_webhook_test_ajax() {
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => __('Unauthorized', 'woochat')], 403);
+        wp_send_json_error(['message' => __('Unauthorized', 'zignites-chat')], 403);
     }
-    if (!check_ajax_referer('wcwp_webhook_test', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
+    if (!check_ajax_referer('zignites_chat_webhook_test', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'zignites-chat')], 400);
     }
 
     $id = isset($_POST['webhook_id']) ? sanitize_text_field(wp_unslash($_POST['webhook_id'])) : '';
-    $webhook = wcwp_get_webhook($id);
+    $webhook = zignites_chat_get_webhook($id);
     if (!$webhook) {
-        wp_send_json_error(['message' => __('Webhook not found.', 'woochat')], 404);
+        wp_send_json_error(['message' => __('Webhook not found.', 'zignites-chat')], 404);
     }
 
-    $result = wcwp_send_webhook($webhook, 'webhook.test', [
-        'note' => 'This is a test event triggered from the WooChat admin.',
+    $result = zignites_chat_send_webhook($webhook, 'webhook.test', [
+        'note' => 'This is a test event triggered from the Zignites Chat admin.',
     ], 1);
 
     if (!empty($result['ok'])) {
@@ -409,7 +409,7 @@ function wcwp_webhook_test_ajax() {
             'code'    => $result['code'],
             'message' => sprintf(
                 /* translators: %d is the HTTP response code */
-                __('Test fired — receiver responded %d.', 'woochat'),
+                __('Test fired — receiver responded %d.', 'zignites-chat'),
                 (int) $result['code']
             ),
         ]);
@@ -419,7 +419,7 @@ function wcwp_webhook_test_ajax() {
         'code'    => $result['code'],
         'message' => sprintf(
             /* translators: %s is the failure reason (HTTP code or transport error) */
-            __('Test failed: %s', 'woochat'),
+            __('Test failed: %s', 'zignites-chat'),
             $result['error'] !== '' ? $result['error'] : 'unknown'
         ),
     ], 502);

@@ -2,9 +2,9 @@
 if (!defined('ABSPATH')) exit;
 
 add_action('rest_api_init', function () {
-    register_rest_route('wcwp/v1', '/optout', [
+    register_rest_route('zignites-chat/v1', '/optout', [
         'methods' => 'POST',
-        'callback' => 'wcwp_optout_webhook_handler',
+        'callback' => 'zignites_chat_optout_webhook_handler',
         'permission_callback' => '__return_true',
     ]);
 });
@@ -20,17 +20,17 @@ add_action('rest_api_init', function () {
  * @param string $ip Caller's IP.
  * @return bool True if request is within the limit, false if blocked.
  */
-function wcwp_optout_rate_limit_ok($ip) {
+function zignites_chat_optout_rate_limit_ok($ip) {
     if (!$ip) return true;
 
     /** @var int $limit  Max requests per window. Default 30. Filtered to 0 disables the limiter. */
-    $limit  = (int) apply_filters('wcwp_optout_rate_limit', 30);
+    $limit  = (int) apply_filters('zignites_chat_optout_rate_limit', 30);
     /** @var int $window Window length in seconds. Default HOUR_IN_SECONDS. */
-    $window = (int) apply_filters('wcwp_optout_rate_window', HOUR_IN_SECONDS);
+    $window = (int) apply_filters('zignites_chat_optout_rate_window', HOUR_IN_SECONDS);
 
     if ($limit < 1 || $window < 1) return true;
 
-    $key  = 'wcwp_optout_rate_' . md5($ip);
+    $key  = 'zignites_chat_optout_rate_' . md5($ip);
     $data = get_transient($key);
 
     if (!is_array($data) || !isset($data['count'], $data['start'])) {
@@ -68,11 +68,11 @@ function wcwp_optout_rate_limit_ok($ip) {
  * @param WP_REST_Request $request
  * @return bool|null
  */
-function wcwp_verify_twilio_signature(WP_REST_Request $request) {
+function zignites_chat_verify_twilio_signature(WP_REST_Request $request) {
     $sig = (string) $request->get_header('x-twilio-signature');
     if ($sig === '') return null;
 
-    $auth_token = (string) get_option('wcwp_twilio_auth_token', '');
+    $auth_token = (string) get_option('zignites_chat_twilio_auth_token', '');
     if ($auth_token === '') return null;
 
     $scheme = is_ssl() ? 'https' : 'http';
@@ -86,7 +86,7 @@ function wcwp_verify_twilio_signature(WP_REST_Request $request) {
      * Useful when WordPress sits behind a reverse proxy / load balancer
      * that rewrites the host or path before Twilio's request reaches PHP.
      */
-    $url = (string) apply_filters('wcwp_optout_twilio_verify_url', $url, $request);
+    $url = (string) apply_filters('zignites_chat_optout_twilio_verify_url', $url, $request);
 
     $params = $request->get_body_params();
     if (!is_array($params)) $params = [];
@@ -113,11 +113,11 @@ function wcwp_verify_twilio_signature(WP_REST_Request $request) {
  * @param WP_REST_Request $request
  * @return bool|null
  */
-function wcwp_verify_meta_signature(WP_REST_Request $request) {
+function zignites_chat_verify_meta_signature(WP_REST_Request $request) {
     $sig_header = (string) $request->get_header('x-hub-signature-256');
     if ($sig_header === '') return null;
 
-    $secret = (string) get_option('wcwp_cloud_app_secret', '');
+    $secret = (string) get_option('zignites_chat_cloud_app_secret', '');
     if ($secret === '') return null;
 
     if (strpos($sig_header, 'sha256=') !== 0) return false;
@@ -129,25 +129,25 @@ function wcwp_verify_meta_signature(WP_REST_Request $request) {
     return hash_equals($expected, $sig);
 }
 
-function wcwp_optout_webhook_handler(WP_REST_Request $request) {
+function zignites_chat_optout_webhook_handler(WP_REST_Request $request) {
     // Rate-limit before any other work — keeps token / signature checks
     // from being a probing oracle.
     $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
-    if (!wcwp_optout_rate_limit_ok($ip)) {
-        return new WP_REST_Response(['message' => __('Rate limited', 'woochat')], 429);
+    if (!zignites_chat_optout_rate_limit_ok($ip)) {
+        return new WP_REST_Response(['message' => __('Rate limited', 'zignites-chat')], 429);
     }
 
     // Provider-signature verification. If a known provider's signature
     // header is present we MUST verify it; this prevents a forged request
     // that simply sends a guessed token from succeeding when the caller
     // claims to be Twilio / Meta.
-    $twilio = wcwp_verify_twilio_signature($request);
+    $twilio = zignites_chat_verify_twilio_signature($request);
     if ($twilio === false) {
-        return new WP_REST_Response(['message' => __('Invalid signature', 'woochat')], 401);
+        return new WP_REST_Response(['message' => __('Invalid signature', 'zignites-chat')], 401);
     }
-    $meta = wcwp_verify_meta_signature($request);
+    $meta = zignites_chat_verify_meta_signature($request);
     if ($meta === false) {
-        return new WP_REST_Response(['message' => __('Invalid signature', 'woochat')], 401);
+        return new WP_REST_Response(['message' => __('Invalid signature', 'zignites-chat')], 401);
     }
 
     // If no provider signature was attempted, fall back to the static
@@ -155,14 +155,14 @@ function wcwp_optout_webhook_handler(WP_REST_Request $request) {
     if ($twilio === null && $meta === null) {
         $token = (string) $request->get_param('token');
         if (!$token) {
-            $header_token = $request->get_header('x-wcwp-token');
+            $header_token = $request->get_header('x-zignites-chat-token');
             if ($header_token) {
                 $token = (string) $header_token;
             }
         }
-        $expected = (string) get_option('wcwp_optout_webhook_token', '');
+        $expected = (string) get_option('zignites_chat_optout_webhook_token', '');
         if (!$expected || !hash_equals($expected, $token)) {
-            return new WP_REST_Response(['message' => __('Unauthorized', 'woochat')], 401);
+            return new WP_REST_Response(['message' => __('Unauthorized', 'zignites-chat')], 401);
         }
     }
 
@@ -189,15 +189,15 @@ function wcwp_optout_webhook_handler(WP_REST_Request $request) {
     }
 
     if (!$from || !$body) {
-        return new WP_REST_Response(['message' => __('Missing data', 'woochat')], 400);
+        return new WP_REST_Response(['message' => __('Missing data', 'zignites-chat')], 400);
     }
 
-    if (!wcwp_optout_keyword_match($body)) {
-        return new WP_REST_Response(['message' => __('No opt-out keyword detected', 'woochat')], 200);
+    if (!zignites_chat_optout_keyword_match($body)) {
+        return new WP_REST_Response(['message' => __('No opt-out keyword detected', 'zignites-chat')], 200);
     }
 
-    $saved = wcwp_add_optout($from);
+    $saved = zignites_chat_add_optout($from);
     return new WP_REST_Response([
-        'message' => $saved ? __('Opted out', 'woochat') : __('Invalid phone', 'woochat'),
+        'message' => $saved ? __('Opted out', 'zignites-chat') : __('Invalid phone', 'zignites-chat'),
     ], $saved ? 200 : 400);
 }

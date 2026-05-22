@@ -1,28 +1,41 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
+/*
+ * Direct SQL below runs against the plugin's own custom tables. Every
+ * user-supplied value is bound through $wpdb->prepare(); the only values
+ * interpolated into query strings are table names derived from
+ * $wpdb->prefix. This transactional data is not object-cached.
+ *
+ * NonceVerification is disabled file-wide: the public click-tracking
+ * redirect is a GET endpoint reached from links inside sent messages, so
+ * it cannot carry a nonce; the AJAX and CSV-export paths verify a nonce /
+ * admin referer of their own before reading request data.
+ */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.Security.NonceVerification.Recommended
+
 // Click-tracking redirect handler — only attach when the parameter is
 // actually present, and only on frontend requests. Tracking URLs are
 // always built against home_url('/'), so template_redirect is the right
 // hook (admin / AJAX / REST / cron paths never need this callback).
-if (!empty($_GET['wcwp_track'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- presence-only switch; nonce-free public click tracker, validated inside the handler.
-    add_action('template_redirect', 'wcwp_handle_tracking_request', 1);
+if (!empty($_GET['zignites_chat_track'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- presence-only switch; nonce-free public click tracker, validated inside the handler.
+    add_action('template_redirect', 'zignites_chat_handle_tracking_request', 1);
 }
-add_action('wp_ajax_wcwp_track_event', 'wcwp_track_event_ajax');
-add_action('wp_ajax_nopriv_wcwp_track_event', 'wcwp_track_event_ajax');
+add_action('wp_ajax_zignites_chat_track_event', 'zignites_chat_track_event_ajax');
+add_action('wp_ajax_nopriv_zignites_chat_track_event', 'zignites_chat_track_event_ajax');
 
-add_action('admin_post_wcwp_analytics_export_csv', 'wcwp_analytics_export_csv');
+add_action('admin_post_zignites_chat_analytics_export_csv', 'zignites_chat_analytics_export_csv');
 
-add_action('wcwp_cleanup_analytics', 'wcwp_cleanup_analytics');
+add_action('zignites_chat_cleanup_analytics', 'zignites_chat_cleanup_analytics');
 
-function wcwp_get_analytics_table_name() {
+function zignites_chat_get_analytics_table_name() {
     global $wpdb;
-    return $wpdb->prefix . 'wcwp_analytics_events';
+    return $wpdb->prefix . 'zignites_chat_analytics_events';
 }
 
-function wcwp_create_analytics_table() {
+function zignites_chat_create_analytics_table() {
     global $wpdb;
-    $table = wcwp_get_analytics_table_name();
+    $table = zignites_chat_get_analytics_table_name();
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE {$table} (
@@ -48,21 +61,21 @@ function wcwp_create_analytics_table() {
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
 
-    if (!wp_next_scheduled('wcwp_cleanup_analytics')) {
-        wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', 'wcwp_cleanup_analytics');
+    if (!wp_next_scheduled('zignites_chat_cleanup_analytics')) {
+        wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', 'zignites_chat_cleanup_analytics');
     }
 }
 
 /**
  * Cron callback — delete analytics events older than the retention window.
  */
-function wcwp_cleanup_analytics() {
-    $days = absint(get_option('wcwp_data_retention_days', 0));
+function zignites_chat_cleanup_analytics() {
+    $days = absint(get_option('zignites_chat_data_retention_days', 0));
     if ($days < 1) return;
 
     global $wpdb;
-    $table = wcwp_get_analytics_table_name();
-    $cutoff = date('Y-m-d H:i:s', time() - ($days * DAY_IN_SECONDS));
+    $table = zignites_chat_get_analytics_table_name();
+    $cutoff = gmdate('Y-m-d H:i:s', time() - ($days * DAY_IN_SECONDS));
     $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE created_at < %s", $cutoff));
 }
 
@@ -74,8 +87,8 @@ function wcwp_cleanup_analytics() {
  *                     provider, message_id, meta.
  * @return string The generated event id.
  */
-function wcwp_analytics_log_event($type, $data = []) {
-    $id = uniqid('wcwp_evt_', true);
+function zignites_chat_analytics_log_event($type, $data = []) {
+    $id = uniqid('zignites_chat_evt_', true);
 
     $event = [
         'id' => $id,
@@ -90,19 +103,19 @@ function wcwp_analytics_log_event($type, $data = []) {
         'meta' => isset($data['meta']) && is_array($data['meta']) ? $data['meta'] : [],
     ];
 
-    wcwp_analytics_insert_event($event);
+    zignites_chat_analytics_insert_event($event);
     return $id;
 }
 
 /**
  * Update mutable columns (status, message_id, meta, …) on an existing event.
  *
- * @param string $event_id Event id returned by wcwp_analytics_log_event().
+ * @param string $event_id Event id returned by zignites_chat_analytics_log_event().
  * @param array  $fields   Column => value pairs to update.
  */
-function wcwp_analytics_update_event($event_id, $fields = []) {
+function zignites_chat_analytics_update_event($event_id, $fields = []) {
     global $wpdb;
-    $table = wcwp_get_analytics_table_name();
+    $table = zignites_chat_get_analytics_table_name();
 
     $data = [];
     $format = [];
@@ -126,17 +139,17 @@ function wcwp_analytics_update_event($event_id, $fields = []) {
 /**
  * @deprecated 1.0.2 Totals are derived from the analytics events table; this
  * is now a no-op kept only for backward compatibility with any external
- * code that may still call it. See wcwp_analytics_get_totals().
+ * code that may still call it. See zignites_chat_analytics_get_totals().
  */
-function wcwp_analytics_increment_total($bucket, $amount = 1) {
+function zignites_chat_analytics_increment_total($bucket, $amount = 1) {
     // No-op.
 }
 
-function wcwp_analytics_get_totals() {
+function zignites_chat_analytics_get_totals() {
     global $wpdb;
-    $table = wcwp_get_analytics_table_name();
+    $table = zignites_chat_get_analytics_table_name();
     // No user input in this query and no values to bind, so prepare() is not
-    // applicable. The table name comes from wcwp_get_analytics_table_name(),
+    // applicable. The table name comes from zignites_chat_get_analytics_table_name(),
     // which is derived from $wpdb->prefix and is not user-controlled.
     $rows = $wpdb->get_results( "SELECT status, COUNT(*) AS total FROM {$table} GROUP BY status" ); // phpcs:ignore WordPress.DB.PreparedSQL
     $totals = [ 'sent' => 0, 'delivered' => 0, 'clicked' => 0 ];
@@ -150,9 +163,9 @@ function wcwp_analytics_get_totals() {
     return $totals;
 }
 
-function wcwp_analytics_get_events($limit = 50, $filters = []) {
+function zignites_chat_analytics_get_events($limit = 50, $filters = []) {
     global $wpdb;
-    $table = wcwp_get_analytics_table_name();
+    $table = zignites_chat_get_analytics_table_name();
 
     $where = [];
     $params = [];
@@ -204,16 +217,16 @@ function wcwp_analytics_get_events($limit = 50, $filters = []) {
  * Aggregates event rows grouped by the `type` column — which acts as a
  * coarse template/source dimension (order, cart_recovery, followup, bulk,
  * chatbot_gpt). Returned counts are raw per-status totals matching the
- * "latest state" semantics of `wcwp_analytics_get_totals()`; `total` sums
+ * "latest state" semantics of `zignites_chat_analytics_get_totals()`; `total` sums
  * the four reportable terminal states (sent + delivered + clicked +
  * failed) and excludes operational states like pending / test / opted_out.
  *
- * @param array $filters Same shape as wcwp_analytics_get_events filters.
+ * @param array $filters Same shape as zignites_chat_analytics_get_events filters.
  * @return array<int, array{type:string,sent:int,delivered:int,clicked:int,failed:int,total:int}>
  */
-function wcwp_analytics_get_per_type_breakdown($filters = []) {
+function zignites_chat_analytics_get_per_type_breakdown($filters = []) {
     global $wpdb;
-    $table = wcwp_get_analytics_table_name();
+    $table = zignites_chat_get_analytics_table_name();
 
     $where = [];
     $params = [];
@@ -247,7 +260,7 @@ function wcwp_analytics_get_per_type_breakdown($filters = []) {
 
     // When $params is non-empty the query is run through prepare(). When it is
     // empty there are no values to bind and no user input in $sql (the only
-    // interpolation is the table name from wcwp_get_analytics_table_name(),
+    // interpolation is the table name from zignites_chat_get_analytics_table_name(),
     // derived from $wpdb->prefix), so prepare() is not applicable.
     $rows = !empty($params)
         ? $wpdb->get_results($wpdb->prepare($sql, $params), ARRAY_A)
@@ -295,7 +308,7 @@ function wcwp_analytics_get_per_type_breakdown($filters = []) {
  * - Orders older than the event are ignored (no false positives from
  *   pre-existing customer history).
  *
- * Extracted from `wcwp_analytics_get_conversions()` so it can be unit-
+ * Extracted from `zignites_chat_analytics_get_conversions()` so it can be unit-
  * tested without a database.
  *
  * @param array $events Each: ['event_id' => string, 'phone_norm' => string, 'time' => int unix].
@@ -303,7 +316,7 @@ function wcwp_analytics_get_per_type_breakdown($filters = []) {
  * @param int   $window_seconds Maximum elapsed time between event and order.
  * @return array{conversions:int,revenue:float,matched:array<int,string>}
  */
-function wcwp_analytics_match_conversions($events, $orders, $window_seconds) {
+function zignites_chat_analytics_match_conversions($events, $orders, $window_seconds) {
     $empty = ['conversions' => 0, 'revenue' => 0.0, 'matched' => []];
     if (!is_array($events) || !is_array($orders) || (int) $window_seconds <= 0) {
         return $empty;
@@ -360,11 +373,11 @@ function wcwp_analytics_match_conversions($events, $orders, $window_seconds) {
  * normalized phone within an attribution window (default 7 days,
  * filterable). Best-effort — caps both event and order fetch at 5000.
  *
- * @param array $filters Same shape as wcwp_analytics_get_events filters.
+ * @param array $filters Same shape as zignites_chat_analytics_get_events filters.
  * @return array{conversions:int,revenue:float,eligible_events:int,window_days:int}
  */
-function wcwp_analytics_get_conversions($filters = []) {
-    $window_days = (int) apply_filters('wcwp_analytics_attribution_window_days', 7);
+function zignites_chat_analytics_get_conversions($filters = []) {
+    $window_days = (int) apply_filters('zignites_chat_analytics_attribution_window_days', 7);
     if ($window_days < 1) $window_days = 7;
     $window_seconds = $window_days * DAY_IN_SECONDS;
 
@@ -376,7 +389,7 @@ function wcwp_analytics_get_conversions($filters = []) {
     // Drop status filter — we always look at sent/delivered/clicked.
     $event_filters = $filters;
     unset($event_filters['status']);
-    $events = wcwp_analytics_get_events(5000, $event_filters);
+    $events = zignites_chat_analytics_get_events(5000, $event_filters);
 
     $eligible = [];
     $earliest = PHP_INT_MAX;
@@ -388,7 +401,7 @@ function wcwp_analytics_get_conversions($filters = []) {
         if (!$time) continue;
         $eligible[] = [
             'event_id' => (string) ($e['id'] ?? ''),
-            'phone_norm' => wcwp_normalize_phone($e['phone']),
+            'phone_norm' => zignites_chat_normalize_phone($e['phone']),
             'time' => $time,
         ];
         if ($time < $earliest) $earliest = $time;
@@ -411,7 +424,7 @@ function wcwp_analytics_get_conversions($filters = []) {
     if (is_array($orders)) {
         foreach ($orders as $order) {
             if (!is_object($order) || !method_exists($order, 'get_billing_phone')) continue;
-            $phone_norm = wcwp_normalize_phone($order->get_billing_phone());
+            $phone_norm = zignites_chat_normalize_phone($order->get_billing_phone());
             if ($phone_norm === '') continue;
             $created = $order->get_date_created();
             if (!$created) continue;
@@ -424,7 +437,7 @@ function wcwp_analytics_get_conversions($filters = []) {
         }
     }
 
-    $result = wcwp_analytics_match_conversions($eligible, $order_records, $window_seconds);
+    $result = zignites_chat_analytics_match_conversions($eligible, $order_records, $window_seconds);
     return [
         'conversions' => $result['conversions'],
         'revenue' => $result['revenue'],
@@ -433,26 +446,26 @@ function wcwp_analytics_get_conversions($filters = []) {
     ];
 }
 
-function wcwp_analytics_export_csv() {
+function zignites_chat_analytics_export_csv() {
     if (!current_user_can('manage_options')) {
-        wp_die(esc_html__('Unauthorized', 'woochat'), '', ['response' => 403]);
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'), '', ['response' => 403]);
     }
-    check_admin_referer('wcwp_analytics_export', 'wcwp_analytics_export_nonce');
+    check_admin_referer('zignites_chat_analytics_export', 'zignites_chat_analytics_export_nonce');
 
     $filters = [
-        'type'      => isset($_GET['wcwp_type']) ? sanitize_text_field(wp_unslash($_GET['wcwp_type'])) : '',
-        'status'    => isset($_GET['wcwp_status']) ? sanitize_text_field(wp_unslash($_GET['wcwp_status'])) : '',
-        'phone'     => isset($_GET['wcwp_phone']) ? sanitize_text_field(wp_unslash($_GET['wcwp_phone'])) : '',
-        'date_from' => isset($_GET['wcwp_date_from']) ? sanitize_text_field(wp_unslash($_GET['wcwp_date_from'])) : '',
-        'date_to'   => isset($_GET['wcwp_date_to']) ? sanitize_text_field(wp_unslash($_GET['wcwp_date_to'])) : '',
+        'type'      => isset($_GET['zignites_chat_type']) ? sanitize_text_field(wp_unslash($_GET['zignites_chat_type'])) : '',
+        'status'    => isset($_GET['zignites_chat_status']) ? sanitize_text_field(wp_unslash($_GET['zignites_chat_status'])) : '',
+        'phone'     => isset($_GET['zignites_chat_phone']) ? sanitize_text_field(wp_unslash($_GET['zignites_chat_phone'])) : '',
+        'date_from' => isset($_GET['zignites_chat_date_from']) ? sanitize_text_field(wp_unslash($_GET['zignites_chat_date_from'])) : '',
+        'date_to'   => isset($_GET['zignites_chat_date_to']) ? sanitize_text_field(wp_unslash($_GET['zignites_chat_date_to'])) : '',
     ];
 
-    $limit = (int) apply_filters('wcwp_analytics_export_limit', 5000);
+    $limit = (int) apply_filters('zignites_chat_analytics_export_limit', 5000);
     if ($limit < 1) $limit = 5000;
 
-    $events = wcwp_analytics_get_events($limit, $filters);
+    $events = zignites_chat_analytics_get_events($limit, $filters);
 
-    $filename = 'woochat-analytics-' . gmdate('Ymd-His') . '.csv';
+    $filename = 'zignites-chat-analytics-' . gmdate('Ymd-His') . '.csv';
     nocache_headers();
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -471,18 +484,17 @@ function wcwp_analytics_export_csv() {
             $evt['message_preview'] ?? '',
         ]);
     }
-    fclose($out);
     exit;
 }
 
 /**
  * Insert a fully-formed event row into the analytics table.
  *
- * @param array $event Normalized event array (see wcwp_analytics_log_event()).
+ * @param array $event Normalized event array (see zignites_chat_analytics_log_event()).
  */
-function wcwp_analytics_insert_event($event) {
+function zignites_chat_analytics_insert_event($event) {
     global $wpdb;
-    $table = wcwp_get_analytics_table_name();
+    $table = zignites_chat_get_analytics_table_name();
     $wpdb->insert(
         $table,
         [
@@ -509,10 +521,10 @@ function wcwp_analytics_insert_event($event) {
  * @param string $redirect_url Final destination after the click is logged.
  * @return string Tracking URL on this site.
  */
-function wcwp_analytics_tracking_url($event_id, $redirect_url) {
+function zignites_chat_analytics_tracking_url($event_id, $redirect_url) {
     $redirect = $redirect_url ? esc_url_raw($redirect_url) : home_url('/');
     return add_query_arg([
-        'wcwp_track' => 'click',
+        'zignites_chat_track' => 'click',
         'event_id' => $event_id,
         'redirect' => $redirect,
     ], home_url('/'));
@@ -529,7 +541,7 @@ function wcwp_analytics_tracking_url($event_id, $redirect_url) {
  * @param string $url Raw URL from the request.
  * @return string Safe URL — original if it passes, home_url('/') otherwise.
  */
-function wcwp_validate_tracking_redirect($url) {
+function zignites_chat_validate_tracking_redirect($url) {
     $fallback = home_url('/');
     if (!is_string($url) || $url === '') {
         return $fallback;
@@ -557,7 +569,7 @@ function wcwp_validate_tracking_redirect($url) {
      *
      * @param string[] $allowed_hosts Default: home_url and site_url hosts.
      */
-    $allowed_hosts = (array) apply_filters('wcwp_tracking_allowed_hosts', $allowed_hosts);
+    $allowed_hosts = (array) apply_filters('zignites_chat_tracking_allowed_hosts', $allowed_hosts);
     $allowed_hosts = array_map('strtolower', array_filter($allowed_hosts));
 
     if (!in_array(strtolower($parts['host']), $allowed_hosts, true)) {
@@ -567,37 +579,37 @@ function wcwp_validate_tracking_redirect($url) {
     return $url;
 }
 
-function wcwp_handle_tracking_request() {
-    if (!isset($_GET['wcwp_track'])) return;
-    $type = sanitize_text_field(wp_unslash($_GET['wcwp_track']));
+function zignites_chat_handle_tracking_request() {
+    if (!isset($_GET['zignites_chat_track'])) return;
+    $type = sanitize_text_field(wp_unslash($_GET['zignites_chat_track']));
     $event_id = isset($_GET['event_id']) ? sanitize_text_field(wp_unslash($_GET['event_id'])) : '';
 
     if ($type === 'click' && $event_id) {
-        wcwp_analytics_update_event($event_id, ['status' => 'clicked']);
-        if (function_exists('wcwp_dispatch_webhook')) {
-            wcwp_dispatch_webhook('message.clicked', ['event_id' => $event_id]);
+        zignites_chat_analytics_update_event($event_id, ['status' => 'clicked']);
+        if (function_exists('zignites_chat_dispatch_webhook')) {
+            zignites_chat_dispatch_webhook('message.clicked', ['event_id' => $event_id]);
         }
     }
 
     $redirect_raw = isset($_GET['redirect']) ? esc_url_raw(wp_unslash($_GET['redirect'])) : '';
-    $redirect = wcwp_validate_tracking_redirect($redirect_raw);
+    $redirect = zignites_chat_validate_tracking_redirect($redirect_raw);
     wp_safe_redirect($redirect);
     exit;
 }
 
-function wcwp_track_event_ajax() {
-    if ( ! check_ajax_referer( 'wcwp_track_event', 'nonce', false ) ) {
-        wp_send_json_error( [ 'message' => __( 'Invalid nonce', 'woochat' ) ], 403 );
+function zignites_chat_track_event_ajax() {
+    if ( ! check_ajax_referer( 'zignites_chat_track_event', 'nonce', false ) ) {
+        wp_send_json_error( [ 'message' => __( 'Invalid nonce', 'zignites-chat' ) ], 403 );
     }
     $type = isset($_REQUEST['type']) ? sanitize_text_field(wp_unslash($_REQUEST['type'])) : '';
     $event_id = isset($_REQUEST['event_id']) ? sanitize_text_field(wp_unslash($_REQUEST['event_id'])) : '';
     if (!$type || !$event_id) {
-        wp_send_json_error(['message' => __('Missing data', 'woochat')], 400);
+        wp_send_json_error(['message' => __('Missing data', 'zignites-chat')], 400);
     }
     if ($type === 'delivered') {
-        wcwp_analytics_update_event($event_id, ['status' => 'delivered']);
-        if (function_exists('wcwp_dispatch_webhook')) {
-            wcwp_dispatch_webhook('message.delivered', ['event_id' => $event_id]);
+        zignites_chat_analytics_update_event($event_id, ['status' => 'delivered']);
+        if (function_exists('zignites_chat_dispatch_webhook')) {
+            zignites_chat_dispatch_webhook('message.delivered', ['event_id' => $event_id]);
         }
     }
     wp_send_json_success();

@@ -1,125 +1,126 @@
 <?php
 if (!defined('ABSPATH')) exit;
+// phpcs:disable WordPress.Security.NonceVerification.Recommended -- The GET query string is read only to pre-fill display filters; no state-changing action is taken here.
 
-$wcwp_log_keyword  = isset($_GET['wcwp_log_q'])     ? sanitize_text_field(wp_unslash($_GET['wcwp_log_q']))     : '';
-$wcwp_log_tag      = isset($_GET['wcwp_log_tag'])   ? sanitize_text_field(wp_unslash($_GET['wcwp_log_tag']))   : '';
-$wcwp_log_message  = isset($_GET['wcwp_log_msg'])   ? sanitize_text_field(wp_unslash($_GET['wcwp_log_msg']))   : '';
+$zignites_chat_log_keyword  = isset($_GET['zignites_chat_log_q'])     ? sanitize_text_field(wp_unslash($_GET['zignites_chat_log_q']))     : '';
+$zignites_chat_log_tag      = isset($_GET['zignites_chat_log_tag'])   ? sanitize_text_field(wp_unslash($_GET['zignites_chat_log_tag']))   : '';
+$zignites_chat_log_message  = isset($_GET['zignites_chat_log_msg'])   ? sanitize_text_field(wp_unslash($_GET['zignites_chat_log_msg']))   : '';
 
 // Free plan: last 50 entries only, and no log export. Pro lifts the cap.
-$wcwp_log_pro      = wcwp_is_pro_active();
-$wcwp_log_lines    = isset($_GET['wcwp_log_lines']) ? max(50, min(2000, (int) $_GET['wcwp_log_lines']))        : 200;
-if (!$wcwp_log_pro) {
-    $wcwp_log_lines = 50;
+$zignites_chat_log_pro      = zignites_chat_is_pro_active();
+$zignites_chat_log_lines    = isset($_GET['zignites_chat_log_lines']) ? max(50, min(2000, (int) $_GET['zignites_chat_log_lines']))        : 200;
+if (!$zignites_chat_log_pro) {
+    $zignites_chat_log_lines = 50;
 }
 
-$wcwp_log_file     = wcwp_get_log_file();
-$wcwp_log_exists   = is_file($wcwp_log_file);
-$wcwp_log_size     = wcwp_log_size_bytes();
-$wcwp_log_lines_raw = $wcwp_log_exists ? wcwp_log_tail_lines($wcwp_log_file, $wcwp_log_lines) : [];
+$zignites_chat_log_file     = zignites_chat_get_log_file();
+$zignites_chat_log_exists   = is_file($zignites_chat_log_file);
+$zignites_chat_log_size     = zignites_chat_log_size_bytes();
+$zignites_chat_log_lines_raw = $zignites_chat_log_exists ? zignites_chat_log_tail_lines($zignites_chat_log_file, $zignites_chat_log_lines) : [];
 
-$wcwp_log_all_entries = [];
-foreach ($wcwp_log_lines_raw as $wcwp_log_line) {
-    $wcwp_log_all_entries[] = wcwp_log_parse_line($wcwp_log_line);
+$zignites_chat_log_all_entries = [];
+foreach ($zignites_chat_log_lines_raw as $zignites_chat_log_line) {
+    $zignites_chat_log_all_entries[] = zignites_chat_log_parse_line($zignites_chat_log_line);
 }
-$wcwp_log_tags_available = wcwp_log_tags_present($wcwp_log_all_entries);
-$wcwp_log_filtered = wcwp_log_filter_lines($wcwp_log_lines_raw, $wcwp_log_keyword, $wcwp_log_tag);
+$zignites_chat_log_tags_available = zignites_chat_log_tags_present($zignites_chat_log_all_entries);
+$zignites_chat_log_filtered = zignites_chat_log_filter_lines($zignites_chat_log_lines_raw, $zignites_chat_log_keyword, $zignites_chat_log_tag);
 
-$wcwp_log_download_url = wp_nonce_url(
-    add_query_arg(['action' => 'wcwp_log_download'], admin_url('admin-post.php')),
-    'wcwp_log_download',
-    'wcwp_log_download_nonce'
+$zignites_chat_log_download_url = wp_nonce_url(
+    add_query_arg(['action' => 'zignites_chat_log_download'], admin_url('admin-post.php')),
+    'zignites_chat_log_download',
+    'zignites_chat_log_download_nonce'
 );
-$wcwp_log_clear_url = wp_nonce_url(
-    add_query_arg(['action' => 'wcwp_log_clear'], admin_url('admin-post.php')),
-    'wcwp_log_clear',
-    'wcwp_log_clear_nonce'
+$zignites_chat_log_clear_url = wp_nonce_url(
+    add_query_arg(['action' => 'zignites_chat_log_clear'], admin_url('admin-post.php')),
+    'zignites_chat_log_clear',
+    'zignites_chat_log_clear_nonce'
 );
 ?>
-<h2><?php esc_html_e('Logs', 'woochat'); ?></h2>
+<h2><?php esc_html_e('Logs', 'zignites-chat'); ?></h2>
     <p class="description">
         <?php
         printf(
             /* translators: %s is the absolute path to the plugin log file */
-            esc_html__('Reading from %s', 'woochat'),
-            '<code>' . esc_html($wcwp_log_file) . '</code>'
+            esc_html__('Reading from %s', 'zignites-chat'),
+            '<code>' . esc_html($zignites_chat_log_file) . '</code>'
         );
         ?>
         — <?php
-        if ($wcwp_log_exists) {
+        if ($zignites_chat_log_exists) {
             printf(
                 /* translators: %s is the file size, already i18n-formatted (e.g. "12.4 KB") */
-                esc_html__('current size: %s', 'woochat'),
-                esc_html(size_format($wcwp_log_size, 1) ?: '0 B')
+                esc_html__('current size: %s', 'zignites-chat'),
+                esc_html(size_format($zignites_chat_log_size, 1) ?: '0 B')
             );
         } else {
-            esc_html_e('the file does not exist yet — it is created the first time the plugin writes a log entry.', 'woochat');
+            esc_html_e('the file does not exist yet — it is created the first time the plugin writes a log entry.', 'zignites-chat');
         }
         ?>
     </p>
 
-    <?php if ($wcwp_log_message === 'cleared') : ?>
-        <div class="notice notice-success is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Log file cleared.', 'woochat'); ?></p></div>
-    <?php elseif ($wcwp_log_message === 'fail') : ?>
-        <div class="notice notice-error is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Could not clear the log file. Check write permissions for wp-content/uploads/woochat/.', 'woochat'); ?></p></div>
-    <?php elseif ($wcwp_log_message === 'empty') : ?>
-        <div class="notice notice-warning is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Log file does not exist yet — nothing to download.', 'woochat'); ?></p></div>
+    <?php if ($zignites_chat_log_message === 'cleared') : ?>
+        <div class="notice notice-success is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Log file cleared.', 'zignites-chat'); ?></p></div>
+    <?php elseif ($zignites_chat_log_message === 'fail') : ?>
+        <div class="notice notice-error is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Could not clear the log file. Check write permissions for wp-content/uploads/zignites-chat/.', 'zignites-chat'); ?></p></div>
+    <?php elseif ($zignites_chat_log_message === 'empty') : ?>
+        <div class="notice notice-warning is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Log file does not exist yet — nothing to download.', 'zignites-chat'); ?></p></div>
     <?php endif; ?>
 
-    <div class="wcwp-log-filters" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
+    <div class="zignites-chat-log-filters" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
         <div>
-            <label for="wcwp_log_q"><?php esc_html_e('Keyword', 'woochat'); ?></label><br>
-            <input type="text" id="wcwp_log_q" name="wcwp_log_q" value="<?php echo esc_attr($wcwp_log_keyword); ?>" placeholder="opt-out, sent, error" />
+            <label for="zignites_chat_log_q"><?php esc_html_e('Keyword', 'zignites-chat'); ?></label><br>
+            <input type="text" id="zignites_chat_log_q" name="zignites_chat_log_q" value="<?php echo esc_attr($zignites_chat_log_keyword); ?>" placeholder="opt-out, sent, error" />
         </div>
         <div>
-            <label for="wcwp_log_tag"><?php esc_html_e('Source', 'woochat'); ?></label><br>
-            <select id="wcwp_log_tag" name="wcwp_log_tag">
-                <option value=""><?php esc_html_e('All sources', 'woochat'); ?></option>
-                <?php foreach ($wcwp_log_tags_available as $wcwp_log_t) : ?>
-                    <option value="<?php echo esc_attr($wcwp_log_t); ?>" <?php selected($wcwp_log_tag, $wcwp_log_t); ?>><?php echo esc_html($wcwp_log_t); ?></option>
+            <label for="zignites_chat_log_tag"><?php esc_html_e('Source', 'zignites-chat'); ?></label><br>
+            <select id="zignites_chat_log_tag" name="zignites_chat_log_tag">
+                <option value=""><?php esc_html_e('All sources', 'zignites-chat'); ?></option>
+                <?php foreach ($zignites_chat_log_tags_available as $zignites_chat_log_t) : ?>
+                    <option value="<?php echo esc_attr($zignites_chat_log_t); ?>" <?php selected($zignites_chat_log_tag, $zignites_chat_log_t); ?>><?php echo esc_html($zignites_chat_log_t); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
-        <?php if ($wcwp_log_pro) : ?>
+        <?php if ($zignites_chat_log_pro) : ?>
         <div>
-            <label for="wcwp_log_lines"><?php esc_html_e('Lines', 'woochat'); ?></label><br>
-            <select id="wcwp_log_lines" name="wcwp_log_lines">
-                <?php foreach ([100, 200, 500, 1000, 2000] as $wcwp_log_n) : ?>
-                    <option value="<?php echo esc_attr((string) $wcwp_log_n); ?>" <?php selected($wcwp_log_lines, $wcwp_log_n); ?>><?php echo esc_html((string) $wcwp_log_n); ?></option>
+            <label for="zignites_chat_log_lines"><?php esc_html_e('Lines', 'zignites-chat'); ?></label><br>
+            <select id="zignites_chat_log_lines" name="zignites_chat_log_lines">
+                <?php foreach ([100, 200, 500, 1000, 2000] as $zignites_chat_log_n) : ?>
+                    <option value="<?php echo esc_attr((string) $zignites_chat_log_n); ?>" <?php selected($zignites_chat_log_lines, $zignites_chat_log_n); ?>><?php echo esc_html((string) $zignites_chat_log_n); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
         <?php endif; ?>
         <div>
-            <button type="button" class="button button-primary" id="wcwp-log-filter-button"><?php esc_html_e('Apply', 'woochat'); ?></button>
+            <button type="button" class="button button-primary" id="zignites-chat-log-filter-button"><?php esc_html_e('Apply', 'zignites-chat'); ?></button>
         </div>
-        <?php if ($wcwp_log_pro) : ?>
+        <?php if ($zignites_chat_log_pro) : ?>
         <div>
-            <a class="button" href="<?php echo esc_url($wcwp_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Download log', 'woochat'); ?></a>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Download log', 'zignites-chat'); ?></a>
         </div>
         <?php endif; ?>
         <div>
-            <a class="button" href="<?php echo esc_url($wcwp_log_clear_url); ?>" id="wcwp-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Clear log', 'woochat'); ?></a>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Clear log', 'zignites-chat'); ?></a>
         </div>
     </div>
 
     <?php
-    $wcwp_log_total_shown = count($wcwp_log_all_entries);
-    $wcwp_log_total_match = count($wcwp_log_filtered);
+    $zignites_chat_log_total_shown = count($zignites_chat_log_all_entries);
+    $zignites_chat_log_total_match = count($zignites_chat_log_filtered);
     ?>
     <p class="description" style="margin:6px 0;">
         <?php
         printf(
             /* translators: 1: number of matching entries, 2: total entries in the current window */
-            esc_html__('Showing %1$d of %2$d recent entries.', 'woochat'),
-            (int) $wcwp_log_total_match,
-            (int) $wcwp_log_total_shown
+            esc_html__('Showing %1$d of %2$d recent entries.', 'zignites-chat'),
+            (int) $zignites_chat_log_total_match,
+            (int) $zignites_chat_log_total_shown
         );
         ?>
-        <?php if ($wcwp_log_total_shown >= $wcwp_log_lines) : ?>
-            <?php if ($wcwp_log_pro) : ?>
-                <em><?php esc_html_e('Older entries are not shown — increase "Lines" or download the full log.', 'woochat'); ?></em>
+        <?php if ($zignites_chat_log_total_shown >= $zignites_chat_log_lines) : ?>
+            <?php if ($zignites_chat_log_pro) : ?>
+                <em><?php esc_html_e('Older entries are not shown — increase "Lines" or download the full log.', 'zignites-chat'); ?></em>
             <?php else : ?>
-                <em><?php esc_html_e('The free plan shows the last 50 entries. Upgrade to WooChat Pro for unlimited log history and CSV export.', 'woochat'); ?> <button type="button" class="button-link wcwp-open-upgrade-modal"><?php esc_html_e('Upgrade', 'woochat'); ?></button></em>
+                <em><?php esc_html_e('The free plan shows the last 50 entries. Upgrade to Zignites Chat Pro for unlimited log history and CSV export.', 'zignites-chat'); ?> <button type="button" class="button-link zignites-chat-open-upgrade-modal"><?php esc_html_e('Upgrade', 'zignites-chat'); ?></button></em>
             <?php endif; ?>
         <?php endif; ?>
     </p>
@@ -127,26 +128,26 @@ $wcwp_log_clear_url = wp_nonce_url(
     <table class="widefat striped" style="margin-top:6px;">
         <thead>
             <tr>
-                <th style="width:200px;"><?php esc_html_e('Source', 'woochat'); ?></th>
-                <th><?php esc_html_e('Message', 'woochat'); ?></th>
+                <th style="width:200px;"><?php esc_html_e('Source', 'zignites-chat'); ?></th>
+                <th><?php esc_html_e('Message', 'zignites-chat'); ?></th>
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($wcwp_log_filtered)) : ?>
-                <?php foreach (array_reverse($wcwp_log_filtered) as $wcwp_log_entry) : ?>
+            <?php if (!empty($zignites_chat_log_filtered)) : ?>
+                <?php foreach (array_reverse($zignites_chat_log_filtered) as $zignites_chat_log_entry) : ?>
                     <tr>
-                        <td><code style="font-size:0.92em;"><?php echo esc_html($wcwp_log_entry['tag'] !== '' ? $wcwp_log_entry['tag'] : '—'); ?></code></td>
-                        <td><pre style="white-space:pre-wrap;font-size:0.95em;margin:0;"><?php echo esc_html($wcwp_log_entry['message']); ?></pre></td>
+                        <td><code style="font-size:0.92em;"><?php echo esc_html($zignites_chat_log_entry['tag'] !== '' ? $zignites_chat_log_entry['tag'] : '—'); ?></code></td>
+                        <td><pre style="white-space:pre-wrap;font-size:0.95em;margin:0;"><?php echo esc_html($zignites_chat_log_entry['message']); ?></pre></td>
                     </tr>
                 <?php endforeach; ?>
             <?php else : ?>
                 <tr><td colspan="2"><?php
-                    if (!$wcwp_log_exists) {
-                        esc_html_e('Log file does not exist yet.', 'woochat');
-                    } elseif ($wcwp_log_total_shown === 0) {
-                        esc_html_e('Log file is empty.', 'woochat');
+                    if (!$zignites_chat_log_exists) {
+                        esc_html_e('Log file does not exist yet.', 'zignites-chat');
+                    } elseif ($zignites_chat_log_total_shown === 0) {
+                        esc_html_e('Log file is empty.', 'zignites-chat');
                     } else {
-                        esc_html_e('No entries match the current filters.', 'woochat');
+                        esc_html_e('No entries match the current filters.', 'zignites-chat');
                     }
                 ?></td></tr>
             <?php endif; ?>

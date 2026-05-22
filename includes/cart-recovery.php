@@ -1,47 +1,55 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-// Inject JS into footer to track cart activity
-add_action('wp_footer', 'wcwp_cart_recovery_script');
+/*
+ * Direct SQL below runs against the plugin's own custom tables. Every
+ * user-supplied value is bound through $wpdb->prepare(); the only values
+ * interpolated into query strings are table names derived from
+ * $wpdb->prefix. This transactional data is not object-cached.
+ */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
-function wcwp_cart_recovery_script() {
+// Inject JS into footer to track cart activity
+add_action('wp_footer', 'zignites_chat_cart_recovery_script');
+
+function zignites_chat_cart_recovery_script() {
     if (is_admin()) return;
 
-    if (!wcwp_is_pro_active()) return;
+    if (!zignites_chat_is_pro_active()) return;
 
-    $enabled = get_option('wcwp_cart_recovery_enabled', 'yes');
+    $enabled = get_option('zignites_chat_cart_recovery_enabled', 'yes');
     if ($enabled !== 'yes') return;
 
-    wp_enqueue_script('wcwp-cart-tracker', plugin_dir_url(__FILE__) . '../assets/js/cart-tracker.js', ['jquery'], WCWP_VERSION, true);
+    wp_enqueue_script('zignites-chat-cart-tracker', plugin_dir_url(__FILE__) . '../assets/js/cart-tracker.js', ['jquery'], ZIGNITES_CHAT_VERSION, true);
 
-    wp_localize_script('wcwp-cart-tracker', 'wcwp_ajax_obj', [
+    wp_localize_script('zignites-chat-cart-tracker', 'zignites_chat_ajax_obj', [
         'ajax_url' => admin_url('admin-ajax.php'),
-        'nonce'    => wp_create_nonce('wcwp_cart_nonce'),
+        'nonce'    => wp_create_nonce('zignites_chat_cart_nonce'),
         'cart_url' => rest_url('wc/store/v1/cart'),
     ]);
-    wp_localize_script('wcwp-cart-tracker', 'wcwp_cart_recovery_delay', get_option('wcwp_cart_recovery_delay', 20));
-    wp_localize_script('wcwp-cart-tracker', 'wcwp_cart_consent_required', get_option('wcwp_cart_recovery_require_consent', 'no'));
+    wp_localize_script('zignites-chat-cart-tracker', 'zignites_chat_cart_recovery_delay', get_option('zignites_chat_cart_recovery_delay', 20));
+    wp_localize_script('zignites-chat-cart-tracker', 'zignites_chat_cart_consent_required', get_option('zignites_chat_cart_recovery_require_consent', 'no'));
 }
 
 // Optional consent checkbox on checkout
-add_action('woocommerce_after_checkout_billing_form', 'wcwp_cart_recovery_consent_field');
-function wcwp_cart_recovery_consent_field() {
-    if (get_option('wcwp_cart_recovery_require_consent', 'no') !== 'yes') return;
-    echo '<div class="wcwp-cart-consent" style="margin-top:12px;">';
+add_action('woocommerce_after_checkout_billing_form', 'zignites_chat_cart_recovery_consent_field');
+function zignites_chat_cart_recovery_consent_field() {
+    if (get_option('zignites_chat_cart_recovery_require_consent', 'no') !== 'yes') return;
+    echo '<div class="zignites-chat-cart-consent" style="margin-top:12px;">';
     echo '<label style="display:flex;align-items:center;gap:8px;">';
-    echo '<input type="checkbox" id="wcwp-cart-consent" name="wcwp-cart-consent" value="yes" />';
-    echo '<span>' . esc_html__('Send me WhatsApp cart reminders', 'woochat') . '</span>';
+    echo '<input type="checkbox" id="zignites-chat-cart-consent" name="zignites-chat-cart-consent" value="yes" />';
+    echo '<span>' . esc_html__('Send me WhatsApp cart reminders', 'zignites-chat') . '</span>';
     echo '</label>';
     echo '</div>';
 }
 
 // Handle AJAX for cart tracking
-add_action('wp_ajax_nopriv_wcwp_save_cart', 'wcwp_save_cart_ajax');
-add_action('wp_ajax_wcwp_save_cart', 'wcwp_save_cart_ajax');
+add_action('wp_ajax_nopriv_zignites_chat_save_cart', 'zignites_chat_save_cart_ajax');
+add_action('wp_ajax_zignites_chat_save_cart', 'zignites_chat_save_cart_ajax');
 
 add_filter('cron_schedules', function($schedules) {
-    if (!isset($schedules['wcwp_five_minutes'])) {
-        $schedules['wcwp_five_minutes'] = [
+    if (!isset($schedules['zignites_chat_five_minutes'])) {
+        $schedules['zignites_chat_five_minutes'] = [
             'interval' => 5 * MINUTE_IN_SECONDS,
             'display' => 'Every 5 Minutes',
         ];
@@ -49,17 +57,17 @@ add_filter('cron_schedules', function($schedules) {
     return $schedules;
 });
 
-add_action('init', 'wcwp_schedule_cart_recovery_cron');
-add_action('wcwp_process_cart_recovery_queue', 'wcwp_process_cart_recovery_queue');
+add_action('init', 'zignites_chat_schedule_cart_recovery_cron');
+add_action('zignites_chat_process_cart_recovery_queue', 'zignites_chat_process_cart_recovery_queue');
 
-function wcwp_get_cart_table_name() {
+function zignites_chat_get_cart_table_name() {
     global $wpdb;
-    return $wpdb->prefix . 'wcwp_abandoned_carts';
+    return $wpdb->prefix . 'zignites_chat_abandoned_carts';
 }
 
-function wcwp_create_cart_recovery_table() {
+function zignites_chat_create_cart_recovery_table() {
     global $wpdb;
-    $table = wcwp_get_cart_table_name();
+    $table = zignites_chat_get_cart_table_name();
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE {$table} (
@@ -87,64 +95,64 @@ function wcwp_create_cart_recovery_table() {
     dbDelta($sql);
 }
 
-function wcwp_schedule_cart_recovery_cron() {
-    if (!wp_next_scheduled('wcwp_process_cart_recovery_queue')) {
-        wp_schedule_event(time() + 60, 'wcwp_five_minutes', 'wcwp_process_cart_recovery_queue');
+function zignites_chat_schedule_cart_recovery_cron() {
+    if (!wp_next_scheduled('zignites_chat_process_cart_recovery_queue')) {
+        wp_schedule_event(time() + 60, 'zignites_chat_five_minutes', 'zignites_chat_process_cart_recovery_queue');
     }
 }
 
-function wcwp_unschedule_cart_recovery_cron() {
-    $timestamp = wp_next_scheduled('wcwp_process_cart_recovery_queue');
+function zignites_chat_unschedule_cart_recovery_cron() {
+    $timestamp = wp_next_scheduled('zignites_chat_process_cart_recovery_queue');
     if ($timestamp) {
-        wp_unschedule_event($timestamp, 'wcwp_process_cart_recovery_queue');
+        wp_unschedule_event($timestamp, 'zignites_chat_process_cart_recovery_queue');
     }
 }
 
-function wcwp_save_cart_ajax() {
-    if (!check_ajax_referer('wcwp_cart_nonce', 'nonce', false)) {
-        wp_send_json_error(['message' => __('Unauthorized', 'woochat')]);
+function zignites_chat_save_cart_ajax() {
+    if (!check_ajax_referer('zignites_chat_cart_nonce', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Unauthorized', 'zignites-chat')]);
         return;
     }
 
-    if (get_option('wcwp_cart_recovery_enabled', 'yes') !== 'yes') {
-        wp_send_json_error(['message' => __('Disabled', 'woochat')], 403);
+    if (get_option('zignites_chat_cart_recovery_enabled', 'yes') !== 'yes') {
+        wp_send_json_error(['message' => __('Disabled', 'zignites-chat')], 403);
         return;
     }
 
     $phone = isset($_POST['phone']) ? sanitize_text_field(wp_unslash($_POST['phone'])) : '';
-    $phone = wcwp_normalize_phone($phone);
+    $phone = zignites_chat_normalize_phone($phone);
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON cart payload, validated and decoded via json_decode below; nonce verified at function entry.
     $cart_raw = isset($_POST['cart']) ? wp_unslash($_POST['cart']) : '';
     $cart_items = json_decode(is_string($cart_raw) ? $cart_raw : '', true);
     $consent = isset($_POST['consent']) ? sanitize_text_field(wp_unslash($_POST['consent'])) : 'no';
     $consent_time = current_time('mysql');
 
-    if (!wcwp_cart_rate_limit_ok($phone)) {
-        wp_send_json_error(['message' => __('Rate limited', 'woochat')], 429);
+    if (!zignites_chat_cart_rate_limit_ok($phone)) {
+        wp_send_json_error(['message' => __('Rate limited', 'zignites-chat')], 429);
         return;
     }
 
-    if (get_option('wcwp_cart_recovery_require_consent', 'no') === 'yes' && $consent !== 'yes') {
-        wp_send_json_error(['message' => __('Consent missing', 'woochat')]);
+    if (get_option('zignites_chat_cart_recovery_require_consent', 'no') === 'yes' && $consent !== 'yes') {
+        wp_send_json_error(['message' => __('Consent missing', 'zignites-chat')]);
         return;
     }
 
     if (!$phone || empty($cart_items)) {
-        wp_send_json_error(['message' => __('Missing data', 'woochat')]);
+        wp_send_json_error(['message' => __('Missing data', 'zignites-chat')]);
         return;
     }
 
-    if (wcwp_is_opted_out($phone)) {
-        wp_send_json_error(['message' => __('Opted out', 'woochat')], 403);
+    if (zignites_chat_is_opted_out($phone)) {
+        wp_send_json_error(['message' => __('Opted out', 'zignites-chat')], 403);
         return;
     }
 
-    $scheduled = wcwp_queue_cart_recovery($phone, $cart_items, $consent === 'yes' ? 'yes' : 'no', $consent_time);
+    $scheduled = zignites_chat_queue_cart_recovery($phone, $cart_items, $consent === 'yes' ? 'yes' : 'no', $consent_time);
     if (!$scheduled) {
-        wp_send_json_error(['message' => __('Failed to schedule', 'woochat')], 500);
+        wp_send_json_error(['message' => __('Failed to schedule', 'zignites-chat')], 500);
         return;
     }
-    wp_send_json_success(['message' => __('Reminder scheduled', 'woochat')]);
+    wp_send_json_success(['message' => __('Reminder scheduled', 'zignites-chat')]);
 }
 
 /**
@@ -156,10 +164,10 @@ function wcwp_save_cart_ajax() {
  * @param string $consent_time MySQL datetime the consent was captured.
  * @return bool True when the cart row was stored/updated.
  */
-function wcwp_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent_time = '') {
+function zignites_chat_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent_time = '') {
     global $wpdb;
-    $table = wcwp_get_cart_table_name();
-    $delay = absint(get_option('wcwp_cart_recovery_delay', 20));
+    $table = zignites_chat_get_cart_table_name();
+    $delay = absint(get_option('zignites_chat_cart_recovery_delay', 20));
     if ($delay < 1) $delay = 20;
 
     // Sanitize individual cart item fields (H7).
@@ -178,7 +186,7 @@ function wcwp_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent
     }
     $cart_json = wp_json_encode( $sanitized_items );
     $cart_hash = md5($cart_json);
-    $next_send_at = date('Y-m-d H:i:s', time() + ($delay * MINUTE_IN_SECONDS));
+    $next_send_at = gmdate('Y-m-d H:i:s', time() + ($delay * MINUTE_IN_SECONDS));
 
     $existing = $wpdb->get_row($wpdb->prepare(
         "SELECT id, cart_hash FROM {$table} WHERE phone = %s AND status IN ('pending','retry') ORDER BY updated_at DESC LIMIT 1",
@@ -238,68 +246,68 @@ function wcwp_queue_cart_recovery($phone, $cart_items, $consent = 'no', $consent
  * @param array  $context      Optional. Extra context, e.g. ['event_id' => ...].
  * @return bool True on a successful send.
  */
-function wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', $consent_time = '', $context = []) {
+function zignites_chat_send_cart_recovery_whatsapp($phone, $cart_items, $consent = 'no', $consent_time = '', $context = []) {
     $event_id = $context['event_id'] ?? null;
 
-    $items = wcwp_format_cart_items_list($cart_items);
-    $total = wcwp_sum_cart_items_total($cart_items);
+    $items = zignites_chat_format_cart_items_list($cart_items);
+    $total = zignites_chat_sum_cart_items_total($cart_items);
 
     $cart_url = wc_get_cart_url();
     if (!$event_id) {
-        $event_id = wcwp_analytics_log_event('cart_recovery', [
+        $event_id = zignites_chat_analytics_log_event('cart_recovery', [
             'status' => 'pending',
             'phone' => $phone,
             'message_preview' => '',
             'meta' => ['items' => $items, 'total' => $total, 'source' => 'cart_recovery'],
         ]);
     }
-    $tracked_cart_url = $event_id ? wcwp_analytics_tracking_url($event_id, $cart_url) : $cart_url;
+    $tracked_cart_url = $event_id ? zignites_chat_analytics_tracking_url($event_id, $cart_url) : $cart_url;
     // Variant selection happens here, not at the render call site, so the
     // resend admin button + Recent Attempts view stay on variant A. Only
     // the automated cart-recovery worker participates in the A/B test.
-    $picked  = wcwp_ab_get_template('cart_recovery', $phone);
-    $message = wcwp_render_cart_recovery_message($items, $total, $tracked_cart_url, $picked['template']);
-    $preview = wcwp_redact_message($message);
+    $picked  = zignites_chat_ab_get_template('cart_recovery', $phone);
+    $message = zignites_chat_render_cart_recovery_message($items, $total, $tracked_cart_url, $picked['template']);
+    $preview = zignites_chat_redact_message($message);
 
-    $log_file = wcwp_get_log_file();
-    $safe_to = wcwp_mask_phone($phone);
+    $log_file = zignites_chat_get_log_file();
+    $safe_to = zignites_chat_mask_phone($phone);
     $safe_msg = $preview;
     $log_tag = $event_id ?: 'no-event';
-    @error_log("[WooChat - Cart Recovery] Attempt {$log_tag} to $safe_to: $safe_msg\n", 3, $log_file); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+    @error_log("[Zignites Chat - Cart Recovery] Attempt {$log_tag} to $safe_to: $safe_msg\n", 3, $log_file); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 
-    $test_mode = get_option('wcwp_test_mode_enabled', 'no');
+    $test_mode = get_option('zignites_chat_test_mode_enabled', 'no');
     if ($test_mode === 'yes') {
-        @error_log("[WooChat - Cart Recovery TEST MODE] {$log_tag} to $safe_to: $safe_msg\n", 3, $log_file); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+        @error_log("[Zignites Chat - Cart Recovery TEST MODE] {$log_tag} to $safe_to: $safe_msg\n", 3, $log_file); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
         if ($event_id) {
-            wcwp_analytics_update_event($event_id, ['status' => 'test', 'message_preview' => $preview]);
+            zignites_chat_analytics_update_event($event_id, ['status' => 'test', 'message_preview' => $preview]);
         }
         return 'test';
     }
 
-    if (wcwp_is_opted_out($phone)) {
+    if (zignites_chat_is_opted_out($phone)) {
         if ($event_id) {
-            wcwp_analytics_update_event($event_id, ['status' => 'opted_out', 'message_preview' => $message]);
+            zignites_chat_analytics_update_event($event_id, ['status' => 'opted_out', 'message_preview' => $message]);
         }
         return 'opted_out';
     }
 
-    $result = wcwp_send_whatsapp_message($phone, $message, false, [
+    $result = zignites_chat_send_whatsapp_message($phone, $message, false, [
         'type'       => 'cart_recovery',
         'event_id'   => $event_id,
         'ab_variant' => $picked['variant'],
     ]);
     if ($event_id) {
-        wcwp_analytics_update_event($event_id, ['status' => $result === true ? 'sent' : 'failed', 'message_preview' => $preview]);
+        zignites_chat_analytics_update_event($event_id, ['status' => $result === true ? 'sent' : 'failed', 'message_preview' => $preview]);
     }
     return $result === true ? true : false;
 }
 
-function wcwp_process_cart_recovery_queue() {
-    if (get_option('wcwp_cart_recovery_enabled', 'yes') !== 'yes') return;
-    if (!wcwp_is_pro_active()) return;
+function zignites_chat_process_cart_recovery_queue() {
+    if (get_option('zignites_chat_cart_recovery_enabled', 'yes') !== 'yes') return;
+    if (!zignites_chat_is_pro_active()) return;
 
     global $wpdb;
-    $table = wcwp_get_cart_table_name();
+    $table = zignites_chat_get_cart_table_name();
     $now = current_time('mysql');
     $max_attempts = 3;
 
@@ -318,12 +326,12 @@ function wcwp_process_cart_recovery_queue() {
             continue;
         }
 
-        if (wcwp_is_opted_out($phone)) {
+        if (zignites_chat_is_opted_out($phone)) {
             $wpdb->update($table, ['status' => 'opted_out', 'updated_at' => $now], ['id' => $row->id], ['%s','%s'], ['%d']);
             continue;
         }
 
-        $result = wcwp_send_cart_recovery_whatsapp($phone, $cart_items, $row->consent, $row->consent_time, ['event_id' => $row->event_id]);
+        $result = zignites_chat_send_cart_recovery_whatsapp($phone, $cart_items, $row->consent, $row->consent_time, ['event_id' => $row->event_id]);
 
         if ($result === true) {
             $wpdb->update($table, ['status' => 'sent', 'updated_at' => $now], ['id' => $row->id], ['%s','%s'], ['%d']);
@@ -345,7 +353,7 @@ function wcwp_process_cart_recovery_queue() {
                 ['%d']
             );
         } else {
-            $retry_at = date('Y-m-d H:i:s', time() + (15 * MINUTE_IN_SECONDS));
+            $retry_at = gmdate('Y-m-d H:i:s', time() + (15 * MINUTE_IN_SECONDS));
             $wpdb->update(
                 $table,
                 ['status' => 'retry', 'attempts' => $attempts, 'next_send_at' => $retry_at, 'updated_at' => $now],
@@ -363,9 +371,9 @@ function wcwp_process_cart_recovery_queue() {
  * @param string $phone Customer phone number.
  * @return bool True when the request is within the limit.
  */
-function wcwp_cart_rate_limit_ok($phone) {
+function zignites_chat_cart_rate_limit_ok($phone) {
     $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
-    $key = 'wcwp_rate_' . md5($ip . '|' . $phone);
+    $key = 'zignites_chat_rate_' . md5($ip . '|' . $phone);
     $data = get_transient($key);
     $limit = 5;
     $window = HOUR_IN_SECONDS;
@@ -396,14 +404,14 @@ function wcwp_cart_rate_limit_ok($phone) {
 
 add_action('woocommerce_checkout_order_processed', function($order_id) {
     // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Hook fires inside WooCommerce's nonce-validated checkout pipeline; relying on WC's own verification.
-    $consent_raw = isset($_POST['wcwp-cart-consent']) ? sanitize_text_field(wp_unslash($_POST['wcwp-cart-consent'])) : '';
+    $consent_raw = isset($_POST['zignites-chat-cart-consent']) ? sanitize_text_field(wp_unslash($_POST['zignites-chat-cart-consent'])) : '';
     $consent = $consent_raw === 'yes' ? 'yes' : 'no';
     $order = wc_get_order( $order_id );
     if ( ! $order ) {
         return;
     }
-    $order->update_meta_data( '_wcwp_cart_consent', $consent );
-    $order->update_meta_data( '_wcwp_cart_consent_time', current_time( 'mysql' ) );
+    $order->update_meta_data( '_zignites_chat_cart_consent', $consent );
+    $order->update_meta_data( '_zignites_chat_cart_consent_time', current_time( 'mysql' ) );
     $order->save();
 });
 
@@ -411,7 +419,7 @@ add_action('woocommerce_checkout_order_processed', function($order_id) {
  * Format raw cart-item dicts into the "- name × qty" lines used both in the
  * WhatsApp message body and the admin "recent attempts" preview.
  */
-function wcwp_format_cart_items_list($cart_items) {
+function zignites_chat_format_cart_items_list($cart_items) {
     $items = [];
     if (!is_array($cart_items)) return $items;
     foreach ($cart_items as $item) {
@@ -428,7 +436,7 @@ function wcwp_format_cart_items_list($cart_items) {
  * @param array $cart_items Cart line items ({price, qty} dicts).
  * @return float
  */
-function wcwp_sum_cart_items_total($cart_items) {
+function zignites_chat_sum_cart_items_total($cart_items) {
     $total = 0.0;
     if (!is_array($cart_items)) return $total;
     foreach ($cart_items as $item) {
@@ -445,13 +453,13 @@ function wcwp_sum_cart_items_total($cart_items) {
  * tracking-wrapped cart URL) and by the admin "recent attempts" view (with
  * the bare cart URL).
  */
-function wcwp_render_cart_recovery_message($items, $total, $cart_url, $template = null) {
+function zignites_chat_render_cart_recovery_message($items, $total, $cart_url, $template = null) {
     if ($template === null || $template === '') {
-        $template = get_option('wcwp_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} {currency_symbol}\nClick here to complete your order: {cart_url}");
+        $template = get_option('zignites_chat_cart_recovery_message', "👋 Hey! You left items in your cart:\n\n{items}\n\nTotal: {total} {currency_symbol}\nClick here to complete your order: {cart_url}");
     }
     return str_replace(
         ['{items}', '{total}', '{cart_url}', '{currency_symbol}'],
-        [implode("\n", $items), $total, $cart_url, wcwp_currency_symbol_text()],
+        [implode("\n", $items), $total, $cart_url, zignites_chat_currency_symbol_text()],
         $template
     );
 }
@@ -459,14 +467,14 @@ function wcwp_render_cart_recovery_message($items, $total, $cart_url, $template 
 /**
  * Fetch the latest cart-recovery rows for the admin "Recent Attempts" view.
  *
- * Reads the {prefix}wcwp_abandoned_carts table directly — there is one row
+ * Reads the {prefix}zignites_chat_abandoned_carts table directly — there is one row
  * per phone+cart, regardless of how many retry attempts were made (the row's
  * `attempts` counter tracks that). Each rendered record uses the current
  * template, so admins see what would actually be sent if they hit Resend now.
  */
-function wcwp_get_cart_recovery_attempts() {
+function zignites_chat_get_cart_recovery_attempts() {
     global $wpdb;
-    $table = wcwp_get_cart_table_name();
+    $table = zignites_chat_get_cart_table_name();
     $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT id, phone, cart_json, total, consent, consent_time, status, attempts, updated_at FROM {$table} ORDER BY updated_at DESC LIMIT %d",
         25
@@ -477,8 +485,8 @@ function wcwp_get_cart_recovery_attempts() {
     $attempts = [];
     foreach ($rows as $row) {
         $cart_items = json_decode($row->cart_json, true);
-        $items = wcwp_format_cart_items_list($cart_items);
-        $message = wcwp_render_cart_recovery_message($items, $row->total, $cart_url);
+        $items = zignites_chat_format_cart_items_list($cart_items);
+        $message = zignites_chat_render_cart_recovery_message($items, $row->total, $cart_url);
         $attempts[] = [
             'id'           => (string) $row->id,
             'time'         => $row->updated_at,
@@ -496,27 +504,27 @@ function wcwp_get_cart_recovery_attempts() {
 }
 
 // Admin resend handler
-add_action('wp_ajax_wcwp_resend_cart_recovery', function() {
-    if (!current_user_can('manage_woocommerce')) wp_send_json_error(['message' => __('Unauthorized', 'woochat')], 403);
-    if (!check_ajax_referer('wcwp_resend_cart', 'nonce', false)) wp_send_json_error(['message' => __('Bad nonce', 'woochat')], 400);
+add_action('wp_ajax_zignites_chat_resend_cart_recovery', function() {
+    if (!current_user_can('manage_woocommerce')) wp_send_json_error(['message' => __('Unauthorized', 'zignites-chat')], 403);
+    if (!check_ajax_referer('zignites_chat_resend_cart', 'nonce', false)) wp_send_json_error(['message' => __('Bad nonce', 'zignites-chat')], 400);
 
     $attempt_id = isset($_POST['attempt_id']) ? absint(wp_unslash($_POST['attempt_id'])) : 0;
-    if (!$attempt_id) wp_send_json_error(['message' => __('Missing attempt id', 'woochat')], 400);
+    if (!$attempt_id) wp_send_json_error(['message' => __('Missing attempt id', 'zignites-chat')], 400);
 
     global $wpdb;
-    $table = wcwp_get_cart_table_name();
+    $table = zignites_chat_get_cart_table_name();
     $row = $wpdb->get_row($wpdb->prepare("SELECT phone, cart_json, total FROM {$table} WHERE id = %d", $attempt_id));
-    if (!$row) wp_send_json_error(['message' => __('Attempt not found', 'woochat')], 404);
+    if (!$row) wp_send_json_error(['message' => __('Attempt not found', 'zignites-chat')], 404);
 
     $cart_items = json_decode($row->cart_json, true);
-    if (!is_array($cart_items) || empty($cart_items)) wp_send_json_error(['message' => __('Invalid cart data', 'woochat')], 400);
+    if (!is_array($cart_items) || empty($cart_items)) wp_send_json_error(['message' => __('Invalid cart data', 'zignites-chat')], 400);
 
-    $items = wcwp_format_cart_items_list($cart_items);
-    $message = wcwp_render_cart_recovery_message($items, $row->total, wc_get_cart_url());
+    $items = zignites_chat_format_cart_items_list($cart_items);
+    $message = zignites_chat_render_cart_recovery_message($items, $row->total, wc_get_cart_url());
 
-    $result = wcwp_send_whatsapp_message($row->phone, $message, true, ['type' => 'cart_recovery']);
+    $result = zignites_chat_send_whatsapp_message($row->phone, $message, true, ['type' => 'cart_recovery']);
     if ($result === true) {
-        wp_send_json_success(['message' => __('Resent', 'woochat')]);
+        wp_send_json_success(['message' => __('Resent', 'zignites-chat')]);
     }
-    wp_send_json_error(['message' => __('Send failed', 'woochat')]);
+    wp_send_json_error(['message' => __('Send failed', 'zignites-chat')]);
 });

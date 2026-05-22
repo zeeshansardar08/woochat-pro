@@ -1,7 +1,7 @@
-/* WooChat Pro – Premium Admin UI Styles */
+/* Zignites Chat Pro – Premium Admin UI Styles */
 
 /* Layout and container */
-.wcwp-admin-premium-wrap {
+.zignites-chat-admin-premium-wrap {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.07);
@@ -12,7 +12,7 @@
 }
 
 /* Header */
-.wcwp-admin-premium-wrap h1 {
+.zignites-chat-admin-premium-wrap h1 {
   font-size: 2.2rem;
   margin-bottom: 18px;
   color: #1c7c54;
@@ -20,7 +20,7 @@
 }
 
 /* Pro upgrade card — shown on Pro-gated submenu pages for free users */
-.wcwp-pro-upgrade-card {
+.zignites-chat-pro-upgrade-card {
   text-align: center;
   background: linear-gradient(160deg, #f4fbf7 0%, #ffffff 70%);
   border: 1px solid #d4e8dd;
@@ -29,47 +29,47 @@
   max-width: 560px;
   margin: 24px auto;
 }
-.wcwp-pro-upgrade-icon {
+.zignites-chat-pro-upgrade-icon {
   font-size: 2.6rem;
   margin-bottom: 8px;
 }
-.wcwp-pro-upgrade-card h2 {
+.zignites-chat-pro-upgrade-card h2 {
   font-size: 1.5rem;
   color: #1c7c54;
   margin: 6px 0 10px;
 }
-.wcwp-pro-upgrade-desc {
+.zignites-chat-pro-upgrade-desc {
   color: #555;
   font-size: 1rem;
   line-height: 1.6;
 }
-.wcwp-pro-upgrade-benefits {
+.zignites-chat-pro-upgrade-benefits {
   list-style: none;
   margin: 18px auto;
   padding: 0;
   max-width: 380px;
   text-align: left;
 }
-.wcwp-pro-upgrade-benefits li {
+.zignites-chat-pro-upgrade-benefits li {
   padding: 5px 0 5px 26px;
   position: relative;
   color: #333;
 }
-.wcwp-pro-upgrade-benefits li::before {
+.zignites-chat-pro-upgrade-benefits li::before {
   content: '\2713';
   position: absolute;
   left: 0;
   color: #1c7c54;
   font-weight: 700;
 }
-.wcwp-pro-upgrade-price {
+.zignites-chat-pro-upgrade-price {
   color: #888;
   font-size: 0.95rem;
   margin-top: 12px;
 }
 
 /* Inline "Pro" tag on gated controls + locked control styling */
-.wcwp-pro-tag {
+.zignites-chat-pro-tag {
   display: inline-block;
   background: #1c7c54;
   color: #fff;
@@ -82,19 +82,19 @@
   vertical-align: middle;
   margin-left: 4px;
 }
-.wcwp-pro-locked {
+.zignites-chat-pro-locked {
   opacity: 0.5;
   pointer-events: none;
 }
 
 /* Dashboard Pro feature teasers */
-.wcwp-dashboard-teasers {
+.zignites-chat-dashboard-teasers {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   margin-top: 12px;
 }
-.wcwp-dashboard-teaser {
+.zignites-chat-dashboard-teaser {
   flex: 1 1 200px;
   background: #fff;
   border: 1px solid #e5e5e5;
@@ -102,40 +102,40 @@
   padding: 20px;
   text-align: center;
 }
-.wcwp-dashboard-teaser-icon {
+.zignites-chat-dashboard-teaser-icon {
   font-size: 2rem;
 }
-.wcwp-dashboard-teaser h3 {
+.zignites-chat-dashboard-teaser h3 {
   margin: 8px 0 6px;
   color: #1c7c54;
 }
-.wcwp-dashboard-teaser p {
+.zignites-chat-dashboard-teaser p {
   color: #666;
   font-size: 0.93rem;
   min-height: 48px;
 }
 
 /* Form table */
-.wcwp-admin-premium-wrap .form-table {
+.zignites-chat-admin-premium-wrap .form-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 16px;
 }
-.wcwp-admin-premium-wrap .form-table th {
+.zignites-chat-admin-premium-wrap .form-table th {
   text-align: left;
   width: 220px;
   color: #1c7c54;
   font-weight: 500;
   padding-top: 8px;
 }
-.wcwp-admin-premium-wrap .form-table td {
+.zignites-chat-admin-premium-wrap .form-table td {
   padding-top: 8px;
 }
 
 /* Inputs */
-.wcwp-admin-premium-wrap input[type="text"],
-.wcwp-admin-premium-wrap textarea,
-.wcwp-admin-premium-wrap select {
+.zignites-chat-admin-premium-wrap input[type="text"],
+.zignites-chat-admin-premium-wrap textarea,
+.zignites-chat-admin-premium-wrap select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #d1e7dd;
@@ -144,22 +144,22 @@
   background: #f8f9fa;
   transition: border 0.2s;
 }
-.wcwp-admin-premium-wrap input[type="text"]:focus,
-.wcwp-admin-premium-wrap textarea:focus,
-.wcwp-admin-premium-wrap select:focus {
+.zignites-chat-admin-premium-wrap input[type="text"]:focus,
+.zignites-chat-admin-premium-wrap textarea:focus,
+.zignites-chat-admin-premium-wrap select:focus {
   border-color: #1c7c54;
   background: #fff;
 }
 
 /* Description/help text */
-.wcwp-admin-premium-wrap .description {
+.zignites-chat-admin-premium-wrap .description {
   color: #6c757d;
   font-size: 0.97rem;
   margin-top: 4px;
 }
 
 /* Submit button */
-.wcwp-admin-premium-wrap .button-primary {
+.zignites-chat-admin-premium-wrap .button-primary {
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
   border: none;
   color: #fff;
@@ -169,24 +169,24 @@
   box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
   transition: background 0.2s, box-shadow 0.2s;
 }
-.wcwp-admin-premium-wrap .button-primary:hover {
+.zignites-chat-admin-premium-wrap .button-primary:hover {
   background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
   box-shadow: 0 4px 16px rgba(44, 62, 80, 0.13);
 }
 
 /* Responsive */
 @media (max-width: 600px) {
-  .wcwp-admin-premium-wrap {
+  .zignites-chat-admin-premium-wrap {
     padding: 12px 4px;
   }
-  .wcwp-admin-premium-wrap .form-table th {
+  .zignites-chat-admin-premium-wrap .form-table th {
     width: 100px;
     font-size: 0.98rem;
   }
 }
 
 /* Pro Upgrade Banner */
-.wcwp-pro-banner {
+.zignites-chat-pro-banner {
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
   color: #fff;
   padding: 18px 24px;
@@ -198,18 +198,18 @@
   gap: 16px;
   box-shadow: 0 2px 8px rgba(44,62,80,0.13);
 }
-.wcwp-pro-banner .dashicons {
+.zignites-chat-pro-banner .dashicons {
   font-size: 2rem;
   margin-right: 10px;
 }
 
 /* Feature Gating Overlay */
-.wcwp-pro-locked {
+.zignites-chat-pro-locked {
   position: relative;
   opacity: 0.6;
   pointer-events: none;
 }
-.wcwp-pro-locked-message {
+.zignites-chat-pro-locked-message {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -225,7 +225,7 @@
 }
 
 /* Upgrade Modal */
-#wcwp-upgrade-modal {
+#zignites-chat-upgrade-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(44,62,80,0.18);
@@ -234,7 +234,7 @@
   align-items: center;
   justify-content: center;
 }
-.wcwp-upgrade-modal-content {
+.zignites-chat-upgrade-modal-content {
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 8px 32px rgba(44,62,80,0.18);
@@ -244,30 +244,30 @@
   text-align: center;
   position: relative;
 }
-.wcwp-upgrade-modal-content h2 {
+.zignites-chat-upgrade-modal-content h2 {
   color: #1c7c54;
   margin-bottom: 12px;
 }
-.wcwp-upgrade-modal-content .wcwp-comparison-table {
+.zignites-chat-upgrade-modal-content .zignites-chat-comparison-table {
   width: 100%;
   margin: 18px 0 24px 0;
   border-collapse: collapse;
 }
-.wcwp-upgrade-modal-content .wcwp-comparison-table th,
-.wcwp-upgrade-modal-content .wcwp-comparison-table td {
+.zignites-chat-upgrade-modal-content .zignites-chat-comparison-table th,
+.zignites-chat-upgrade-modal-content .zignites-chat-comparison-table td {
   border: 1px solid #e5e5e5;
   padding: 10px 8px;
   font-size: 1rem;
 }
-.wcwp-upgrade-modal-content .wcwp-comparison-table th {
+.zignites-chat-upgrade-modal-content .zignites-chat-comparison-table th {
   background: #f8f9fa;
   color: #1c7c54;
 }
-.wcwp-upgrade-modal-content .wcwp-comparison-table .pro {
+.zignites-chat-upgrade-modal-content .zignites-chat-comparison-table .pro {
   color: #2ec4b6;
   font-weight: bold;
 }
-.wcwp-upgrade-modal-content .wcwp-upgrade-btn {
+.zignites-chat-upgrade-modal-content .zignites-chat-upgrade-btn {
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
   color: #fff;
   border: none;
@@ -278,10 +278,10 @@
   margin-top: 18px;
   transition: background 0.2s;
 }
-.wcwp-upgrade-modal-content .wcwp-upgrade-btn:hover {
+.zignites-chat-upgrade-modal-content .zignites-chat-upgrade-btn:hover {
   background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
 }
-.wcwp-upgrade-modal-close {
+.zignites-chat-upgrade-modal-close {
   position: absolute;
   top: 12px;
   right: 18px;
@@ -293,7 +293,7 @@
 }
 
 /* Tooltips and help icons */
-.wcwp-help-icon {
+.zignites-chat-help-icon {
   display: inline-block;
   margin-left: 6px;
   color: #2ec4b6;
@@ -308,11 +308,11 @@
   position: relative;
   transition: background 0.2s;
 }
-.wcwp-help-icon:hover {
+.zignites-chat-help-icon:hover {
   background: #2ec4b6;
   color: #fff;
 }
-.wcwp-tooltip {
+.zignites-chat-tooltip {
   display: none;
   position: absolute;
   left: 50%;
@@ -328,12 +328,12 @@
   min-width: 180px;
   box-shadow: 0 2px 8px rgba(44,62,80,0.13);
 }
-.wcwp-help-icon:hover .wcwp-tooltip {
+.zignites-chat-help-icon:hover .zignites-chat-tooltip {
   display: block;
 }
 
 /* Chatbot Customizer */
-.wcwp-chatbot-customizer {
+.zignites-chat-chatbot-customizer {
   background: #f8f9fa;
   border-radius: 10px;
   padding: 24px 24px 18px 24px;
@@ -345,15 +345,15 @@
   align-items: flex-start;
   transition: box-shadow 0.2s, transform 0.2s;
 }
-.wcwp-chatbot-customizer:hover {
+.zignites-chat-chatbot-customizer:hover {
   box-shadow: 0 4px 24px rgba(44,62,80,0.13);
   transform: translateY(-2px) scale(1.01);
 }
-.wcwp-chatbot-customizer-controls {
+.zignites-chat-chatbot-customizer-controls {
   flex: 1 1 220px;
   min-width: 220px;
 }
-.wcwp-chatbot-customizer-preview {
+.zignites-chat-chatbot-customizer-preview {
   flex: 1 1 260px;
   min-width: 260px;
   background: #fff;
@@ -362,10 +362,10 @@
   padding: 18px 12px 18px 12px;
   text-align: center;
 }
-.wcwp-chatbot-preview-bubble {
+.zignites-chat-chatbot-preview-bubble {
   display: inline-block;
-  background: var(--wcwp-chatbot-bg, #1c7c54);
-  color: var(--wcwp-chatbot-color, #fff);
+  background: var(--zignites-chat-chatbot-bg, #1c7c54);
+  color: var(--zignites-chat-chatbot-color, #fff);
   border-radius: 24px 24px 24px 0;
   padding: 16px 28px;
   font-size: 1.1rem;
@@ -373,18 +373,18 @@
   box-shadow: 0 2px 8px rgba(44,62,80,0.13);
   position: relative;
 }
-.wcwp-chatbot-preview-icon {
+.zignites-chat-chatbot-preview-icon {
   font-size: 2.2rem;
   margin-bottom: 8px;
-  color: var(--wcwp-chatbot-icon, #2ec4b6);
+  color: var(--zignites-chat-chatbot-icon, #2ec4b6);
 }
-.wcwp-chatbot-customizer label {
+.zignites-chat-chatbot-customizer label {
   font-weight: 500;
   color: #1c7c54;
   margin-bottom: 6px;
   display: block;
 }
-.wcwp-chatbot-customizer input[type="color"] {
+.zignites-chat-chatbot-customizer input[type="color"] {
   border: none;
   width: 36px;
   height: 36px;
@@ -393,12 +393,12 @@
   background: #e5e5e5;
   cursor: pointer;
 }
-.wcwp-chatbot-customizer .wcwp-icon-select {
+.zignites-chat-chatbot-customizer .zignites-chat-icon-select {
   display: flex;
   gap: 10px;
   margin: 8px 0 16px 0;
 }
-.wcwp-chatbot-customizer .wcwp-icon-option {
+.zignites-chat-chatbot-customizer .zignites-chat-icon-option {
   font-size: 2rem;
   background: #e5f7f6;
   border-radius: 8px;
@@ -407,14 +407,14 @@
   border: 2px solid transparent;
   transition: border 0.2s, background 0.2s;
 }
-.wcwp-chatbot-customizer .wcwp-icon-option.selected {
+.zignites-chat-chatbot-customizer .zignites-chat-icon-option.selected {
   border: 2px solid #1c7c54;
   background: #2ec4b6;
   color: #fff;
 }
 
 /* Dashboard Widget */
-.wcwp-dashboard-widget {
+.zignites-chat-dashboard-widget {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 16px rgba(44,62,80,0.07);
@@ -426,17 +426,17 @@
   align-items: flex-start;
   transition: box-shadow 0.2s, transform 0.2s;
 }
-.wcwp-dashboard-widget:hover {
+.zignites-chat-dashboard-widget:hover {
   box-shadow: 0 4px 24px rgba(44,62,80,0.13);
   transform: translateY(-2px) scale(1.01);
 }
-.wcwp-dashboard-widget-stats {
+.zignites-chat-dashboard-widget-stats {
   flex: 1 1 220px;
   min-width: 220px;
   display: flex;
   gap: 18px;
 }
-.wcwp-dashboard-widget-stat {
+.zignites-chat-dashboard-widget-stat {
   background: #f8f9fa;
   border-radius: 8px;
   padding: 16px 18px;
@@ -444,16 +444,16 @@
   flex: 1 1 0;
   box-shadow: 0 1px 8px rgba(44,62,80,0.07);
 }
-.wcwp-dashboard-widget-stat .dashicons {
+.zignites-chat-dashboard-widget-stat .dashicons {
   font-size: 2rem;
   color: #1c7c54;
   margin-bottom: 6px;
 }
-.wcwp-dashboard-widget-stat .wcwp-stat-label {
+.zignites-chat-dashboard-widget-stat .zignites-chat-stat-label {
   color: #888;
   font-size: 0.97rem;
 }
-.wcwp-dashboard-widget-actions {
+.zignites-chat-dashboard-widget-actions {
   flex: 1 1 120px;
   min-width: 120px;
   display: flex;
@@ -462,7 +462,7 @@
   align-items: flex-end;
   justify-content: flex-start;
 }
-.wcwp-dashboard-widget-actions .button {
+.zignites-chat-dashboard-widget-actions .button {
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
   color: #fff;
   border: none;
@@ -472,72 +472,72 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.wcwp-dashboard-widget-actions .button:hover {
+.zignites-chat-dashboard-widget-actions .button:hover {
   background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
 }
 
 /* Dark Mode */
-.wcwp-dark-mode,
-.wcwp-dark-mode .wcwp-admin-premium-wrap,
-.wcwp-dark-mode .wcwp-dashboard-widget,
-.wcwp-dark-mode .wcwp-chatbot-customizer,
-.wcwp-dark-mode .wcwp-upgrade-modal-content {
+.zignites-chat-dark-mode,
+.zignites-chat-dark-mode .zignites-chat-admin-premium-wrap,
+.zignites-chat-dark-mode .zignites-chat-dashboard-widget,
+.zignites-chat-dark-mode .zignites-chat-chatbot-customizer,
+.zignites-chat-dark-mode .zignites-chat-upgrade-modal-content {
   background: #181c1f !important;
   color: #e5e5e5 !important;
   transition: background 0.3s, color 0.3s;
 }
-.wcwp-dark-mode .form-table th,
-.wcwp-dark-mode .wcwp-chatbot-customizer label {
+.zignites-chat-dark-mode .form-table th,
+.zignites-chat-dark-mode .zignites-chat-chatbot-customizer label {
   color: #2ec4b6 !important;
 }
-.wcwp-dark-mode .form-table td,
-.wcwp-dark-mode .description {
+.zignites-chat-dark-mode .form-table td,
+.zignites-chat-dark-mode .description {
   color: #b2f7ef !important;
 }
-.wcwp-dark-mode input,
-.wcwp-dark-mode textarea,
-.wcwp-dark-mode select {
+.zignites-chat-dark-mode input,
+.zignites-chat-dark-mode textarea,
+.zignites-chat-dark-mode select {
   background: #23272b !important;
   color: #e5e5e5 !important;
   border-color: #2ec4b6 !important;
 }
-.wcwp-dark-mode .wcwp-dashboard-widget-stat {
+.zignites-chat-dark-mode .zignites-chat-dashboard-widget-stat {
   background: #23272b !important;
   color: #b2f7ef !important;
 }
-.wcwp-dark-mode .wcwp-pro-banner,
-.wcwp-dark-mode .wcwp-pro-locked-message {
+.zignites-chat-dark-mode .zignites-chat-pro-banner,
+.zignites-chat-dark-mode .zignites-chat-pro-locked-message {
   background: linear-gradient(90deg, #2ec4b6 60%, #1c7c54 100%) !important;
   color: #181c1f !important;
 }
-.wcwp-dark-mode .wcwp-upgrade-btn,
-.wcwp-dark-mode .button-primary,
-.wcwp-dark-mode .button {
+.zignites-chat-dark-mode .zignites-chat-upgrade-btn,
+.zignites-chat-dark-mode .button-primary,
+.zignites-chat-dark-mode .button {
   background: linear-gradient(90deg, #2ec4b6 60%, #1c7c54 100%) !important;
   color: #181c1f !important;
 }
-.wcwp-dark-mode .wcwp-help-icon {
+.zignites-chat-dark-mode .zignites-chat-help-icon {
   background: #23272b !important;
   color: #2ec4b6 !important;
 }
-.wcwp-dark-mode .wcwp-tooltip {
+.zignites-chat-dark-mode .zignites-chat-tooltip {
   background: #23272b !important;
   color: #b2f7ef !important;
 }
 
 /* Agents (multi-agent routing) */
-#wcwp-agents-table {
+#zignites-chat-agents-table {
   margin-top: 8px;
   max-width: 720px;
 }
-#wcwp-agents-table th,
-#wcwp-agents-table td {
+#zignites-chat-agents-table th,
+#zignites-chat-agents-table td {
   vertical-align: middle;
 }
-#wcwp-agents-table .wcwp-agents-row-actions {
+#zignites-chat-agents-table .zignites-chat-agents-row-actions {
   width: 40px;
 }
-.wcwp-agent-remove {
+.zignites-chat-agent-remove {
   color: #c0392b;
   font-size: 1.2rem;
   text-decoration: none;
@@ -546,35 +546,35 @@
   border: 0;
   padding: 0 4px;
 }
-.wcwp-agent-remove:hover { color: #922b21; }
+.zignites-chat-agent-remove:hover { color: #922b21; }
 
 /* Campaigns tab */
-.wcwp-campaign-create {
+.zignites-chat-campaign-create {
   background: #f8f9fa;
   border-radius: 10px;
   padding: 18px 22px;
   margin: 18px 0 24px;
   box-shadow: 0 1px 8px rgba(44,62,80,0.05);
 }
-.wcwp-campaign-create h3 {
+.zignites-chat-campaign-create h3 {
   margin-top: 0;
 }
-.wcwp-campaign-feedback {
+.zignites-chat-campaign-feedback {
   display: inline-block;
   margin-left: 12px;
   font-size: 0.95rem;
   color: #1c7c54;
 }
-.wcwp-campaign-feedback.is-error {
+.zignites-chat-campaign-feedback.is-error {
   color: #c0392b;
 }
-.wcwp-campaigns-list .wcwp-campaign-status {
+.zignites-chat-campaigns-list .zignites-chat-campaign-status {
   text-transform: capitalize;
   font-weight: 600;
 }
 
 /* Support/Contact card */
-.wcwp-support-form {
+.zignites-chat-support-form {
   background: #f8f9fa;
   border-radius: 10px;
   padding: 24px 24px 18px 24px;
@@ -583,29 +583,29 @@
   max-width: 480px;
   transition: box-shadow 0.2s, transform 0.2s;
 }
-.wcwp-support-form:hover {
+.zignites-chat-support-form:hover {
   box-shadow: 0 4px 24px rgba(44,62,80,0.13);
   transform: translateY(-2px) scale(1.01);
 }
 
 /* Microinteractions & Branding */
-.button, .button-primary, .wcwp-upgrade-btn {
+.button, .button-primary, .zignites-chat-upgrade-btn {
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
 }
-.button:active, .button-primary:active, .wcwp-upgrade-btn:active {
+.button:active, .button-primary:active, .zignites-chat-upgrade-btn:active {
   transform: scale(0.97);
   box-shadow: 0 1px 4px rgba(44,62,80,0.13);
 }
-.wcwp-dashboard-widget, .wcwp-chatbot-customizer, .wcwp-support-form {
+.zignites-chat-dashboard-widget, .zignites-chat-chatbot-customizer, .zignites-chat-support-form {
   transition: box-shadow 0.2s, transform 0.2s;
 }
-.wcwp-dashboard-widget:hover, .wcwp-chatbot-customizer:hover, .wcwp-support-form:hover {
+.zignites-chat-dashboard-widget:hover, .zignites-chat-chatbot-customizer:hover, .zignites-chat-support-form:hover {
   box-shadow: 0 4px 24px rgba(44,62,80,0.13);
   transform: translateY(-2px) scale(1.01);
 }
 
 /* Branded illustration for empty states */
-.wcwp-empty-illustration {
+.zignites-chat-empty-illustration {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -615,19 +615,19 @@
   font-size: 2.5rem;
   opacity: 0.7;
 }
-.wcwp-empty-illustration span {
+.zignites-chat-empty-illustration span {
   font-size: 4rem;
   margin-bottom: 8px;
 }
 
 /* Plugin icon splash */
-.wcwp-plugin-splash {
+.zignites-chat-plugin-splash {
   display: flex;
   align-items: center;
   gap: 16px;
   margin-bottom: 18px;
 }
-.wcwp-plugin-splash .wcwp-plugin-logo {
+.zignites-chat-plugin-splash .zignites-chat-plugin-logo {
   font-size: 2.6rem;
   color: #2ec4b6;
   background: #e5f7f6;
@@ -635,7 +635,7 @@
   padding: 10px 16px;
   box-shadow: 0 2px 8px rgba(44,62,80,0.09);
 }
-.wcwp-plugin-splash .wcwp-plugin-title {
+.zignites-chat-plugin-splash .zignites-chat-plugin-title {
   font-size: 2rem;
   font-weight: 700;
   color: #1c7c54;
@@ -643,7 +643,7 @@
 }
 
 /* Enhanced Dark Mode Toggle */
-.wcwp-dark-toggle {
+.zignites-chat-dark-toggle {
   position: absolute;
   top: 18px;
   right: 32px;
@@ -662,43 +662,43 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
   outline: none;
-  animation: wcwp-glow 2s infinite alternate;
+  animation: zignites-chat-glow 2s infinite alternate;
 }
-.wcwp-dark-toggle:hover {
+.zignites-chat-dark-toggle:hover {
   background: #ffe066;
   color: #23272b;
   box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18);
   transform: scale(1.08) rotate(-8deg);
 }
-@keyframes wcwp-glow {
+@keyframes zignites-chat-glow {
   from { box-shadow: 0 2px 12px #ffe06633, 0 2px 12px rgba(44,62,80,0.18); }
   to   { box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18); }
 }
-.wcwp-dark-toggle .wcwp-dark-icon {
+.zignites-chat-dark-toggle .zignites-chat-dark-icon {
   transition: transform 0.4s cubic-bezier(.4,2,.6,1), color 0.2s;
 }
-.wcwp-dark-mode .wcwp-dark-toggle {
+.zignites-chat-dark-mode .zignites-chat-dark-toggle {
   background: #ffe066;
   color: #23272b;
   box-shadow: 0 4px 24px #ffe06699, 0 2px 12px rgba(44,62,80,0.18);
 }
-.wcwp-dark-mode .wcwp-dark-toggle .wcwp-dark-icon {
+.zignites-chat-dark-mode .zignites-chat-dark-toggle .zignites-chat-dark-icon {
   transform: rotate(180deg) scale(1.2);
   color: #23272b;
 }
 
 /* Template Library Modal */
-.wcwp-template-library-modal {
+.zignites-chat-template-library-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 99998;
 }
-.wcwp-template-library-overlay {
+.zignites-chat-template-library-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(44,62,80,0.45);
 }
-.wcwp-template-library-dialog {
+.zignites-chat-template-library-dialog {
   position: relative;
   background: #fff;
   border-radius: 14px;
@@ -710,21 +710,21 @@
   flex-direction: column;
   overflow: hidden;
 }
-.wcwp-template-library-header {
+.zignites-chat-template-library-header {
   padding: 20px 28px 14px;
   border-bottom: 1px solid #ececec;
 }
-.wcwp-template-library-header h2 {
+.zignites-chat-template-library-header h2 {
   color: #1c7c54;
   margin: 0 0 4px 0;
   font-size: 1.4rem;
 }
-.wcwp-template-library-subtitle {
+.zignites-chat-template-library-subtitle {
   color: #666;
   margin: 0;
   font-size: 0.95rem;
 }
-.wcwp-template-library-close {
+.zignites-chat-template-library-close {
   position: absolute;
   top: 14px; right: 18px;
   font-size: 1.6rem;
@@ -734,14 +734,14 @@
   cursor: pointer;
   line-height: 1;
 }
-.wcwp-template-library-body {
+.zignites-chat-template-library-body {
   padding: 18px 28px 24px;
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 14px;
 }
-.wcwp-template-card {
+.zignites-chat-template-card {
   background: #f9fbfa;
   border: 1px solid #e5ece8;
   border-radius: 10px;
@@ -750,24 +750,24 @@
   flex-direction: column;
   gap: 10px;
 }
-.wcwp-template-card-meta {
+.zignites-chat-template-card-meta {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.wcwp-template-industry {
+.zignites-chat-template-industry {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #2ec4b6;
   font-weight: 600;
 }
-.wcwp-template-name {
+.zignites-chat-template-name {
   margin: 0;
   font-size: 1.02rem;
   color: #1c7c54;
 }
-.wcwp-template-body {
+.zignites-chat-template-body {
   background: #fff;
   border: 1px solid #ececec;
   border-radius: 6px;
@@ -781,38 +781,38 @@
   overflow-y: auto;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
-.wcwp-template-use {
+.zignites-chat-template-use {
   align-self: flex-start;
 }
-.wcwp-template-library-empty {
+.zignites-chat-template-library-empty {
   grid-column: 1 / -1;
   text-align: center;
   color: #888;
   font-style: italic;
   padding: 20px 0;
 }
-body.wcwp-template-library-open {
+body.zignites-chat-template-library-open {
   overflow: hidden;
 }
-.wcwp-dark-mode .wcwp-template-library-dialog {
+.zignites-chat-dark-mode .zignites-chat-template-library-dialog {
   background: #181c1f;
   color: #e5e5e5;
 }
-.wcwp-dark-mode .wcwp-template-library-header {
+.zignites-chat-dark-mode .zignites-chat-template-library-header {
   border-bottom-color: #23272b;
 }
-.wcwp-dark-mode .wcwp-template-library-header h2,
-.wcwp-dark-mode .wcwp-template-name {
+.zignites-chat-dark-mode .zignites-chat-template-library-header h2,
+.zignites-chat-dark-mode .zignites-chat-template-name {
   color: #2ec4b6;
 }
-.wcwp-dark-mode .wcwp-template-library-subtitle {
+.zignites-chat-dark-mode .zignites-chat-template-library-subtitle {
   color: #b2f7ef;
 }
-.wcwp-dark-mode .wcwp-template-card {
+.zignites-chat-dark-mode .zignites-chat-template-card {
   background: #23272b;
   border-color: #2ec4b6;
 }
-.wcwp-dark-mode .wcwp-template-body {
+.zignites-chat-dark-mode .zignites-chat-template-body {
   background: #181c1f;
   border-color: #2ec4b6;
   color: #e5e5e5;

@@ -7,23 +7,23 @@ $icon = isset($settings['icon']) ? $settings['icon'] : '💬';
 $welcome = isset($settings['welcome']) ? $settings['welcome'] : 'Hi! How can I help you?';
 
 // Store colors travel as CSS custom properties; the layout rules live in
-// assets/css/chatbot-widget.css (enqueued by wcwp_enqueue_chatbot_assets).
-$wcwp_cb_vars = sprintf(
-    '--wcwp-cb-bubble:%s;--wcwp-cb-text:%s;--wcwp-cb-icon:%s;',
+// assets/css/chatbot-widget.css (enqueued by zignites_chat_enqueue_chatbot_assets).
+$zignites_chat_cb_vars = sprintf(
+    '--zignites-chat-cb-bubble:%s;--zignites-chat-cb-text:%s;--zignites-chat-cb-icon:%s;',
     $bubble,
     $text,
     $iconColor
 );
 ?>
-<div id="wcwp-chatbot" style="<?php echo esc_attr($wcwp_cb_vars); ?>">
-    <div id="wcwp-chat-window">
-        <h4><span class="wcwp-icon"><?php echo esc_html($icon); ?></span> <?php esc_html_e('Chat with us', 'woochat'); ?></h4>
-        <input type="text" id="wcwp-user-input" placeholder="<?php esc_attr_e('Ask a question...', 'woochat'); ?>" />
-        <div id="wcwp-chat-response"><?php echo esc_html($welcome); ?></div>
-        <a id="wcwp-send-wa" href="#" target="_blank"><?php esc_html_e('Send via WhatsApp', 'woochat'); ?></a>
+<div id="zignites-chat-chatbot" style="<?php echo esc_attr($zignites_chat_cb_vars); ?>">
+    <div id="zignites-chat-chat-window">
+        <h4><span class="zignites-chat-icon"><?php echo esc_html($icon); ?></span> <?php esc_html_e('Chat with us', 'zignites-chat'); ?></h4>
+        <input type="text" id="zignites-chat-user-input" placeholder="<?php esc_attr_e('Ask a question...', 'zignites-chat'); ?>" />
+        <div id="zignites-chat-chat-response"><?php echo esc_html($welcome); ?></div>
+        <a id="zignites-chat-send-wa" href="#" target="_blank"><?php esc_html_e('Send via WhatsApp', 'zignites-chat'); ?></a>
     </div>
-    <button id="wcwp-toggle-chat">
-        <span class="wcwp-icon"><?php echo esc_html($icon); ?></span>
-        <span><?php esc_html_e('Chat', 'woochat'); ?></span>
+    <button id="zignites-chat-toggle-chat">
+        <span class="zignites-chat-icon"><?php echo esc_html($icon); ?></span>
+        <span><?php esc_html_e('Chat', 'zignites-chat'); ?></span>
     </button>
 </div>
