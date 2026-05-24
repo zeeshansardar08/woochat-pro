@@ -141,18 +141,38 @@ Current branch: `free`
 
 ---
 
-## PHASE 6 — Freemius Integration — ⬜ Not started
-- [ ] 6.1 Freemius account + product setup (user action)
-- [ ] 6.2 Integrate Freemius SDK, replace `license-manager.php`
+## PHASE 6 — Freemius Integration — 🟡 Partial (scaffolded on `pro` branch)
+- [ ] 6.1 Freemius account + product setup (user action — credentials needed)
+- [🟡] 6.2 Integrate Freemius SDK — SDK vendored at `/freemius/`,
+       `includes/freemius.php` declares `zignites_chat_pro_freemius()` with
+       `fs_dynamic_init()` and is_premium_only=true. Placeholder
+       `FREEMIUS_PLUGIN_ID` and `pk_FREEMIUS_PUBLIC_KEY` remain — user must
+       paste the real values from the Freemius dashboard.
+       `zignites_chat_is_pro_active()` already bridges to the Freemius
+       singleton when present, so the unlock flips automatically once
+       credentials are in. Legacy `license-manager.php` left in place for
+       compatibility with sites that activated a key pre-migration.
 
 ---
 
-## PHASE 7 — Pro Version Polish — ⬜ Not started
-- [ ] 7.1 Test all Pro features end-to-end
-- [ ] 7.2 Error handling hardening
-- [ ] 7.3 "Test Connection" button on General Settings
+## PHASE 7 — Pro Version Polish — 🟡 Partial (in progress on `pro` branch)
+- [🟡] 7.1 Test all Pro features end-to-end — smoke test plan drafted
+       in chat; user action to run against a live store with a real
+       Twilio / Meta sandbox.
+- [✅] 7.2 Error handling hardening — GPT call sites (chatbot fallback
+       + follow-up scheduler) no longer swallow failures; new
+       `zignites_chat_record_gpt_error()` helper + admin notice surfaces
+       the most recent failure with one-click dismiss. Other Pro
+       modules (campaign chunking, cart-recovery queue, webhook retry)
+       already had bounded retries + per-row state.
+- [✅] 7.3 "Test Connection" button on General Settings — verifies the
+       active provider's credentials via a cheap GET against Twilio
+       Accounts / Meta phone-info; works against the values currently
+       in the form so admins can validate keys before saving them.
 
 ---
 
 ## Next Action
-**Phase 1, Task 1.2** — convert tabs to submenus (plus the quick `Author: Zignites` fix in Task 1.1).
+**Phase 6.1** — paste real Freemius `id` and `public_key` into
+`includes/freemius.php` (lines 51, 56). Then run Phase 7.1 smoke
+test on a staging store.
