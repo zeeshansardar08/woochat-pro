@@ -37,20 +37,15 @@ if ( ! function_exists( 'zignites_chat_pro_freemius' ) ) {
 			require_once ZIGNITES_CHAT_PATH . 'freemius/start.php';
 
 			$zignites_chat_pro_fs = fs_dynamic_init( array(
-				// TODO: replace the four placeholders below with the values
-				// from your Freemius dashboard → Plugin → Settings:
-				//   * id           — numeric plugin ID
-				//   * public_key   — starts with "pk_"
-				//   * slug         — should match the free plugin slug on
-				//                    WordPress.org so cross-plugin handoff
-				//                    works (zignites-chat).
-				//   * premium_slug — slug for this Pro-only distribution
-				//                    (zignites-chat-pro).
-				'id'                  => 'FREEMIUS_PLUGIN_ID',
+				// Freemius plugin identity. The secret key is NOT included
+				// here on purpose — it lives only in the Freemius dashboard
+				// + the deploy environment used to sign Pro builds and must
+				// never ship inside a plugin zip.
+				'id'                  => '30447',
 				'slug'                => 'zignites-chat',
 				'premium_slug'        => 'zignites-chat-pro',
 				'type'                => 'plugin',
-				'public_key'          => 'pk_FREEMIUS_PUBLIC_KEY',
+				'public_key'          => 'pk_72169d28057b2fec5922d4d9a1765',
 				'is_premium'          => true,
 				'is_premium_only'     => true,
 				'has_addons'          => false,
