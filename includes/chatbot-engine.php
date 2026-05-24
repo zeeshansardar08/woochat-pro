@@ -220,7 +220,10 @@ function zignites_chat_generate_chatbot_reply($user_message) {
     $model    = trim(get_option('zignites_chat_gpt_model', 'gpt-3.5-turbo'));
     if ($model === '') $model = 'gpt-3.5-turbo';
 
-    if ($endpoint === '' || $api_key === '') return '';
+    if ($endpoint === '' || $api_key === '') {
+        zignites_chat_record_gpt_error('chatbot', 'Chatbot GPT fallback enabled but the endpoint or API key is empty.');
+        return '';
+    }
 
     $system_prompt = apply_filters(
         'zignites_chat_chatbot_gpt_system_prompt',
@@ -246,13 +249,22 @@ function zignites_chat_generate_chatbot_reply($user_message) {
         'body' => wp_json_encode($body),
     ]);
 
-    if (is_wp_error($response)) return '';
+    if (is_wp_error($response)) {
+        zignites_chat_record_gpt_error('chatbot', 'Network error: ' . $response->get_error_message());
+        return '';
+    }
 
     $code = wp_remote_retrieve_response_code($response);
-    if ($code !== 200) return '';
+    if ($code !== 200) {
+        zignites_chat_record_gpt_error('chatbot', sprintf('GPT endpoint returned HTTP %d.', (int) $code));
+        return '';
+    }
 
     $data = json_decode(wp_remote_retrieve_body($response), true);
-    if (!isset($data['choices'][0]['message']['content'])) return '';
+    if (!isset($data['choices'][0]['message']['content'])) {
+        zignites_chat_record_gpt_error('chatbot', 'GPT response missing choices[0].message.content.');
+        return '';
+    }
 
     return trim($data['choices'][0]['message']['content']);
 }

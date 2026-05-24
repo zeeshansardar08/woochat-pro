@@ -558,6 +558,85 @@ function zignites_chat_handle_pro_notice_dismiss() {
 }
 
 /**
+ * Surface the most recent GPT failure to the admin.
+ *
+ * The actual GPT call sites (follow-up scheduler, chatbot fallback) used
+ * to return '' on any error and the admin had no idea AI was broken.
+ * zignites_chat_record_gpt_error() now stashes a 24h transient on every
+ * failure; this notice picks it up on the next Zignites Chat admin page
+ * load and lets the admin dismiss once they've fixed the root cause.
+ */
+add_action('admin_notices', 'zignites_chat_render_gpt_error_notice');
+function zignites_chat_render_gpt_error_notice() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    $screen = get_current_screen();
+    if (!$screen || strpos($screen->id, 'zignites-chat') === false) {
+        return;
+    }
+    $err = zignites_chat_get_last_gpt_error();
+    if (!$err) {
+        return;
+    }
+
+    $dismiss_url = wp_nonce_url(
+        add_query_arg('zignites_chat_dismiss_gpt_error', '1'),
+        'zignites_chat_dismiss_gpt_error'
+    );
+
+    $context_label = ($err['context'] === 'chatbot')
+        ? __('chatbot fallback', 'zignites-chat')
+        : __('follow-up scheduler', 'zignites-chat');
+
+    $when = isset($err['time']) ? (int) $err['time'] : 0;
+    $relative = $when > 0
+        ? sprintf(
+            /* translators: %s: human-readable "x minutes ago" */
+            __('%s ago', 'zignites-chat'),
+            human_time_diff($when, time())
+        )
+        : '';
+    ?>
+    <div class="notice notice-warning is-dismissible">
+        <p>
+            <strong><?php esc_html_e('Zignites Chat:', 'zignites-chat'); ?></strong>
+            <?php
+            printf(
+                /* translators: 1: feature (chatbot fallback or follow-up scheduler), 2: relative time, 3: error message */
+                esc_html__('The %1$s GPT call failed %2$s: %3$s', 'zignites-chat'),
+                esc_html($context_label),
+                esc_html($relative),
+                esc_html($err['message'])
+            );
+            ?>
+        </p>
+        <p>
+            <a href="<?php echo esc_url(admin_url('admin.php?page=zignites-chat-scheduler')); ?>" class="button button-small"><?php esc_html_e('Open Scheduler', 'zignites-chat'); ?></a>
+            <a href="<?php echo esc_url($dismiss_url); ?>" class="button button-small"><?php esc_html_e('Dismiss', 'zignites-chat'); ?></a>
+        </p>
+    </div>
+    <?php
+}
+
+/**
+ * Clear the GPT-error transient when the admin dismisses the notice.
+ */
+add_action('admin_init', 'zignites_chat_handle_gpt_error_dismiss');
+function zignites_chat_handle_gpt_error_dismiss() {
+    if (!isset($_GET['zignites_chat_dismiss_gpt_error']) || !current_user_can('manage_options')) {
+        return;
+    }
+    $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+    if (!wp_verify_nonce($nonce, 'zignites_chat_dismiss_gpt_error')) {
+        return;
+    }
+    delete_transient('zignites_chat_last_gpt_error');
+    wp_safe_redirect(remove_query_arg(['zignites_chat_dismiss_gpt_error', '_wpnonce']));
+    exit;
+}
+
+/**
  * Print the first-run onboarding wizard modal. Rendered on the Dashboard
  * until the admin completes or skips it.
  */

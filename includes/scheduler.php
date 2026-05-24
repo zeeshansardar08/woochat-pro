@@ -115,7 +115,10 @@ function zignites_chat_generate_gpt_followup($order) {
     $api_key = trim(get_option('zignites_chat_gpt_api_key', ''));
     $model = trim(get_option('zignites_chat_gpt_model', 'gpt-3.5-turbo')) ?: 'gpt-3.5-turbo';
 
-    if (!$endpoint || !$api_key) return '';
+    if (!$endpoint || !$api_key) {
+        zignites_chat_record_gpt_error('followup', 'Missing endpoint or API key — GPT follow-up skipped, falling back to template.');
+        return '';
+    }
 
     $user_prompt = sprintf(
         'Create a short, friendly WhatsApp follow-up for %s (order #%d, total %s, status %s). Keep under 320 characters.',
@@ -144,13 +147,22 @@ function zignites_chat_generate_gpt_followup($order) {
         'body' => wp_json_encode($body),
     ]);
 
-    if (is_wp_error($response)) return '';
+    if (is_wp_error($response)) {
+        zignites_chat_record_gpt_error('followup', 'Network error: ' . $response->get_error_message());
+        return '';
+    }
 
     $code = wp_remote_retrieve_response_code($response);
-    if ($code !== 200) return '';
+    if ($code !== 200) {
+        zignites_chat_record_gpt_error('followup', sprintf('GPT endpoint returned HTTP %d.', (int) $code));
+        return '';
+    }
 
     $data = json_decode(wp_remote_retrieve_body($response), true);
-    if (!isset($data['choices'][0]['message']['content'])) return '';
+    if (!isset($data['choices'][0]['message']['content'])) {
+        zignites_chat_record_gpt_error('followup', 'GPT response missing choices[0].message.content.');
+        return '';
+    }
 
     return trim($data['choices'][0]['message']['content']);
 }

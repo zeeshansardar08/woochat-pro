@@ -355,6 +355,59 @@ function zignites_chat_get_log_file() {
 }
 
 /**
+ * Record a GPT API failure so the admin can see it.
+ *
+ * Stored as a short-lived transient (24h) and appended to the plugin log
+ * file. The admin notice in settings-page.php picks up the transient on
+ * the next admin page load — so the silent "GPT returned 401" failures
+ * that used to vanish into thin air now surface with a dismissible
+ * banner.
+ *
+ * @param string $context     Pro feature that triggered the call: 'followup' or 'chatbot'.
+ * @param string $error_text  Short, actionable error description (HTTP code,
+ *                            timeout, missing creds, etc.). Already sanitized
+ *                            by callers — never embed raw API response bodies
+ *                            because they may contain secrets.
+ */
+function zignites_chat_record_gpt_error($context, $error_text) {
+    $context = sanitize_text_field((string) $context);
+    $error_text = sanitize_text_field((string) $error_text);
+    if ($error_text === '') return;
+
+    set_transient(
+        'zignites_chat_last_gpt_error',
+        array(
+            'time'    => time(),
+            'context' => $context,
+            'message' => $error_text,
+        ),
+        DAY_IN_SECONDS
+    );
+
+    $log_file = zignites_chat_get_log_file();
+    @error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+        '[Zignites Chat][GPT][' . $context . '] ' . $error_text . "\n",
+        3,
+        $log_file
+    );
+}
+
+/**
+ * Return the most recent GPT error (or null if none in the last 24h).
+ *
+ * Shape: ['time' => int, 'context' => string, 'message' => string].
+ *
+ * @return array{time:int, context:string, message:string}|null
+ */
+function zignites_chat_get_last_gpt_error() {
+    $entry = get_transient('zignites_chat_last_gpt_error');
+    if (!is_array($entry) || !isset($entry['time'], $entry['message'])) {
+        return null;
+    }
+    return $entry;
+}
+
+/**
  * Reduce a phone number to digits only.
  *
  * @param string $phone Raw phone input.
