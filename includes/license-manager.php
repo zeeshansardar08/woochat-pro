@@ -107,11 +107,26 @@ function zignites_chat_deactivate_license_ajax() {
 
 // Helper function to use in feature gates.
 //
-// On the Pro build the ZIGNITES_CHAT_IS_PRO constant is defined in the main
-// plugin file; until Freemius is wired in we use that as the unlock. Once
-// my_freemius() is available, this returns true only when
-// can_use_premium_code__premium_only() reports a valid license.
+// Order of checks (first true wins):
+//   1. ZIGNITES_CHAT_DEV_UNLOCK — a developer override defined in
+//      wp-config.php for local/staging environments where you don't want
+//      to round-trip through Freemius on every test. Lets QA reproduce a
+//      "licensed Pro" state on a sandbox without burning a real license
+//      seat. Should never be defined on a live customer site.
+//   2. Freemius license — the production source of truth. Once a customer
+//      activates their key via the Account screen,
+//      can_use_premium_code__premium_only() returns true and every Pro
+//      gate flips on.
+//   3. ZIGNITES_CHAT_IS_PRO constant — the build-time marker from the
+//      main plugin file. Acts as a fallback during the early seconds of
+//      activation before the Freemius singleton has booted.
+//   4. Legacy zignites_chat_license_status option — for sites that
+//      activated a key before the Freemius migration; will be retired in
+//      a future release.
 function zignites_chat_is_pro_active() {
+    if (defined('ZIGNITES_CHAT_DEV_UNLOCK') && ZIGNITES_CHAT_DEV_UNLOCK) {
+        return true;
+    }
     if (function_exists('zignites_chat_pro_freemius')) {
         return zignites_chat_pro_freemius()->can_use_premium_code__premium_only();
     }
