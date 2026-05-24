@@ -98,8 +98,14 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-analytics',     __('Analytics', 'zignites-chat'),        'zignites_chat_render_analytics_page',     true],
         ['zignites-chat-logs',          __('Logs', 'zignites-chat'),             'zignites_chat_render_logs_page'],
         ['zignites-chat-webhooks',      __('Webhooks', 'zignites-chat'),         'zignites_chat_render_webhooks_page',      true],
-        ['zignites-chat-license',       __('License', 'zignites-chat'),          'zignites_chat_render_license_page'],
     ];
+
+    // On Pro builds Freemius adds its own Account/Billing/Support submenus,
+    // so the legacy License page is removed to avoid two competing license
+    // surfaces. Free builds keep it as the only license entry point.
+    if ( ! ( defined('ZIGNITES_CHAT_IS_PRO') && ZIGNITES_CHAT_IS_PRO ) ) {
+        $submenus[] = ['zignites-chat-license', __('License', 'zignites-chat'), 'zignites_chat_render_license_page'];
+    }
 
     foreach ($submenus as $submenu) {
         list($slug, $title, $callback) = $submenu;

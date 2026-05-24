@@ -2,11 +2,13 @@
 if (!defined('ABSPATH')) exit;
 
 $zignites_chat_dash_totals  = zignites_chat_analytics_get_totals();
-$zignites_chat_dash_license = get_option('zignites_chat_license_status', 'inactive');
+$zignites_chat_dash_is_pro  = zignites_chat_is_pro_active();
+$zignites_chat_dash_license = $zignites_chat_dash_is_pro
+    ? 'valid'
+    : get_option('zignites_chat_license_status', 'inactive');
 $zignites_chat_dash_open_rate = $zignites_chat_dash_totals['sent'] > 0
     ? round(($zignites_chat_dash_totals['delivered'] / $zignites_chat_dash_totals['sent']) * 100) . '%'
     : '—';
-$zignites_chat_dash_is_pro = zignites_chat_is_pro_active();
 ?>
 <div class="zignites-chat-plugin-splash">
     <span class="zignites-chat-plugin-logo">💬</span>
@@ -34,7 +36,16 @@ $zignites_chat_dash_is_pro = zignites_chat_is_pro_active();
     <div class="zignites-chat-dashboard-widget-actions">
         <a href="<?php echo esc_url(admin_url('admin.php?page=zignites-chat-general')); ?>" class="button"><?php esc_html_e('General Settings', 'zignites-chat'); ?></a>
         <a href="<?php echo esc_url(admin_url('admin.php?page=zignites-chat-messaging')); ?>" class="button"><?php esc_html_e('Send Test Message', 'zignites-chat'); ?></a>
-        <a href="<?php echo esc_url(admin_url('admin.php?page=zignites-chat-license')); ?>" class="button"><?php esc_html_e('Manage License', 'zignites-chat'); ?></a>
+        <?php
+        // Pro builds link Freemius's Account page (added by the SDK), free
+        // builds link the legacy License submenu.
+        if ($zignites_chat_dash_is_pro && function_exists('zignites_chat_pro_freemius')) :
+            $zignites_chat_dash_account_url = admin_url('admin.php?page=zignites-chat-account');
+        else :
+            $zignites_chat_dash_account_url = admin_url('admin.php?page=zignites-chat-license');
+        endif;
+        ?>
+        <a href="<?php echo esc_url($zignites_chat_dash_account_url); ?>" class="button"><?php esc_html_e('Manage License', 'zignites-chat'); ?></a>
     </div>
 </div>
 

@@ -24,6 +24,11 @@ define( 'ZIGNITES_CHAT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ZIGNITES_CHAT_URL', plugin_dir_url( __FILE__ ) );
 define( 'ZIGNITES_CHAT_PLUGIN_FILE', __FILE__ );
 
+// Freemius must boot first so its hooks register before any plugin
+// module fires its own listeners. The SDK lives in /freemius and is
+// initialised by includes/freemius.php.
+require_once ZIGNITES_CHAT_PATH . 'includes/freemius.php';
+
 // Helpers must load before the plugin class so its dependency checks
 // (zignites_chat_is_woocommerce_active) can resolve.
 require_once ZIGNITES_CHAT_PATH . 'includes/helpers.php';
