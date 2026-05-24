@@ -105,8 +105,19 @@ function zignites_chat_deactivate_license_ajax() {
     wp_send_json_success(['status' => 'inactive', 'message' => __('Deactivated', 'zignites-chat')]);
 }
 
-// Helper function to use in feature gates
+// Helper function to use in feature gates.
+//
+// On the Pro build the ZIGNITES_CHAT_IS_PRO constant is defined in the main
+// plugin file; until Freemius is wired in we use that as the unlock. Once
+// my_freemius() is available, this returns true only when
+// can_use_premium_code__premium_only() reports a valid license.
 function zignites_chat_is_pro_active() {
+    if (function_exists('zignites_chat_pro_freemius')) {
+        return zignites_chat_pro_freemius()->can_use_premium_code__premium_only();
+    }
+    if (defined('ZIGNITES_CHAT_IS_PRO') && ZIGNITES_CHAT_IS_PRO) {
+        return true;
+    }
     return get_option('zignites_chat_license_status') === 'valid';
 }
 

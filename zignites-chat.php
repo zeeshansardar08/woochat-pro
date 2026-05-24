@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Zignites Chat – Order Notifications & Chat Widget for WooCommerce
- * Plugin URI:  https://zignites.com/plugins/zignites-chat
- * Description: Send WhatsApp order notifications, add a chat widget, and engage WooCommerce customers via WhatsApp. Supports Twilio and WhatsApp Cloud API.
- * Version:     1.0.0
+ * Plugin Name: Zignites Chat Pro – WhatsApp Marketing for WooCommerce
+ * Plugin URI:  https://zignites.com/plugins/zignites-chat-pro
+ * Description: WhatsApp order notifications, abandoned cart recovery, scheduled follow-ups, bulk campaigns, analytics, multi-agent chat with GPT fallback, A/B testing, and outbound webhooks — all in one premium plugin. Supports Twilio and Meta WhatsApp Cloud API.
+ * Version:     1.1.0
  * Author:      Zignites
  * Author URI:  https://zignites.com
  * License:     GPL-2.0-or-later
@@ -18,7 +18,8 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'ZIGNITES_CHAT_VERSION', '1.0.0' );
+define( 'ZIGNITES_CHAT_VERSION', '1.1.0' );
+define( 'ZIGNITES_CHAT_IS_PRO', true );
 define( 'ZIGNITES_CHAT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ZIGNITES_CHAT_URL', plugin_dir_url( __FILE__ ) );
 define( 'ZIGNITES_CHAT_PLUGIN_FILE', __FILE__ );

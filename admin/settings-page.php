@@ -488,6 +488,12 @@ function zignites_chat_render_admin_footer_modals() {
     if (!$screen || strpos($screen->id, 'zignites-chat-') === false) {
         return;
     }
+    // Pro builds: license already covers every feature, so the upgrade modal
+    // is dead UI — every trigger button is gated by zignites_chat_is_pro_active()
+    // and won't render either.
+    if (zignites_chat_is_pro_active()) {
+        return;
+    }
     zignites_chat_render_upgrade_modal();
 }
 
