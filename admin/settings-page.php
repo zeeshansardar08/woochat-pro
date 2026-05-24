@@ -140,10 +140,11 @@ function zignites_chat_enqueue_admin_scripts($hook) {
     wp_enqueue_style('zignites-chat-admin-premium-css', ZIGNITES_CHAT_URL . 'assets/css/admin-premium.css', [], ZIGNITES_CHAT_VERSION);
     wp_enqueue_script('zignites-chat-admin-premium-js', ZIGNITES_CHAT_URL . 'assets/js/admin-premium.js', [], ZIGNITES_CHAT_VERSION, true);
     wp_localize_script('zignites-chat-admin-premium-js', 'zignitesChatAdminData', [
-        'ajaxUrl'      => admin_url('admin-ajax.php'),
-        'resendNonce'  => wp_create_nonce('zignites_chat_resend_cart'),
-        'licenseNonce' => wp_create_nonce('zignites_chat_license_nonce'),
-        'testNonce'    => wp_create_nonce('zignites_chat_test_message'),
+        'ajaxUrl'             => admin_url('admin-ajax.php'),
+        'resendNonce'         => wp_create_nonce('zignites_chat_resend_cart'),
+        'licenseNonce'        => wp_create_nonce('zignites_chat_license_nonce'),
+        'testNonce'           => wp_create_nonce('zignites_chat_test_message'),
+        'testConnectionNonce' => wp_create_nonce('zignites_chat_test_connection'),
         'licenseLabels' => [
             'keyRequired'        => __('Key required', 'zignites-chat'),
             'activating'         => __('Activating…', 'zignites-chat'),

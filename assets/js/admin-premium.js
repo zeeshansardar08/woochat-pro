@@ -577,3 +577,60 @@ document.addEventListener('DOMContentLoaded', function () {
           .finally(() => { sendBtn.disabled = false; });
     });
 });
+
+// Test Connection button on the General Settings tab. Verifies the
+// credentials currently in the form against the provider API (Twilio or
+// Meta Cloud) without sending a real message. Reads the in-form values
+// so the admin can test BEFORE clicking Save.
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('zignites-chat-test-connection');
+    const statusEl = document.getElementById('zignites-chat-test-connection-status');
+    const providerEl = document.getElementById('zignites_chat_api_provider');
+    if (!btn || !providerEl) return;
+
+    function setStatus(text, ok) {
+        if (!statusEl) return;
+        statusEl.textContent = text;
+        statusEl.style.color = ok ? '#1c7c54' : '#b32d2e';
+    }
+
+    function val(id) {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    }
+
+    btn.addEventListener('click', function () {
+        const provider = providerEl.value;
+        const formData = new FormData();
+        formData.append('action', 'zignites_chat_test_connection');
+        formData.append('nonce', (window.zignitesChatAdminData && zignitesChatAdminData.testConnectionNonce) ? zignitesChatAdminData.testConnectionNonce : '');
+        formData.append('provider', provider);
+
+        if (provider === 'twilio') {
+            formData.append('sid', val('zignites_chat_twilio_sid'));
+            formData.append('token', val('zignites_chat_twilio_auth_token'));
+        } else if (provider === 'cloud') {
+            formData.append('token', val('zignites_chat_cloud_token'));
+            formData.append('phone_id', val('zignites_chat_cloud_phone_id'));
+        }
+
+        setStatus('Testing…', true);
+        btn.disabled = true;
+
+        fetch((window.zignitesChatAdminData && zignitesChatAdminData.ajaxUrl) ? zignitesChatAdminData.ajaxUrl : '', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData
+        }).then(res => res.json())
+          .then(data => {
+            if (data && data.success) {
+                const label = data.data && data.data.label ? ' (' + data.data.label + ')' : '';
+                setStatus('Connection successful' + label + '.', true);
+            } else {
+                setStatus((data && data.data && data.data.message) ? data.data.message : 'Connection failed.', false);
+            }
+          })
+          .catch(() => setStatus('Connection failed.', false))
+          .finally(() => { btn.disabled = false; });
+    });
+});

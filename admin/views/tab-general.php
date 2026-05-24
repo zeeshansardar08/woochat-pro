@@ -43,6 +43,14 @@ if (!defined('ABSPATH')) exit;
                 <p class="description"><?php esc_html_e('Leave blank to skip Meta webhook signature verification (token check still applies).', 'zignites-chat'); ?></p></td>
         </tr>
         <tr>
+            <th scope="row"><?php esc_html_e('Test Connection', 'zignites-chat'); ?><span class="zignites-chat-help-icon">?<span class="zignites-chat-tooltip"><?php esc_html_e('Validate the credentials on this page against the provider API without sending a message. Uses the values currently in the form, even before you save.', 'zignites-chat'); ?></span></span></th>
+            <td>
+                <button type="button" class="button button-secondary" id="zignites-chat-test-connection"><?php esc_html_e('Test Connection', 'zignites-chat'); ?></button>
+                <span id="zignites-chat-test-connection-status" style="margin-left:10px;font-weight:600;"></span>
+                <p class="description"><?php esc_html_e('A successful check confirms the SID/token (Twilio) or token + Phone Number ID (Meta) are accepted. The "From" number is verified the first time you send a message.', 'zignites-chat'); ?></p>
+            </td>
+        </tr>
+        <tr>
             <td colspan="2">
                 <div style="background: #fff3cd; color: #856404; border: 1px solid #ffe066; border-radius: 8px; padding: 18px 22px; margin-top: 18px; display: flex; align-items: center; gap: 16px;">
                     <span style="font-size: 2rem;">⚠️</span>

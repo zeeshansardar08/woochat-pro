@@ -203,6 +203,71 @@ function zignites_chat_send_whatsapp_message( $to, $message, $manual = false, $c
 }
 
 /**
+ * Validate a provider's credentials against the upstream API without
+ * sending a message. Used by the Test Connection button on General
+ * Settings. Credentials are read from $_POST when present so the admin
+ * can verify keys they have just pasted but not yet saved.
+ *
+ * Capability: manage_options. Nonce: zignites_chat_test_connection.
+ */
+add_action( 'wp_ajax_zignites_chat_test_connection', 'zignites_chat_test_connection_ajax' );
+function zignites_chat_test_connection_ajax() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => __( 'Unauthorized', 'zignites-chat' ) ), 403 );
+    }
+    if ( ! check_ajax_referer( 'zignites_chat_test_connection', 'nonce', false ) ) {
+        wp_send_json_error( array( 'message' => __( 'Bad nonce', 'zignites-chat' ) ), 400 );
+    }
+
+    $provider_id = isset( $_POST['provider'] )
+        ? sanitize_text_field( wp_unslash( $_POST['provider'] ) )
+        : (string) get_option( 'zignites_chat_api_provider', 'twilio' );
+
+    if ( ! in_array( $provider_id, array( 'twilio', 'cloud' ), true ) ) {
+        wp_send_json_error( array( 'message' => __( 'Unknown provider.', 'zignites-chat' ) ), 400 );
+    }
+
+    $provider = zignites_chat_get_provider( $provider_id );
+    if ( ! $provider ) {
+        wp_send_json_error( array( 'message' => __( 'Provider not available.', 'zignites-chat' ) ), 500 );
+    }
+
+    // Per-provider whitelist of POST overrides. Anything not in this list
+    // is dropped, so a malicious payload can't sneak surprise fields into
+    // the credentials array.
+    $allowed = array(
+        'twilio' => array( 'sid', 'token' ),
+        'cloud'  => array( 'token', 'phone_id' ),
+    );
+
+    $config = array();
+    foreach ( $allowed[ $provider_id ] as $key ) {
+        if ( isset( $_POST[ $key ] ) ) {
+            $value = sanitize_text_field( wp_unslash( $_POST[ $key ] ) );
+            if ( '' !== $value ) {
+                $config[ $key ] = $value;
+            }
+        }
+    }
+
+    $result = $provider->verify_credentials( $config );
+
+    if ( empty( $result['ok'] ) ) {
+        wp_send_json_error( array(
+            'message' => isset( $result['error'] )
+                ? (string) $result['error']
+                : __( 'Connection failed.', 'zignites-chat' ),
+        ) );
+    }
+
+    wp_send_json_success( array(
+        'provider' => $provider_id,
+        'label'    => isset( $result['label'] ) ? (string) $result['label'] : '',
+        'message'  => __( 'Connection successful.', 'zignites-chat' ),
+    ) );
+}
+
+/**
  * Surface a single admin notice if the log file could not be written
  * during this request. Hooked once per request — multiple failed writes
  * collapse to one notice.

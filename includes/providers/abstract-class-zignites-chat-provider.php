@@ -45,4 +45,25 @@ abstract class ZIGNITES_CHAT_Provider {
      * Pre-formatted "missing credentials" line for the log.
      */
     abstract public function missing_credentials_message();
+
+    /**
+     * Cheaply verify that the credentials are accepted by the upstream API
+     * without sending a real message.
+     *
+     * Implementations should hit a low-cost read endpoint (account fetch,
+     * phone-info lookup) and translate the upstream response into the
+     * uniform { ok, label?, error? } shape. The `label` field is a short
+     * human-readable identifier returned by the API (account friendly name,
+     * display phone number) so the UI can confirm the right account was
+     * reached.
+     *
+     * Accepting a `$config` override lets the Test Connection button
+     * validate credentials the admin has just pasted into the form, before
+     * those values are persisted via options.php.
+     *
+     * @param array $config Optional overrides. Concrete providers document
+     *                      their accepted keys.
+     * @return array{ok:bool, label?:string, error?:string}
+     */
+    abstract public function verify_credentials( array $config = array() );
 }
