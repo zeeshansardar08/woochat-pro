@@ -201,28 +201,29 @@
   display: block;
 }
 .zignites-chat-log-filters input[type="text"] {
-  height: 30px;
   font-size: 13px;
+  padding: 5px 8px;
   min-width: 180px;
+  box-sizing: border-box;
 }
 .zignites-chat-log-filters select {
-  height: 30px;
   font-size: 13px;
+  padding: 5px 6px;
+  box-sizing: border-box;
 }
 .zignites-chat-log-filters select#zignites_chat_log_tag {
-  min-width: 120px;
+  min-width: 130px;
 }
 .zignites-chat-log-filters select#zignites_chat_log_lines {
-  min-width: 70px;
+  min-width: 75px;
 }
 .zignites-chat-log-filters .button,
 .zignites-chat-log-filters .button-primary {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 30px;
+  gap: 5px;
   font-size: 13px;
-  padding: 0 12px;
+  padding: 6px 14px;
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
   border: none;
   color: #fff;
@@ -230,6 +231,7 @@
   cursor: pointer;
   text-decoration: none;
   box-sizing: border-box;
+  vertical-align: middle;
 }
 .zignites-chat-log-filters .button:hover,
 .zignites-chat-log-filters .button-primary:hover {
@@ -237,10 +239,11 @@
   color: #fff;
 }
 .zignites-chat-log-filters .button .dashicons {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
   line-height: 1;
+  flex-shrink: 0;
 }
 .zignites-chat-log-filters .zignites-chat-log-clear-btn {
   background: #fff;
