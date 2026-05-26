@@ -185,10 +185,6 @@ function zignites_chat_log_download_handler() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'), '', ['response' => 403]);
     }
-    // Log export is a Pro feature.
-    if (!zignites_chat_is_pro_active()) {
-        wp_die(esc_html__('Log export is a Zignites Chat Pro feature.', 'zignites-chat'), '', ['response' => 403]);
-    }
     check_admin_referer('zignites_chat_log_download', 'zignites_chat_log_download_nonce');
 
     $file = zignites_chat_get_log_file();

@@ -71,22 +71,13 @@ final class Plugin {
         require_once ZIGNITES_CHAT_PATH . 'includes/providers/class-zignites-chat-provider-twilio.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/providers/class-zignites-chat-provider-cloud.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/messaging.php';
-
-        require_once ZIGNITES_CHAT_PATH . 'includes/analytics.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/template-library.php';
-        require_once ZIGNITES_CHAT_PATH . 'includes/ab-testing.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/privacy.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/log-viewer.php';
-        require_once ZIGNITES_CHAT_PATH . 'includes/webhooks.php';
         require_once ZIGNITES_CHAT_PATH . 'admin/settings-page.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/chatbot-engine.php';
-        require_once ZIGNITES_CHAT_PATH . 'includes/license-manager.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/optout.php';
-
         require_once ZIGNITES_CHAT_PATH . 'includes/order-hooks.php';
-        require_once ZIGNITES_CHAT_PATH . 'includes/cart-recovery.php';
-        require_once ZIGNITES_CHAT_PATH . 'includes/scheduler.php';
-        require_once ZIGNITES_CHAT_PATH . 'includes/campaigns.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/blocks.php';
     }
 
@@ -98,24 +89,11 @@ final class Plugin {
         if (!zignites_chat_is_woocommerce_active()) {
             $this->die_missing_woocommerce($network_wide);
         }
-        zignites_chat_create_cart_recovery_table();
-        zignites_chat_create_analytics_table();
-        require_once ZIGNITES_CHAT_PATH . 'includes/campaigns.php';
-        zignites_chat_create_campaign_tables();
-        zignites_chat_schedule_cart_recovery_cron();
         zignites_chat_run_migrations();
     }
 
     public function deactivate() {
-        // Guard kept: when WC has been deactivated, Plugin::init() skips
-        // boot_modules(), so cart-recovery.php is never loaded. The
-        // self-deactivate cascade in enforce_woocommerce_dependency()
-        // then fires the deactivation hook on a request where this
-        // function does not exist.
-        if (function_exists('zignites_chat_unschedule_cart_recovery_cron')) {
-            zignites_chat_unschedule_cart_recovery_cron();
-        }
-        wp_clear_scheduled_hook('zignites_chat_cleanup_analytics');
+        wp_clear_scheduled_hook('zignites_chat_send_order_message');
     }
 
     /**

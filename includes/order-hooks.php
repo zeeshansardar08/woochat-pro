@@ -24,19 +24,17 @@ function zignites_chat_send_whatsapp_on_order_complete($order_id) {
     $name = $order->get_billing_first_name();
     $total = $order->get_total();
 
-    $picked    = zignites_chat_ab_get_template('order', $order_id);
-    $template  = $picked['template'];
-    $message = str_replace(
+    $template = get_option( 'zignites_chat_order_message_template', 'Hi {name}, thanks for your order #{order_id}! Total: {total} {currency_symbol}.' );
+    $message  = str_replace(
         ['{name}', '{order_id}', '{total}', '{currency_symbol}'],
         [$name, $order_id, $total, zignites_chat_currency_symbol_text()],
         $template
     );
 
-    $result = zignites_chat_send_whatsapp_message($to, $message, false, [
-        'type'       => 'order',
-        'order_id'   => $order_id,
-        'ab_variant' => $picked['variant'],
-    ]);
+    $result = zignites_chat_send_whatsapp_message( $to, $message, false, [
+        'type'     => 'order',
+        'order_id' => $order_id,
+    ] );
     if ($result === true) {
         $order->update_meta_data('_zignites_chat_order_msg_sent', current_time('mysql'));
         $order->save();

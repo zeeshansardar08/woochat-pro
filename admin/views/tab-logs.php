@@ -6,12 +6,7 @@ $zignites_chat_log_keyword  = isset($_GET['zignites_chat_log_q'])     ? sanitize
 $zignites_chat_log_tag      = isset($_GET['zignites_chat_log_tag'])   ? sanitize_text_field(wp_unslash($_GET['zignites_chat_log_tag']))   : '';
 $zignites_chat_log_message  = isset($_GET['zignites_chat_log_msg'])   ? sanitize_text_field(wp_unslash($_GET['zignites_chat_log_msg']))   : '';
 
-// Free plan: last 50 entries only, and no log export. Pro lifts the cap.
-$zignites_chat_log_pro      = zignites_chat_is_pro_active();
-$zignites_chat_log_lines    = isset($_GET['zignites_chat_log_lines']) ? max(50, min(2000, (int) $_GET['zignites_chat_log_lines']))        : 200;
-if (!$zignites_chat_log_pro) {
-    $zignites_chat_log_lines = 50;
-}
+$zignites_chat_log_lines    = isset($_GET['zignites_chat_log_lines']) ? max(50, min(500, (int) $_GET['zignites_chat_log_lines'])) : 200;
 
 $zignites_chat_log_file     = zignites_chat_get_log_file();
 $zignites_chat_log_exists   = is_file($zignites_chat_log_file);
