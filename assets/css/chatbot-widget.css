@@ -2,64 +2,83 @@
    Per-store colors are injected as CSS custom properties on #zignites-chat-chatbot. */
 #zignites-chat-chatbot {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
+  bottom: 24px;
+  right: 24px;
   z-index: 9999;
   font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
 }
 #zignites-chat-chat-window {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   width: 300px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  padding: 15px;
+  box-sizing: border-box;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+  padding: 16px;
   display: none;
 }
 #zignites-chat-toggle-chat {
   background: var(--zignites-chat-cb-bubble, #1c7c54);
   color: var(--zignites-chat-cb-text, #ffffff);
   border: none;
-  padding: 12px 16px;
+  padding: 12px 18px;
   border-radius: 50px;
   cursor: pointer;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 600;
 }
 #zignites-chat-toggle-chat .zignites-chat-icon,
 #zignites-chat-chat-window h4 .zignites-chat-icon {
   color: var(--zignites-chat-cb-icon, #2ec4b6);
 }
 #zignites-chat-chat-window h4 {
-  margin-top: 0;
-  margin-bottom: 8px;
+  margin: 0 0 10px;
+  font-size: 15px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 #zignites-chat-user-input {
   width: 100%;
-  margin-top: 10px;
+  box-sizing: border-box;
   padding: 8px 10px;
-  border: 1px solid #e3e3e3;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+#zignites-chat-user-input:focus {
+  border-color: var(--zignites-chat-cb-bubble, #1c7c54);
 }
 #zignites-chat-chat-response {
   margin-top: 10px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #333;
-  min-height: 40px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #444;
+  min-height: 36px;
+  word-break: break-word;
 }
 #zignites-chat-send-wa {
   display: none;
   margin-top: 10px;
+  width: 100%;
+  box-sizing: border-box;
   background: var(--zignites-chat-cb-bubble, #1c7c54);
   color: var(--zignites-chat-cb-text, #ffffff);
-  padding: 9px 12px;
+  padding: 9px 14px;
   border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+}
+#zignites-chat-send-wa:hover {
+  opacity: 0.9;
 }

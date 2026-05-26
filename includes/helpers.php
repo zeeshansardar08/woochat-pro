@@ -52,13 +52,7 @@ function zignites_chat_get_secret_option_keys() {
         'zignites_chat_cloud_phone_id',
         'zignites_chat_cloud_from',
         'zignites_chat_cloud_app_secret',
-        'zignites_chat_gpt_api_key',
-        'zignites_chat_gpt_api_endpoint',
-        'zignites_chat_gpt_model',
         'zignites_chat_optout_webhook_token',
-        'zignites_chat_license_key',
-        'zignites_chat_webhooks',
-        'zignites_chat_webhook_log',
     ];
 }
 
@@ -113,7 +107,6 @@ function zignites_chat_get_migrations() {
     return [
         1 => 'zignites_chat_migration_v1_secrets_autoload',
         2 => 'zignites_chat_migration_v2_analytics_to_table',
-        3 => 'zignites_chat_migration_v3_campaign_tables',
     ];
 }
 
@@ -156,19 +149,6 @@ function zignites_chat_migration_v2_analytics_to_table() {
     zignites_chat_migrate_analytics_options_to_table();
 }
 
-/**
- * v3: create the campaigns + campaign_recipients tables for bulk-messaging.
- *
- * Same guard shape as v2 — the migration runner fires on admin_init priority
- * 5 regardless of WC state, but boot_modules() (which loads campaigns.php)
- * only runs when WC is active. The activation hook also runs the table
- * creator, so a re-activation rebuilds the tables if WC is added later.
- */
-function zignites_chat_migration_v3_campaign_tables() {
-    if (function_exists('zignites_chat_create_campaign_tables')) {
-        zignites_chat_create_campaign_tables();
-    }
-}
 
 /**
  * Move any legacy option-store analytics rows into the events table, then
@@ -293,17 +273,23 @@ function zignites_chat_sanitize_agents_json($value) {
  * @return array<int, array{name:string, phone:string}>
  */
 function zignites_chat_get_agents() {
+    $name  = (string) get_option('zignites_chat_agent_name',  '');
+    $phone = (string) get_option('zignites_chat_agent_phone', '');
+    if ($name !== '' && $phone !== '') {
+        return [['name' => $name, 'phone' => $phone]];
+    }
+
+    // Fallback: legacy JSON array option (may have been set by a prior save).
     $raw = get_option('zignites_chat_agents', '[]');
     $list = is_array($raw) ? $raw : json_decode((string) $raw, true);
     if (!is_array($list)) return [];
-
     $clean = [];
     foreach ($list as $agent) {
         if (!is_array($agent)) continue;
-        $name  = isset($agent['name'])  ? (string) $agent['name']  : '';
-        $phone = isset($agent['phone']) ? (string) $agent['phone'] : '';
-        if ($name === '' || $phone === '') continue;
-        $clean[] = ['name' => $name, 'phone' => $phone];
+        $n = isset($agent['name'])  ? (string) $agent['name']  : '';
+        $p = isset($agent['phone']) ? (string) $agent['phone'] : '';
+        if ($n === '' || $p === '') continue;
+        $clean[] = ['name' => $n, 'phone' => $p];
     }
     return $clean;
 }
