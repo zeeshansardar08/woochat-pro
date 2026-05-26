@@ -33,12 +33,13 @@ $zignites_chat_option_keys = [
 	'zignites_chat_chatbot_enabled',
 	'zignites_chat_chatbot_welcome',
 	'zignites_chat_agents',
+	'zignites_chat_agent_name',
+	'zignites_chat_agent_phone',
 	'zignites_chat_faq_pairs',
 	'zignites_chat_data_retention_days',
 	'zignites_chat_delete_data_on_uninstall',
 	'zignites_chat_optout_keywords',
 	'zignites_chat_optout_list',
-	'zignites_chat_optout_webhook_token',
 	'zignites_chat_db_version',
 	'zignites_chat_onboarding_completed',
 ];
@@ -46,12 +47,6 @@ $zignites_chat_option_keys = [
 foreach ( $zignites_chat_option_keys as $zignites_chat_key ) {
 	delete_option( $zignites_chat_key );
 }
-
-global $wpdb;
-
-// Drop the plugin's custom table. Table name is built from $wpdb->prefix only — no user input.
-// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
-$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}zignites_chat_analytics_events`" );
 
 // Clear any scheduled cron events.
 wp_clear_scheduled_hook( 'zignites_chat_send_order_message' );

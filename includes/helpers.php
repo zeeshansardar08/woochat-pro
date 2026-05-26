@@ -106,7 +106,6 @@ function zignites_chat_ensure_secret_option_rows() {
 function zignites_chat_get_migrations() {
     return [
         1 => 'zignites_chat_migration_v1_secrets_autoload',
-        2 => 'zignites_chat_migration_v2_analytics_to_table',
     ];
 }
 
@@ -139,60 +138,6 @@ function zignites_chat_run_migrations() {
 function zignites_chat_migration_v1_secrets_autoload() {
     zignites_chat_ensure_secret_option_rows();
     zignites_chat_set_secrets_autoload_no();
-}
-
-/**
- * v2 (PR #23): copy any legacy zignites_chat_analytics_events option rows into
- * the {prefix}zignites_chat_analytics_events table and delete the legacy options.
- */
-function zignites_chat_migration_v2_analytics_to_table() {
-    zignites_chat_migrate_analytics_options_to_table();
-}
-
-
-/**
- * Move any legacy option-store analytics rows into the events table, then
- * drop the option keys. The option-store fallback was retired in favor of
- * a single source of truth (the {prefix}zignites_chat_analytics_events table); this
- * runs once per install to carry forward any data that accumulated while
- * the table-creation activation hook had not yet fired (e.g. very early
- * installs that activated before the table existed).
- */
-function zignites_chat_migrate_analytics_options_to_table() {
-    // Guards kept: the migration runner fires on admin_init priority 5
-    // regardless of whether WooCommerce is active, but boot_modules() —
-    // which loads analytics.php — only runs when WC is active. So when
-    // the v2 migration triggers on a WC-inactive request we may not have
-    // zignites_chat_create_analytics_table / zignites_chat_analytics_insert_event defined.
-    // The migration version is bumped after this returns either way; the
-    // table is also (re)created via the activation hook so a later
-    // re-activation rebuilds it.
-    if (function_exists('zignites_chat_create_analytics_table')) {
-        zignites_chat_create_analytics_table();
-    }
-
-    $events = get_option('zignites_chat_analytics_events', []);
-    if (is_array($events) && !empty($events) && function_exists('zignites_chat_analytics_insert_event')) {
-        foreach ($events as $event) {
-            if (!is_array($event) || empty($event['id']) || empty($event['type'])) continue;
-            $event = wp_parse_args($event, [
-                'id' => '',
-                'type' => '',
-                'time' => current_time('mysql'),
-                'status' => 'pending',
-                'phone' => '',
-                'order_id' => 0,
-                'message_preview' => '',
-                'provider' => '',
-                'message_id' => '',
-                'meta' => [],
-            ]);
-            zignites_chat_analytics_insert_event($event);
-        }
-    }
-
-    delete_option('zignites_chat_analytics_events');
-    delete_option('zignites_chat_analytics_totals');
 }
 
 /**
@@ -452,9 +397,6 @@ function zignites_chat_add_optout($phone) {
         $list[] = $phone;
         update_option('zignites_chat_optout_list', $list, false);
         $newly_added = true;
-    }
-    if ($newly_added && function_exists('zignites_chat_dispatch_webhook')) {
-        zignites_chat_dispatch_webhook('customer.opted_out', ['phone' => $phone]);
     }
     return true;
 }
