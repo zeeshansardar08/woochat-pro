@@ -30,8 +30,9 @@ function zignites_chat_register_settings() {
 	// Chatbot.
 	register_setting( 'zignites_chat_chatbot_group', 'zignites_chat_chatbot_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no'] );
 	register_setting( 'zignites_chat_chatbot_group', 'zignites_chat_faq_pairs',       ['sanitize_callback' => 'zignites_chat_sanitize_json_faq'] );
-	register_setting( 'zignites_chat_chatbot_group', 'zignites_chat_agents',          ['sanitize_callback' => 'zignites_chat_sanitize_agents_json'] );
 	register_setting( 'zignites_chat_chatbot_group', 'zignites_chat_chatbot_welcome', ['sanitize_callback' => 'zignites_chat_sanitize_text'] );
+	register_setting( 'zignites_chat_chatbot_group', 'zignites_chat_agent_name',      ['sanitize_callback' => 'zignites_chat_sanitize_text'] );
+	register_setting( 'zignites_chat_chatbot_group', 'zignites_chat_agent_phone',     ['sanitize_callback' => 'zignites_chat_sanitize_text'] );
 }
 
 /* ---------------------------------------------------------------------------

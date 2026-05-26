@@ -168,9 +168,9 @@
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
   border: none;
   color: #fff;
-  font-size: 1.1rem;
-  padding: 12px 32px;
-  border-radius: 6px;
+  font-size: 0.95rem;
+  padding: 8px 24px;
+  border-radius: 5px;
   box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
   transition: background 0.2s, box-shadow 0.2s;
 }

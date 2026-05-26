@@ -273,17 +273,23 @@ function zignites_chat_sanitize_agents_json($value) {
  * @return array<int, array{name:string, phone:string}>
  */
 function zignites_chat_get_agents() {
+    $name  = (string) get_option('zignites_chat_agent_name',  '');
+    $phone = (string) get_option('zignites_chat_agent_phone', '');
+    if ($name !== '' && $phone !== '') {
+        return [['name' => $name, 'phone' => $phone]];
+    }
+
+    // Fallback: legacy JSON array option (may have been set by a prior save).
     $raw = get_option('zignites_chat_agents', '[]');
     $list = is_array($raw) ? $raw : json_decode((string) $raw, true);
     if (!is_array($list)) return [];
-
     $clean = [];
     foreach ($list as $agent) {
         if (!is_array($agent)) continue;
-        $name  = isset($agent['name'])  ? (string) $agent['name']  : '';
-        $phone = isset($agent['phone']) ? (string) $agent['phone'] : '';
-        if ($name === '' || $phone === '') continue;
-        $clean[] = ['name' => $name, 'phone' => $phone];
+        $n = isset($agent['name'])  ? (string) $agent['name']  : '';
+        $p = isset($agent['phone']) ? (string) $agent['phone'] : '';
+        if ($n === '' || $p === '') continue;
+        $clean[] = ['name' => $n, 'phone' => $p];
     }
     return $clean;
 }

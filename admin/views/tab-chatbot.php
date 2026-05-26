@@ -40,8 +40,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <h3><?php esc_html_e( 'Agent', 'zignites-chat' ); ?></h3>
 <p class="description"><?php esc_html_e( 'The team member who receives customer chats. Upgrade to Pro to add multiple agents and load-balance between them.', 'zignites-chat' ); ?></p>
 
-<?php $zignites_chat_agents = array_slice( zignites_chat_get_agents(), 0, 1 ); ?>
-<table class="widefat striped" id="zignites-chat-agents-table">
+<?php
+$zignites_chat_agent_first = zignites_chat_get_agents();
+$zignites_chat_agent_first = ! empty( $zignites_chat_agent_first ) ? $zignites_chat_agent_first[0] : [ 'name' => '', 'phone' => '' ];
+?>
+<table class="widefat striped">
 	<thead>
 		<tr>
 			<th><?php esc_html_e( 'Agent name', 'zignites-chat' ); ?></th>
@@ -49,17 +52,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		</tr>
 	</thead>
 	<tbody>
-		<?php if ( empty( $zignites_chat_agents ) ) : ?>
-			<tr class="zignites-chat-agent-row">
-				<td><input type="text" class="zignites-chat-agent-name regular-text" placeholder="<?php esc_attr_e( 'e.g. Sales', 'zignites-chat' ); ?>" value="" /></td>
-				<td><input type="text" class="zignites-chat-agent-phone regular-text" placeholder="<?php esc_attr_e( 'e.g. +14155550100', 'zignites-chat' ); ?>" value="" /></td>
-			</tr>
-		<?php else : foreach ( $zignites_chat_agents as $zignites_chat_agent ) : ?>
-			<tr class="zignites-chat-agent-row">
-				<td><input type="text" class="zignites-chat-agent-name regular-text" placeholder="<?php esc_attr_e( 'e.g. Sales', 'zignites-chat' ); ?>" value="<?php echo esc_attr( $zignites_chat_agent['name'] ); ?>" /></td>
-				<td><input type="text" class="zignites-chat-agent-phone regular-text" placeholder="<?php esc_attr_e( 'e.g. +14155550100', 'zignites-chat' ); ?>" value="<?php echo esc_attr( $zignites_chat_agent['phone'] ); ?>" /></td>
-			</tr>
-		<?php endforeach; endif; ?>
+		<tr>
+			<td><input type="text" name="zignites_chat_agent_name" class="regular-text" placeholder="<?php esc_attr_e( 'e.g. Sales', 'zignites-chat' ); ?>" value="<?php echo esc_attr( $zignites_chat_agent_first['name'] ); ?>" /></td>
+			<td><input type="text" name="zignites_chat_agent_phone" class="regular-text" placeholder="<?php esc_attr_e( 'e.g. +14155550100', 'zignites-chat' ); ?>" value="<?php echo esc_attr( $zignites_chat_agent_first['phone'] ); ?>" /></td>
+		</tr>
 	</tbody>
 </table>
-<input type="hidden" name="zignites_chat_agents" id="zignites_chat_agents_input" value="<?php echo esc_attr( get_option( 'zignites_chat_agents', '[]' ) ); ?>" />
