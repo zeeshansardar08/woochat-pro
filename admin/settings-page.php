@@ -20,7 +20,6 @@ function zignites_chat_register_settings() {
 	register_setting( 'zignites_chat_general_group', 'zignites_chat_delete_data_on_uninstall',['sanitize_callback' => 'zignites_chat_sanitize_yes_no'] );
 	register_setting( 'zignites_chat_general_group', 'zignites_chat_optout_keywords',         ['sanitize_callback' => 'zignites_chat_sanitize_optout_keywords'] );
 	register_setting( 'zignites_chat_general_group', 'zignites_chat_optout_list',             ['sanitize_callback' => 'zignites_chat_parse_optout_list'] );
-	register_setting( 'zignites_chat_general_group', 'zignites_chat_optout_webhook_token',    ['sanitize_callback' => 'zignites_chat_sanitize_text'] );
 
 	// Messaging.
 	register_setting( 'zignites_chat_messaging_group', 'zignites_chat_test_phone',             ['sanitize_callback' => 'zignites_chat_sanitize_text'] );

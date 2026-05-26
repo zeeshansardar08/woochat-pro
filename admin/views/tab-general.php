@@ -56,7 +56,7 @@ if (!defined('ABSPATH')) exit;
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="zignites_chat_data_retention_days"><?php esc_html_e('Data Retention (days)', 'zignites-chat'); ?></label><span class="zignites-chat-help-icon">?<span class="zignites-chat-tooltip"><?php esc_html_e('Automatically delete analytics events older than this. Set to 0 to keep indefinitely.', 'zignites-chat'); ?></span></span></th>
+            <th scope="row"><label for="zignites_chat_data_retention_days"><?php esc_html_e('Data Retention (days)', 'zignites-chat'); ?></label><span class="zignites-chat-help-icon">?<span class="zignites-chat-tooltip"><?php esc_html_e('Automatically delete message log entries older than this. Set to 0 to keep indefinitely.', 'zignites-chat'); ?></span></span></th>
             <td>
                 <input type="number" min="0" name="zignites_chat_data_retention_days" id="zignites_chat_data_retention_days" value="<?php echo esc_attr(get_option('zignites_chat_data_retention_days', 0)); ?>" class="small-text" />
                 <p class="description"><?php esc_html_e('Recommended: 30–180 days.', 'zignites-chat'); ?></p>
@@ -77,13 +77,6 @@ if (!defined('ABSPATH')) exit;
             <td>
                 <input type="text" name="zignites_chat_optout_keywords" id="zignites_chat_optout_keywords" value="<?php echo esc_attr(get_option('zignites_chat_optout_keywords', 'stop, unsubscribe')); ?>" class="regular-text" />
                 <p class="description"><?php esc_html_e('Comma-separated. Default: stop, unsubscribe.', 'zignites-chat'); ?></p>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row"><label for="zignites_chat_optout_webhook_token"><?php esc_html_e('Opt-out Webhook Token', 'zignites-chat'); ?></label><span class="zignites-chat-help-icon">?<span class="zignites-chat-tooltip"><?php esc_html_e('Use this token to secure the opt-out webhook endpoint.', 'zignites-chat'); ?></span></span></th>
-            <td>
-                <input type="text" name="zignites_chat_optout_webhook_token" id="zignites_chat_optout_webhook_token" value="<?php echo esc_attr(get_option('zignites_chat_optout_webhook_token', '')); ?>" class="regular-text" />
-                <p class="description"><?php esc_html_e('Webhook:', 'zignites-chat'); ?> <code><?php echo esc_html(rest_url('zignites-chat/v1/optout')); ?></code></p>
             </td>
         </tr>
         <tr>
