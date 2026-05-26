@@ -31,7 +31,6 @@ $zignites_chat_log_clear_url = wp_nonce_url(
     'zignites_chat_log_clear_nonce'
 );
 ?>
-<h2><?php esc_html_e('Logs', 'zignites-chat'); ?></h2>
     <p class="description">
         <?php
         printf(
@@ -61,10 +60,10 @@ $zignites_chat_log_clear_url = wp_nonce_url(
         <div class="notice notice-warning is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Log file does not exist yet — nothing to download.', 'zignites-chat'); ?></p></div>
     <?php endif; ?>
 
-    <div class="zignites-chat-log-filters" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
+    <div class="zignites-chat-log-filters" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
         <div>
             <label for="zignites_chat_log_q"><?php esc_html_e('Keyword', 'zignites-chat'); ?></label><br>
-            <input type="text" id="zignites_chat_log_q" name="zignites_chat_log_q" value="<?php echo esc_attr($zignites_chat_log_keyword); ?>" placeholder="opt-out, sent, error" />
+            <input type="text" id="zignites_chat_log_q" name="zignites_chat_log_q" value="<?php echo esc_attr($zignites_chat_log_keyword); ?>" placeholder="opt-out, sent, error" class="regular-text" />
         </div>
         <div>
             <label for="zignites_chat_log_tag"><?php esc_html_e('Source', 'zignites-chat'); ?></label><br>
@@ -75,26 +74,22 @@ $zignites_chat_log_clear_url = wp_nonce_url(
                 <?php endforeach; ?>
             </select>
         </div>
-        <?php if ($zignites_chat_log_pro) : ?>
         <div>
             <label for="zignites_chat_log_lines"><?php esc_html_e('Lines', 'zignites-chat'); ?></label><br>
             <select id="zignites_chat_log_lines" name="zignites_chat_log_lines">
-                <?php foreach ([100, 200, 500, 1000, 2000] as $zignites_chat_log_n) : ?>
+                <?php foreach ([50, 100, 200, 500] as $zignites_chat_log_n) : ?>
                     <option value="<?php echo esc_attr((string) $zignites_chat_log_n); ?>" <?php selected($zignites_chat_log_lines, $zignites_chat_log_n); ?>><?php echo esc_html((string) $zignites_chat_log_n); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
-        <?php endif; ?>
         <div>
             <button type="button" class="button button-primary" id="zignites-chat-log-filter-button"><?php esc_html_e('Apply', 'zignites-chat'); ?></button>
         </div>
-        <?php if ($zignites_chat_log_pro) : ?>
         <div>
-            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Download log', 'zignites-chat'); ?></a>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Download', 'zignites-chat'); ?></a>
         </div>
-        <?php endif; ?>
         <div>
-            <a class="button" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Clear log', 'zignites-chat'); ?></a>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Clear', 'zignites-chat'); ?></a>
         </div>
     </div>
 
@@ -112,11 +107,7 @@ $zignites_chat_log_clear_url = wp_nonce_url(
         );
         ?>
         <?php if ($zignites_chat_log_total_shown >= $zignites_chat_log_lines) : ?>
-            <?php if ($zignites_chat_log_pro) : ?>
-                <em><?php esc_html_e('Older entries are not shown — increase "Lines" or download the full log.', 'zignites-chat'); ?></em>
-            <?php else : ?>
-                <em><?php esc_html_e('The free plan shows the last 50 entries. Upgrade to Zignites Chat Pro for unlimited log history and CSV export.', 'zignites-chat'); ?> <button type="button" class="button-link zignites-chat-open-upgrade-modal"><?php esc_html_e('Upgrade', 'zignites-chat'); ?></button></em>
-            <?php endif; ?>
+            <em><?php esc_html_e('Older entries are not shown — increase "Lines" or download the full log.', 'zignites-chat'); ?></em>
         <?php endif; ?>
     </p>
 
