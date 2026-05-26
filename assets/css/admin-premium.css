@@ -162,8 +162,9 @@
   margin-top: 4px;
 }
 
-/* Submit button */
-.zignites-chat-admin-premium-wrap .button-primary {
+/* Submit button — scoped to settings forms only, not filter toolbars */
+.zignites-chat-admin-wrap form > p.submit .button-primary,
+.zignites-chat-admin-wrap form > .submit .button-primary {
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
   border: none;
   color: #fff;
@@ -173,9 +174,62 @@
   box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
   transition: background 0.2s, box-shadow 0.2s;
 }
-.zignites-chat-admin-premium-wrap .button-primary:hover {
+.zignites-chat-admin-wrap form > p.submit .button-primary:hover,
+.zignites-chat-admin-wrap form > .submit .button-primary:hover {
   background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
   box-shadow: 0 4px 16px rgba(44, 62, 80, 0.13);
+}
+
+/* Log filter toolbar — all controls same height, consistent with WP defaults */
+.zignites-chat-log-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 12px 0;
+}
+.zignites-chat-log-filters > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.zignites-chat-log-filters label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  min-height: 18px;
+}
+.zignites-chat-log-filters input[type="text"],
+.zignites-chat-log-filters select {
+  height: 30px;
+  line-height: 28px;
+  font-size: 13px;
+}
+.zignites-chat-log-filters .button,
+.zignites-chat-log-filters .button-primary {
+  height: 30px;
+  line-height: 28px;
+  font-size: 13px;
+  padding: 0 12px;
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.zignites-chat-log-filters .button:hover,
+.zignites-chat-log-filters .button-primary:hover {
+  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
+  color: #fff;
+}
+.zignites-chat-log-filters .button[style*="color:#b32d2e"] {
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #b32d2e !important;
+}
+.zignites-chat-log-filters .button[style*="color:#b32d2e"]:hover {
+  border-color: #b32d2e;
+  background: #fff5f5;
 }
 
 /* Responsive */

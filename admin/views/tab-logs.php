@@ -60,13 +60,13 @@ $zignites_chat_log_clear_url = wp_nonce_url(
         <div class="notice notice-warning is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Log file does not exist yet — nothing to download.', 'zignites-chat'); ?></p></div>
     <?php endif; ?>
 
-    <div class="zignites-chat-log-filters" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+    <div class="zignites-chat-log-filters">
         <div>
-            <label for="zignites_chat_log_q"><?php esc_html_e('Keyword', 'zignites-chat'); ?></label><br>
-            <input type="text" id="zignites_chat_log_q" name="zignites_chat_log_q" value="<?php echo esc_attr($zignites_chat_log_keyword); ?>" placeholder="opt-out, sent, error" class="regular-text" />
+            <label for="zignites_chat_log_q"><?php esc_html_e('Keyword', 'zignites-chat'); ?></label>
+            <input type="text" id="zignites_chat_log_q" name="zignites_chat_log_q" value="<?php echo esc_attr($zignites_chat_log_keyword); ?>" placeholder="opt-out, sent, error" style="width:180px;" />
         </div>
         <div>
-            <label for="zignites_chat_log_tag"><?php esc_html_e('Source', 'zignites-chat'); ?></label><br>
+            <label for="zignites_chat_log_tag"><?php esc_html_e('Source', 'zignites-chat'); ?></label>
             <select id="zignites_chat_log_tag" name="zignites_chat_log_tag">
                 <option value=""><?php esc_html_e('All sources', 'zignites-chat'); ?></option>
                 <?php foreach ($zignites_chat_log_tags_available as $zignites_chat_log_t) : ?>
@@ -75,7 +75,7 @@ $zignites_chat_log_clear_url = wp_nonce_url(
             </select>
         </div>
         <div>
-            <label for="zignites_chat_log_lines"><?php esc_html_e('Lines', 'zignites-chat'); ?></label><br>
+            <label for="zignites_chat_log_lines"><?php esc_html_e('Lines', 'zignites-chat'); ?></label>
             <select id="zignites_chat_log_lines" name="zignites_chat_log_lines">
                 <?php foreach ([50, 100, 200, 500] as $zignites_chat_log_n) : ?>
                     <option value="<?php echo esc_attr((string) $zignites_chat_log_n); ?>" <?php selected($zignites_chat_log_lines, $zignites_chat_log_n); ?>><?php echo esc_html((string) $zignites_chat_log_n); ?></option>
@@ -83,13 +83,16 @@ $zignites_chat_log_clear_url = wp_nonce_url(
             </select>
         </div>
         <div>
+            <label>&nbsp;</label>
             <button type="button" class="button button-primary" id="zignites-chat-log-filter-button"><?php esc_html_e('Apply', 'zignites-chat'); ?></button>
         </div>
         <div>
-            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Download', 'zignites-chat'); ?></a>
+            <label>&nbsp;</label>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;"></span> <?php esc_html_e('Download', 'zignites-chat'); ?></a>
         </div>
         <div>
-            <a class="button" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Clear', 'zignites-chat'); ?></a>
+            <label>&nbsp;</label>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;"></span> <?php esc_html_e('Clear', 'zignites-chat'); ?></a>
         </div>
     </div>
 
