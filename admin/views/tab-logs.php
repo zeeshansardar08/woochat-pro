@@ -88,11 +88,11 @@ $zignites_chat_log_clear_url = wp_nonce_url(
         </div>
         <div>
             <label>&nbsp;</label>
-            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;"></span> <?php esc_html_e('Download', 'zignites-chat'); ?></a>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download"></span><?php esc_html_e('Download', 'zignites-chat'); ?></a>
         </div>
         <div>
             <label>&nbsp;</label>
-            <a class="button" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;"></span> <?php esc_html_e('Clear', 'zignites-chat'); ?></a>
+            <a class="button zignites-chat-log-clear-btn" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button"><span class="dashicons dashicons-trash"></span><?php esc_html_e('Clear', 'zignites-chat'); ?></a>
         </div>
     </div>
 

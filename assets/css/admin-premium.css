@@ -180,7 +180,7 @@
   box-shadow: 0 4px 16px rgba(44, 62, 80, 0.13);
 }
 
-/* Log filter toolbar — all controls same height, consistent with WP defaults */
+/* Log filter toolbar */
 .zignites-chat-log-filters {
   display: flex;
   gap: 8px;
@@ -198,17 +198,29 @@
   font-weight: 600;
   color: #555;
   min-height: 18px;
+  display: block;
 }
-.zignites-chat-log-filters input[type="text"],
+.zignites-chat-log-filters input[type="text"] {
+  height: 30px;
+  font-size: 13px;
+  min-width: 180px;
+}
 .zignites-chat-log-filters select {
   height: 30px;
-  line-height: 28px;
   font-size: 13px;
+}
+.zignites-chat-log-filters select#zignites_chat_log_tag {
+  min-width: 120px;
+}
+.zignites-chat-log-filters select#zignites_chat_log_lines {
+  min-width: 70px;
 }
 .zignites-chat-log-filters .button,
 .zignites-chat-log-filters .button-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   height: 30px;
-  line-height: 28px;
   font-size: 13px;
   padding: 0 12px;
   background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
@@ -216,20 +228,29 @@
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 .zignites-chat-log-filters .button:hover,
 .zignites-chat-log-filters .button-primary:hover {
   background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
   color: #fff;
 }
-.zignites-chat-log-filters .button[style*="color:#b32d2e"] {
+.zignites-chat-log-filters .button .dashicons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+}
+.zignites-chat-log-filters .zignites-chat-log-clear-btn {
   background: #fff;
   border: 1px solid #ddd;
-  color: #b32d2e !important;
+  color: #b32d2e;
 }
-.zignites-chat-log-filters .button[style*="color:#b32d2e"]:hover {
+.zignites-chat-log-filters .zignites-chat-log-clear-btn:hover {
   border-color: #b32d2e;
   background: #fff5f5;
+  color: #b32d2e;
 }
 
 /* Responsive */
