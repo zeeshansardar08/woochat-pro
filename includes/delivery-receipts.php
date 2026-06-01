@@ -167,6 +167,55 @@ function zignites_chat_twilio_status_callback( WP_REST_Request $request ) {
 }
 
 /**
+ * Flatten the status objects out of a decoded Meta webhook payload across
+ * every entry / change (Meta can batch several into one POST).
+ *
+ * @param array $json Decoded webhook body.
+ * @return array Flat list of status objects.
+ */
+function zignites_chat_extract_meta_statuses( $json ) {
+	$statuses = array();
+	if ( ! is_array( $json ) || empty( $json['entry'] ) || ! is_array( $json['entry'] ) ) {
+		return $statuses;
+	}
+	foreach ( $json['entry'] as $entry ) {
+		if ( empty( $entry['changes'] ) || ! is_array( $entry['changes'] ) ) {
+			continue;
+		}
+		foreach ( $entry['changes'] as $change ) {
+			if ( isset( $change['value']['statuses'] ) && is_array( $change['value']['statuses'] ) ) {
+				$statuses = array_merge( $statuses, $change['value']['statuses'] );
+			}
+		}
+	}
+	return $statuses;
+}
+
+/**
+ * Whether a decoded Meta webhook payload carries any inbound messages (as
+ * opposed to being a status-only delivery-receipt callback).
+ *
+ * @param array $json Decoded webhook body.
+ * @return bool
+ */
+function zignites_chat_meta_payload_has_messages( $json ) {
+	if ( ! is_array( $json ) || empty( $json['entry'] ) || ! is_array( $json['entry'] ) ) {
+		return false;
+	}
+	foreach ( $json['entry'] as $entry ) {
+		if ( empty( $entry['changes'] ) || ! is_array( $entry['changes'] ) ) {
+			continue;
+		}
+		foreach ( $entry['changes'] as $change ) {
+			if ( ! empty( $change['value']['messages'] ) ) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/**
  * Ingest the `statuses` array from a Meta Cloud webhook payload.
  *
  * Called by the Meta webhook handler in optout.php after it has verified the

@@ -203,10 +203,23 @@ deliverable in production.
 - [ ] 8.0.7 Manual smoke test against a live Meta WABA with a real approved
       template (user action)
 
-### P1 — Provider delivery/read receipts → analytics
-`delivered`/`read` are never ingested from providers today (only a generic
-AJAX endpoint). Wire Twilio StatusCallback + Meta status webhooks into the
-analytics event statuses. — ⬜ Not started
+### P1 — Provider delivery/read receipts → analytics — ✅ Code complete (`feat/pro-p1-delivery-receipts`; smoke test pending)
+`delivered`/`read` were never ingested from providers (only a generic AJAX
+endpoint). Now wired end-to-end:
+- [x] 8.1.1 Monotonic analytics status core: status_rank(),
+      resolve_status_transition() (funnel only advances; failed only
+      in-flight + sticky; operational states untouched),
+      apply_receipt_by_message_id()
+- [x] 8.1.2 `includes/delivery-receipts.php`: Twilio StatusCallback REST
+      endpoint (signed), Twilio/Meta status mappers, webhook dispatch on
+      delivered/read/failed, Meta status extract/ingest helpers
+- [x] 8.1.3 Twilio provider attaches StatusCallback URL per send
+- [x] 8.1.4 Meta statuses ingested via the existing opt-out webhook (shared
+      callback URL) + GET verification handshake (hub.challenge)
+- [x] 8.1.5 General Settings: Webhook Verify Token field + callback URL
+      display; option registered + cleaned on uninstall
+- [x] 8.1.6 `message.read` webhook event; 16 unit tests; 121 pass, PHPCS green
+- [ ] 8.1.7 Smoke test against live Twilio + Meta sandboxes (user action)
 
 ### P1 — Two-way team inbox
 Ingest inbound Cloud API / Twilio messages (signatures already verified in
@@ -238,6 +251,6 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**P0 / 8.0.7** — smoke-test template sends against a live Meta WABA, then
-merge `feat/pro-p0-whatsapp-templates` into `pro`. After that, start **P1
-(provider delivery/read receipts → analytics)**.
+**P1 / 8.1.7** — smoke-test receipts against live Twilio + Meta sandboxes,
+then merge `feat/pro-p1-delivery-receipts` into `pro`. After that, start
+**P1 (two-way team inbox)** or **scheduled campaigns** — pick next priority.

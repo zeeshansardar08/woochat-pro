@@ -21,6 +21,7 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_general_group', 'zignites_chat_cloud_phone_id', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_general_group', 'zignites_chat_cloud_from', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_general_group', 'zignites_chat_cloud_app_secret', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
+    register_setting('zignites_chat_general_group', 'zignites_chat_meta_verify_token', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_general_group', 'zignites_chat_test_mode_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_general_group', 'zignites_chat_data_retention_days', ['sanitize_callback' => 'zignites_chat_sanitize_int']);
     register_setting('zignites_chat_general_group', 'zignites_chat_delete_data_on_uninstall', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);

@@ -89,4 +89,41 @@ final class DeliveryReceiptsTest extends TestCase
         $this->assertSame(0, \zignites_chat_ingest_meta_statuses('nope'));
         $this->assertSame(0, \zignites_chat_ingest_meta_statuses([]));
     }
+
+    public function test_extract_meta_statuses_flattens_entries(): void
+    {
+        $payload = [
+            'entry' => [
+                ['changes' => [
+                    ['value' => ['statuses' => [
+                        ['id' => 'wamid.A', 'status' => 'delivered'],
+                        ['id' => 'wamid.B', 'status' => 'read'],
+                    ]]],
+                ]],
+                ['changes' => [
+                    ['value' => ['statuses' => [['id' => 'wamid.C', 'status' => 'sent']]]],
+                ]],
+            ],
+        ];
+        $statuses = \zignites_chat_extract_meta_statuses($payload);
+        $this->assertCount(3, $statuses);
+        $this->assertSame('wamid.A', $statuses[0]['id']);
+        $this->assertSame('wamid.C', $statuses[2]['id']);
+    }
+
+    public function test_extract_meta_statuses_empty_for_message_payload(): void
+    {
+        $payload = ['entry' => [['changes' => [['value' => ['messages' => [['from' => '1', 'text' => ['body' => 'stop']]]]]]]]];
+        $this->assertSame([], \zignites_chat_extract_meta_statuses($payload));
+        $this->assertSame([], \zignites_chat_extract_meta_statuses('nope'));
+    }
+
+    public function test_meta_payload_has_messages(): void
+    {
+        $with = ['entry' => [['changes' => [['value' => ['messages' => [['from' => '1']]]]]]]];
+        $without = ['entry' => [['changes' => [['value' => ['statuses' => [['id' => 'x', 'status' => 'read']]]]]]]];
+        $this->assertTrue(\zignites_chat_meta_payload_has_messages($with));
+        $this->assertFalse(\zignites_chat_meta_payload_has_messages($without));
+        $this->assertFalse(\zignites_chat_meta_payload_has_messages('nope'));
+    }
 }
