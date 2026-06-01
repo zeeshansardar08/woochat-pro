@@ -261,9 +261,17 @@ resolver to aggregate per customer:
 ### P2 — Media messages
 Images / PDF (receipts, product images) via provider media endpoints. — ⬜
 
-### P2 — Revenue dashboard widget
-Surface `match_conversions()` per campaign/cart/followup as a revenue panel
-on Analytics. — ⬜
+### P2 — Revenue dashboard widget — ✅ Code complete (`feat/pro-revenue-widget`; smoke test pending)
+Surface attributed revenue per channel on Analytics.
+- [x] get_revenue_by_type(): one global first-event-wins match (reusing
+      match_conversions()), matched orders bucketed by the winning event's
+      type — no double counting; also feeds the existing Attributed-orders
+      card so orders are fetched once
+- [x] pure bucket_revenue_by_type() + type_label() helpers
+- [x] "Revenue by channel" table on the Analytics tab (per-channel
+      conversions + revenue, with a total row)
+- [x] 3 new unit tests; 145 pass, PHPCS green; smoke-tested
+- [ ] live verification on a store with attributed orders (user action)
 
 ### P3 — Modernize GPT
 Replace `gpt-3.5-turbo` default with a current model; optional store-catalog
@@ -276,6 +284,6 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-Merge `feat/pro-richer-segments` into `pro`. Remaining: **two-way team
-inbox** (P1, the big one), **media messages** (P2), **revenue widget** (P2),
-**GPT modernization** (P3).
+Merge `feat/pro-revenue-widget` into `pro`. Remaining: **two-way team
+inbox** (P1, the big one), **media messages** (P2), **GPT modernization**
+(P3).

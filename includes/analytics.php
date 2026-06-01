@@ -537,6 +537,140 @@ function zignites_chat_analytics_get_conversions($filters = []) {
     ];
 }
 
+/**
+ * Bucket matched conversions by the winning event's type. Pure.
+ *
+ * Each matched order is attributed to exactly one event (match_conversions()
+ * is first-event-wins), so summing per type never double-counts an order.
+ *
+ * @param array<int,string>    $matched      order_id => winning event_id.
+ * @param array<string,string> $event_types  event_id => type.
+ * @param array<int,float>     $order_totals order_id => order total.
+ * @return array<string,array{conversions:int,revenue:float}> Keyed by type.
+ */
+function zignites_chat_analytics_bucket_revenue_by_type($matched, $event_types, $order_totals) {
+    $out = [];
+    if (!is_array($matched)) return $out;
+
+    foreach ($matched as $order_id => $event_id) {
+        $type = isset($event_types[$event_id]) ? (string) $event_types[$event_id] : 'unknown';
+        if ($type === '') $type = 'unknown';
+        if (!isset($out[$type])) {
+            $out[$type] = ['conversions' => 0, 'revenue' => 0.0];
+        }
+        $out[$type]['conversions']++;
+        $out[$type]['revenue'] += isset($order_totals[$order_id]) ? (float) $order_totals[$order_id] : 0.0;
+    }
+    ksort($out);
+    return $out;
+}
+
+/**
+ * Human label for an analytics event type, for the revenue-by-channel widget.
+ *
+ * @param string $type Event type key.
+ * @return string Translated label (falls back to the raw key).
+ */
+function zignites_chat_analytics_type_label($type) {
+    $labels = [
+        'order'         => __('Order confirmations', 'zignites-chat'),
+        'cart_recovery' => __('Cart recovery', 'zignites-chat'),
+        'followup'      => __('Follow-ups', 'zignites-chat'),
+        'bulk'          => __('Bulk campaigns', 'zignites-chat'),
+        'chatbot_gpt'   => __('Chatbot', 'zignites-chat'),
+        'test'          => __('Test', 'zignites-chat'),
+        'unknown'       => __('Other', 'zignites-chat'),
+    ];
+    return $labels[$type] ?? ucfirst(str_replace('_', ' ', (string) $type));
+}
+
+/**
+ * Conversion attribution broken down by the winning event's type — powers the
+ * "Revenue by channel" widget. Same matching semantics as
+ * zignites_chat_analytics_get_conversions() (global first-event-wins, no double
+ * counting), with the matched orders bucketed per type.
+ *
+ * @param array $filters Same shape as zignites_chat_analytics_get_events filters.
+ * @return array{window_days:int, conversions:int, revenue:float, eligible_events:int, by_type: array<string,array{conversions:int,revenue:float}>}
+ */
+function zignites_chat_analytics_get_revenue_by_type($filters = []) {
+    $window_days = (int) apply_filters('zignites_chat_analytics_attribution_window_days', 7);
+    if ($window_days < 1) $window_days = 7;
+    $window_seconds = $window_days * DAY_IN_SECONDS;
+
+    $base = ['window_days' => $window_days, 'conversions' => 0, 'revenue' => 0.0, 'eligible_events' => 0, 'by_type' => []];
+    if (!function_exists('wc_get_orders')) {
+        return $base;
+    }
+
+    $event_filters = $filters;
+    unset($event_filters['status']);
+    $events = zignites_chat_analytics_get_events(5000, $event_filters);
+
+    $eligible    = [];
+    $event_types = [];
+    $earliest    = PHP_INT_MAX;
+    $latest      = 0;
+    foreach ($events as $e) {
+        if (empty($e['phone'])) continue;
+        if (!in_array($e['status'] ?? '', ['sent', 'delivered', 'clicked'], true)) continue;
+        $time = isset($e['time']) ? strtotime((string) $e['time']) : 0;
+        if (!$time) continue;
+        $eid = (string) ($e['id'] ?? '');
+        $eligible[] = [
+            'event_id'   => $eid,
+            'phone_norm' => zignites_chat_normalize_phone($e['phone']),
+            'time'       => $time,
+        ];
+        $event_types[$eid] = (string) ($e['type'] ?? 'unknown');
+        if ($time < $earliest) $earliest = $time;
+        if ($time > $latest) $latest = $time;
+    }
+
+    if (empty($eligible)) {
+        return $base;
+    }
+
+    $orders = wc_get_orders([
+        'limit' => 5000,
+        'date_created' => gmdate('Y-m-d\TH:i:s', $earliest) . '...' . gmdate('Y-m-d\TH:i:s', $latest + $window_seconds),
+        'status' => ['wc-processing', 'wc-on-hold', 'wc-completed'],
+        'orderby' => 'date',
+        'order' => 'ASC',
+    ]);
+
+    $order_records = [];
+    $order_totals  = [];
+    if (is_array($orders)) {
+        foreach ($orders as $order) {
+            if (!is_object($order) || !method_exists($order, 'get_billing_phone')) continue;
+            $phone_norm = zignites_chat_normalize_phone($order->get_billing_phone());
+            if ($phone_norm === '') continue;
+            $created = $order->get_date_created();
+            if (!$created) continue;
+            $oid = (int) $order->get_id();
+            $order_records[] = [
+                'order_id'   => $oid,
+                'phone_norm' => $phone_norm,
+                'time'       => (int) $created->getTimestamp(),
+                'total'      => (float) $order->get_total(),
+            ];
+            $order_totals[$oid] = (float) $order->get_total();
+        }
+    }
+
+    $result  = zignites_chat_analytics_match_conversions($eligible, $order_records, $window_seconds);
+    $by_type = zignites_chat_analytics_bucket_revenue_by_type($result['matched'], $event_types, $order_totals);
+
+    return [
+        'window_days'     => $window_days,
+        'conversions'     => $result['conversions'],
+        'revenue'         => $result['revenue'],
+        'eligible_events' => count($eligible),
+        'by_type'         => $by_type,
+    ];
+}
+
 function zignites_chat_analytics_export_csv() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'), '', ['response' => 403]);

@@ -110,6 +110,45 @@ final class CampaignsTest extends TestCase
         $this->assertTrue(\zignites_chat_campaign_phone_qualifies([], 'recent_orders', [], $now));
     }
 
+    public function test_csv_to_int_ids(): void
+    {
+        $this->assertSame([42, 108, 256], \zignites_chat_csv_to_int_ids('42, 108 ,256'));
+        $this->assertSame([5], \zignites_chat_csv_to_int_ids('5, 0, -3, abc'));
+        $this->assertSame([7], \zignites_chat_csv_to_int_ids('7, 7, 7'));
+        $this->assertSame([], \zignites_chat_csv_to_int_ids(''));
+    }
+
+    public function test_build_segment_meta_product_and_category(): void
+    {
+        $this->assertSame(
+            ['product_ids' => [10, 20]],
+            \zignites_chat_build_campaign_segment_meta('product_purchased', ['product_ids' => '10, 20'])
+        );
+        $this->assertSame(
+            ['category_ids' => [3]],
+            \zignites_chat_build_campaign_segment_meta('category_purchased', ['category_ids' => '3'])
+        );
+    }
+
+    public function test_build_segment_meta_min_spend_and_winback(): void
+    {
+        $this->assertSame(['min_spend' => 99.5], \zignites_chat_build_campaign_segment_meta('min_spend', ['min_spend' => '99.5']));
+        $this->assertSame(['days' => 45], \zignites_chat_build_campaign_segment_meta('win_back', ['winback_days' => '45']));
+        // Defaults when blank.
+        $this->assertSame(['days' => 60], \zignites_chat_build_campaign_segment_meta('win_back', []));
+    }
+
+    public function test_build_segment_meta_location_validates_codes(): void
+    {
+        $meta = \zignites_chat_build_campaign_segment_meta('location', ['countries' => 'us, GB, x, 12, ae']);
+        $this->assertSame(['countries' => ['US', 'GB', 'AE']], $meta);
+    }
+
+    public function test_build_segment_meta_unknown_is_empty(): void
+    {
+        $this->assertSame([], \zignites_chat_build_campaign_segment_meta('all_customers', []));
+    }
+
     public function test_normalize_datetime(): void
     {
         $this->assertSame('2026-06-10 09:30:00', \zignites_chat_normalize_datetime('2026-06-10T09:30'));
