@@ -137,6 +137,96 @@ function zignites_chat_analytics_update_event($event_id, $fields = []) {
 }
 
 /**
+ * Funnel rank for a message status. Higher = further along the delivery /
+ * engagement funnel. Used to keep provider receipts monotonic so a late
+ * 'delivered' callback can't clobber a 'read' or 'clicked' already recorded.
+ * Non-funnel / operational states return -1.
+ *
+ * @param string $status
+ * @return int
+ */
+function zignites_chat_analytics_status_rank($status) {
+    $ranks = [
+        'pending'   => 0,
+        'sent'      => 1,
+        'delivered' => 2,
+        'read'      => 3,
+        'clicked'   => 4,
+    ];
+    return $ranks[(string) $status] ?? -1;
+}
+
+/**
+ * Decide which status (if any) an incoming provider receipt should write,
+ * given the event's current status. Pure — no DB.
+ *
+ * Rules:
+ *  - 'failed' is recorded only while the message is still in-flight (current
+ *    pending/sent/unknown); a delivered/read/clicked message is never
+ *    flipped back to failed.
+ *  - A terminal 'failed' is sticky and never advanced.
+ *  - Operational states (test/opted_out/invalid) are left untouched.
+ *  - Otherwise the receipt only moves the funnel forward (rank must strictly
+ *    increase), so out-of-order callbacks are idempotent.
+ *
+ * @param string $current  Event's current status.
+ * @param string $incoming Normalized receipt status: sent|delivered|read|failed.
+ * @return string|null New status to persist, or null to leave as-is.
+ */
+function zignites_chat_analytics_resolve_status_transition($current, $incoming) {
+    $current  = (string) $current;
+    $incoming = (string) $incoming;
+
+    if ($incoming === '') return null;
+    if ($current === 'failed') return null;
+
+    if ($incoming === 'failed') {
+        return in_array($current, ['pending', 'sent', ''], true) ? 'failed' : null;
+    }
+
+    // Only ever advance known funnel states.
+    if (zignites_chat_analytics_status_rank($incoming) < 0) return null;
+
+    // Don't override operational terminal states (test/opted_out/invalid).
+    if (!in_array($current, ['pending', 'sent', 'delivered', 'read', 'clicked', ''], true)) {
+        return null;
+    }
+
+    return zignites_chat_analytics_status_rank($incoming) > zignites_chat_analytics_status_rank($current)
+        ? $incoming
+        : null;
+}
+
+/**
+ * Apply a provider delivery receipt to the event identified by its provider
+ * message id (Twilio MessageSid / Meta wamid). Monotonic — see
+ * zignites_chat_analytics_resolve_status_transition().
+ *
+ * @param string $message_id Provider message id stored at send time.
+ * @param string $incoming   Normalized status: sent|delivered|read|failed.
+ * @return array{event_id:string, applied:string}|null Null when no row
+ *         matches or the status would not move forward.
+ */
+function zignites_chat_analytics_apply_receipt_by_message_id($message_id, $incoming) {
+    $message_id = (string) $message_id;
+    if ($message_id === '') return null;
+
+    global $wpdb;
+    $table = zignites_chat_get_analytics_table_name();
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT event_id, status FROM {$table} WHERE message_id = %s ORDER BY id DESC LIMIT 1",
+        $message_id
+    ));
+    if (!$row) return null;
+
+    $new = zignites_chat_analytics_resolve_status_transition($row->status, $incoming);
+    if ($new === null) return null;
+
+    zignites_chat_analytics_update_event($row->event_id, ['status' => $new]);
+    return ['event_id' => (string) $row->event_id, 'applied' => $new];
+}
+
+/**
  * @deprecated 1.0.2 Totals are derived from the analytics events table; this
  * is now a no-op kept only for backward compatibility with any external
  * code that may still call it. See zignites_chat_analytics_get_totals().

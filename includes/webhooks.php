@@ -56,6 +56,7 @@ function zignites_chat_webhook_event_keys() {
     $keys = [
         'message.sent'        => __('Message sent', 'zignites-chat'),
         'message.delivered'   => __('Message delivered', 'zignites-chat'),
+        'message.read'        => __('Message read', 'zignites-chat'),
         'message.clicked'     => __('Tracked link clicked', 'zignites-chat'),
         'message.failed'      => __('Message send failed', 'zignites-chat'),
         'customer.opted_out'  => __('Customer opted out', 'zignites-chat'),
