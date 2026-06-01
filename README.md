@@ -1,29 +1,62 @@
-# Zignites Chat – WhatsApp for WooCommerce
+# Zignites Chat – WhatsApp Order Notifications & Chat for WooCommerce
 
-**Zignites Chat** is a powerful, lightweight WordPress plugin that integrates **WhatsApp messaging directly into WooCommerce**, helping store owners increase conversions, recover abandoned carts, and engage customers faster.
+**Zignites Chat** connects your WooCommerce store to WhatsApp — the messaging
+platform with 90%+ open rates. Send automated order notifications, let
+customers chat with your team via a floating widget, and reach buyers on the
+channel they already use every day. Works with both **Twilio** and the
+**WhatsApp Cloud API (Meta)**.
 
-## ✅ Core Features
-- 📦 **Order Notifications** – Send WhatsApp messages when orders are placed or completed.
-- 🛒 **Cart Recovery** – Auto-remind users via WhatsApp if they abandon their carts.
-- 💬 **Smart Chatbot Widget** – Floating WhatsApp bot that answers FAQs (token-overlap matching, unicode-aware).
-- ⏰ **Follow-up Scheduler** – Schedule personalised follow-up messages after orders, with bounded retries on transient send failures.
-- 📊 **Analytics Dashboard** – Track sent / delivered / clicked message statistics; per-event log plus a summary widget on the settings page.
-- 🤖 **GPT Integration** – Optionally generate follow-up copy with a configurable GPT endpoint (OpenAI-compatible).
-- 🔐 **License Control System** – Lock premium features behind license keys.
-- 🌍 **Translation-ready** – `zignites-chat` textdomain with `.pot` file provided in `languages/`.
+## ✨ Features
 
-## 🚀 Coming Soon in Pro
-- 📢 Bulk Messaging to Customers
-- 🤖 GPT-powered Chatbot Fallback (when no FAQ matches)
-- 👥 Multi-Agent WhatsApp Routing
+- 📦 **Order Notifications** – Automatically send a WhatsApp message when a new
+  order is placed. Fully customisable template with `{name}`, `{order_id}`,
+  `{total}`, and `{currency_symbol}` placeholders.
+- 🖱️ **Manual Message Button** – Send a WhatsApp message directly from the
+  WooCommerce order edit screen with one click.
+- 💬 **Floating Chat Widget** – Add a floating WhatsApp chat button to your
+  storefront so customers can contact you instantly.
+- 🤖 **FAQ Chatbot** – Keyword-based auto-replies so the widget answers common
+  questions before routing customers to WhatsApp.
+- 🧩 **Gutenberg Blocks** – WhatsApp button and chatbot widget blocks for the
+  block editor.
+- 🔀 **Dual Provider Support** – Choose Twilio or the WhatsApp Cloud API (Meta)
+  to fit your setup and budget.
+- 🧪 **Test Mode** – Log messages instead of sending them so you can verify your
+  setup before going live.
+- 📋 **Log Viewer** – View, filter, download, and clear the message log from the
+  admin.
+- 🚫 **Opt-out Management** – GDPR-friendly: customers can reply STOP (or any
+  keyword you configure) to opt out and join a suppression list.
+- 📚 **Template Library** – Pre-built order-message starters to get going fast.
+- 🔐 **Privacy Tools** – Built-in data export and erasure hooks for WordPress's
+  personal data tools.
+- 🌍 **Translation-ready** – `zignites-chat` text domain with a `.pot` file in
+  `languages/`.
 
----
+## 🔒 Privacy & Data
 
-🛠️ Built for global deployment, with security and performance in mind.  
-🔒 Secure API integration (Twilio, Meta, OpenAI-ready).  
-📦 Ready for WordPress.org and commercial sales (Gumroad, EDD, Freemius).
+Zignites Chat only sends data to a third-party service **when the site
+administrator explicitly configures it**:
 
----
+- **Twilio** – for sending WhatsApp messages via the Twilio API.
+- **Meta / WhatsApp Cloud API** – for sending WhatsApp messages via the Cloud
+  API.
 
-### Lite Description for GitHub Repo Homepage
-> WhatsApp integration for WooCommerce: order messages, cart recovery, chatbot, and license control. Built for scale & monetization.
+No data is sent anywhere without the administrator entering credentials and
+enabling the feature. No data is ever sent to Zignites servers.
+
+## 🚀 Zignites Chat Pro
+
+Advanced automation — cart recovery, analytics, A/B testing, follow-up
+scheduling, bulk campaigns, AI chatbot, webhooks, and multi-agent routing — is
+available in [Zignites Chat Pro](https://zignites.com/plugins/zignites-chat-pro).
+
+## 📦 Requirements
+
+- WordPress 6.0 or greater
+- WooCommerce 7.0 or greater
+- PHP 7.4 or greater
+
+## 📄 License
+
+GPL-2.0-or-later.
