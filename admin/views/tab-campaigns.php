@@ -97,6 +97,17 @@ $zignites_chat_wc_countries = (function_exists('WC') && WC()->countries) ? WC()-
                 </td>
             </tr>
             <tr>
+                <th scope="row"><?php esc_html_e('Attachment', 'zignites-chat'); ?></th>
+                <td>
+                    <input type="hidden" id="zignites-chat-campaign-media-url" value="" />
+                    <input type="hidden" id="zignites-chat-campaign-media-mime" value="" />
+                    <button type="button" class="button" id="zignites-chat-campaign-media-select"><?php esc_html_e('Select image or document', 'zignites-chat'); ?></button>
+                    <button type="button" class="button-link" id="zignites-chat-campaign-media-remove" style="display:none; margin-left:8px;"><?php esc_html_e('Remove', 'zignites-chat'); ?></button>
+                    <span id="zignites-chat-campaign-media-name" style="margin-left:8px; color:#555;"></span>
+                    <p class="description"><?php esc_html_e('Optional. Sends the message as an image/document with your text as the caption. The file must be in this site\'s Media Library.', 'zignites-chat'); ?></p>
+                </td>
+            </tr>
+            <tr>
                 <th scope="row"><label for="zignites-chat-campaign-schedule"><?php esc_html_e('Schedule send', 'zignites-chat'); ?></label></th>
                 <td>
                     <input type="datetime-local" id="zignites-chat-campaign-schedule" />

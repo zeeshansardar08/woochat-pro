@@ -128,6 +128,7 @@ if (!function_exists('zignites_chat_is_pro_active')) {
 
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/wa-templates.php';
+require_once __DIR__ . '/../includes/media.php';
 require_once __DIR__ . '/../includes/cart-recovery.php';
 require_once __DIR__ . '/../includes/campaigns.php';
 require_once __DIR__ . '/../includes/blocks.php';

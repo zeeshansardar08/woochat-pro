@@ -71,6 +71,7 @@ final class Plugin {
         require_once ZIGNITES_CHAT_PATH . 'includes/providers/class-zignites-chat-provider-twilio.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/providers/class-zignites-chat-provider-cloud.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/wa-templates.php';
+        require_once ZIGNITES_CHAT_PATH . 'includes/media.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/messaging.php';
 
         require_once ZIGNITES_CHAT_PATH . 'includes/analytics.php';

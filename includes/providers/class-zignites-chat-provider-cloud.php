@@ -70,6 +70,33 @@ class ZIGNITES_CHAT_Provider_Cloud extends ZIGNITES_CHAT_Provider {
     }
 
     /**
+     * Send an image or document message by public URL.
+     *
+     * @param string $to         Raw destination phone number.
+     * @param array  $descriptor { url, type:'image'|'document', caption, filename }.
+     * @return array{ok:bool, message_id?:string, error?:string}
+     */
+    public function send_media( $to, $descriptor ) {
+        $to_number = preg_replace( '/[^0-9]/', '', (string) $to );
+        $type      = ( ( $descriptor['type'] ?? '' ) === 'image' ) ? 'image' : 'document';
+
+        $media = [ 'link' => (string) ( $descriptor['url'] ?? '' ) ];
+        if ( ! empty( $descriptor['caption'] ) ) {
+            $media['caption'] = (string) $descriptor['caption'];
+        }
+        if ( $type === 'document' && ! empty( $descriptor['filename'] ) ) {
+            $media['filename'] = (string) $descriptor['filename'];
+        }
+
+        return $this->dispatch( [
+            'messaging_product' => 'whatsapp',
+            'to'                => $to_number,
+            'type'              => $type,
+            $type               => $media,
+        ] );
+    }
+
+    /**
      * POST a message envelope to the Cloud API and normalise the response
      * into the uniform { ok, message_id, error } shape. Shared by send()
      * and send_template().

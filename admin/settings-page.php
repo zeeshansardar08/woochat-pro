@@ -188,6 +188,7 @@ function zignites_chat_enqueue_admin_scripts($hook) {
 
     // Campaigns page.
     if (strpos($hook, 'zignites-chat-campaigns') !== false) {
+        wp_enqueue_media(); // WP media library frame for the campaign attachment picker.
         wp_enqueue_script('zignites-chat-campaigns-js', ZIGNITES_CHAT_URL . 'assets/js/campaigns.js', [], ZIGNITES_CHAT_VERSION, true);
         wp_localize_script('zignites-chat-campaigns-js', 'zignitesChatCampaigns', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -824,12 +825,17 @@ function zignites_chat_ajax_create_campaign() {
         $segment_meta['exclude_recent_days'] = $exclude_days;
     }
 
+    $media_url  = isset($_POST['media_url']) ? esc_url_raw(wp_unslash($_POST['media_url'])) : '';
+    $media_mime = isset($_POST['media_mime']) ? sanitize_text_field(wp_unslash($_POST['media_mime'])) : '';
+
     $result = zignites_chat_campaign_create([
         'name'         => $name,
         'template'     => $template,
         'segment_type' => $segment_type,
         'segment_meta' => $segment_meta,
         'scheduled_at' => $scheduled_at,
+        'media_url'    => $media_url,
+        'media_mime'   => $media_mime,
     ]);
 
     if (is_wp_error($result)) {

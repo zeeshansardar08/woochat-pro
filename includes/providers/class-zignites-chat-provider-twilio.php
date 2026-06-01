@@ -28,16 +28,47 @@ class ZIGNITES_CHAT_Provider_Twilio extends ZIGNITES_CHAT_Provider {
     }
 
     public function send( $to, $message ) {
-        $sid       = (string) get_option( 'zignites_chat_twilio_sid' );
-        $token     = (string) get_option( 'zignites_chat_twilio_auth_token' );
-        $from      = (string) get_option( 'zignites_chat_twilio_from' );
         $to_number = 'whatsapp:+' . preg_replace( '/[^0-9]/', '', (string) $to );
 
-        $body = [
-            'From' => $from,
+        return $this->request( [
             'To'   => $to_number,
             'Body' => $message,
-        ];
+        ] );
+    }
+
+    /**
+     * Send an image or document message by public URL (Twilio MediaUrl).
+     *
+     * @param string $to         Raw destination phone number.
+     * @param array  $descriptor { url, type, caption, filename }.
+     * @return array{ok:bool, message_id?:string, error?:string}
+     */
+    public function send_media( $to, $descriptor ) {
+        $to_number = 'whatsapp:+' . preg_replace( '/[^0-9]/', '', (string) $to );
+
+        $body = [ 'To' => $to_number ];
+        if ( ! empty( $descriptor['caption'] ) ) {
+            $body['Body'] = (string) $descriptor['caption'];
+        }
+        $body['MediaUrl'] = (string) ( $descriptor['url'] ?? '' );
+
+        return $this->request( $body );
+    }
+
+    /**
+     * POST a message to the Twilio Messages endpoint and normalise the
+     * response. Fills in From + auth + the delivery StatusCallback. Shared by
+     * send() and send_media().
+     *
+     * @param array $body Partial body (must include To; From is added here).
+     * @return array{ok:bool, message_id?:string, error?:string}
+     */
+    private function request( array $body ) {
+        $sid   = (string) get_option( 'zignites_chat_twilio_sid' );
+        $token = (string) get_option( 'zignites_chat_twilio_auth_token' );
+        $from  = (string) get_option( 'zignites_chat_twilio_from' );
+
+        $body['From'] = $from;
 
         // Ask Twilio to POST delivery/read receipts back so the analytics
         // funnel can advance past "sent". Harmless if the receipt endpoint

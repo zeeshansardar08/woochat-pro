@@ -115,6 +115,7 @@ function zignites_chat_get_migrations() {
         2 => 'zignites_chat_migration_v2_analytics_to_table',
         3 => 'zignites_chat_migration_v3_campaign_tables',
         4 => 'zignites_chat_migration_v4_campaign_scheduled_at',
+        5 => 'zignites_chat_migration_v5_campaign_media',
     ];
 }
 
@@ -179,6 +180,16 @@ function zignites_chat_migration_v3_campaign_tables() {
  * shape as v3 — the function is only defined once campaigns.php is loaded.
  */
 function zignites_chat_migration_v4_campaign_scheduled_at() {
+    if (function_exists('zignites_chat_create_campaign_tables')) {
+        zignites_chat_create_campaign_tables();
+    }
+}
+
+/**
+ * v5: add the campaigns.media_url / media_type columns for image/document
+ * campaign attachments. Idempotent dbDelta re-run, same guard shape as v4.
+ */
+function zignites_chat_migration_v5_campaign_media() {
     if (function_exists('zignites_chat_create_campaign_tables')) {
         zignites_chat_create_campaign_tables();
     }

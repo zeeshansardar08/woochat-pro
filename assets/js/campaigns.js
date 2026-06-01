@@ -14,8 +14,37 @@
         var daysEl    = document.getElementById('zignites-chat-campaign-days');
         var scheduleEl = document.getElementById('zignites-chat-campaign-schedule');
         var excludeEl  = document.getElementById('zignites-chat-campaign-exclude-days');
+        var mediaUrlEl  = document.getElementById('zignites-chat-campaign-media-url');
+        var mediaMimeEl = document.getElementById('zignites-chat-campaign-media-mime');
+        var mediaNameEl = document.getElementById('zignites-chat-campaign-media-name');
+        var mediaSelect = document.getElementById('zignites-chat-campaign-media-select');
+        var mediaRemove = document.getElementById('zignites-chat-campaign-media-remove');
         var submit    = document.getElementById('zignites-chat-campaign-submit');
         var feedback  = document.getElementById('zignites-chat-campaign-feedback');
+
+        // WP Media Library picker for the optional campaign attachment.
+        var mediaFrame = null;
+        function setMedia(url, mime, name) {
+            if (mediaUrlEl) mediaUrlEl.value = url || '';
+            if (mediaMimeEl) mediaMimeEl.value = mime || '';
+            if (mediaNameEl) mediaNameEl.textContent = name || '';
+            if (mediaRemove) mediaRemove.style.display = url ? 'inline' : 'none';
+        }
+        if (mediaSelect && window.wp && wp.media) {
+            mediaSelect.addEventListener('click', function () {
+                if (!mediaFrame) {
+                    mediaFrame = wp.media({ title: mediaSelect.textContent, multiple: false });
+                    mediaFrame.on('select', function () {
+                        var a = mediaFrame.state().get('selection').first().toJSON();
+                        setMedia(a.url, a.mime, a.filename || a.title || '');
+                    });
+                }
+                mediaFrame.open();
+            });
+        }
+        if (mediaRemove) {
+            mediaRemove.addEventListener('click', function () { setMedia('', '', ''); });
+        }
 
         function updateSegmentMeta() {
             if (!segmentEl) return;
@@ -101,6 +130,10 @@
             }
             if (excludeEl && excludeEl.value) {
                 body.append('exclude_recent_days', excludeEl.value);
+            }
+            if (mediaUrlEl && mediaUrlEl.value) {
+                body.append('media_url', mediaUrlEl.value);
+                body.append('media_mime', mediaMimeEl ? mediaMimeEl.value : '');
             }
 
             fetch(config.ajaxUrl, {
