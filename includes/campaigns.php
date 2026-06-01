@@ -345,18 +345,187 @@ function zignites_chat_campaign_list($limit = 20) {
 
 function zignites_chat_campaign_segment_types() {
     return [
-        'all_customers' => __('All customers with phone', 'zignites-chat'),
-        'recent_orders' => __('Customers who ordered recently', 'zignites-chat'),
+        'all_customers'      => __('All customers with phone', 'zignites-chat'),
+        'recent_orders'      => __('Customers who ordered recently', 'zignites-chat'),
+        'product_purchased'  => __('Customers who bought specific products', 'zignites-chat'),
+        'category_purchased' => __('Customers who bought from categories', 'zignites-chat'),
+        'min_spend'          => __('Customers by lifetime spend', 'zignites-chat'),
+        'location'           => __('Customers by country', 'zignites-chat'),
+        'win_back'           => __('Win-back — no order in N days', 'zignites-chat'),
     ];
 }
 
 /**
- * Walk WC orders in pages, dedupe by normalized phone, drop opt-outs.
+ * Parse a comma-separated string into a list of unique positive ints. Pure.
+ *
+ * @param string $csv
+ * @return int[]
+ */
+function zignites_chat_csv_to_int_ids($csv) {
+    $out = [];
+    foreach (explode(',', (string) $csv) as $part) {
+        $n = (int) trim($part);
+        if ($n > 0) $out[] = $n;
+    }
+    return array_values(array_unique($out));
+}
+
+/**
+ * Build a campaign's segment_meta from already-sanitized string inputs. Pure.
+ *
+ * @param string                $segment_type
+ * @param array<string, string> $inputs Sanitized field values from the form.
+ * @return array Segment meta for the resolver.
+ */
+function zignites_chat_build_campaign_segment_meta($segment_type, $inputs) {
+    switch ($segment_type) {
+        case 'recent_orders':
+            return ['days' => max(1, (int) ($inputs['segment_days'] ?? 30))];
+
+        case 'product_purchased':
+            return ['product_ids' => zignites_chat_csv_to_int_ids($inputs['product_ids'] ?? '')];
+
+        case 'category_purchased':
+            return ['category_ids' => zignites_chat_csv_to_int_ids($inputs['category_ids'] ?? '')];
+
+        case 'min_spend':
+            return ['min_spend' => max(0, (float) ($inputs['min_spend'] ?? 0))];
+
+        case 'location':
+            $codes = [];
+            foreach (explode(',', (string) ($inputs['countries'] ?? '')) as $code) {
+                $code = strtoupper(trim($code));
+                if (preg_match('/^[A-Z]{2}$/', $code)) {
+                    $codes[] = $code;
+                }
+            }
+            return ['countries' => array_values(array_unique($codes))];
+
+        case 'win_back':
+            return ['days' => max(1, (int) ($inputs['winback_days'] ?? 60))];
+
+        default:
+            return [];
+    }
+}
+
+/**
+ * Whether a single order contributes a "match" for the per-order match
+ * segment types (product / category / location). Pure.
+ *
+ * @param array  $order        Normalized order: {country, product_ids[], category_ids[]}.
+ * @param string $segment_type
+ * @param array  $segment_meta
+ * @return bool
+ */
+function zignites_chat_campaign_order_contributes_match($order, $segment_type, $segment_meta) {
+    switch ($segment_type) {
+        case 'product_purchased':
+            $want = array_map('intval', (array) ($segment_meta['product_ids'] ?? []));
+            $have = array_map('intval', (array) ($order['product_ids'] ?? []));
+            return !empty(array_intersect($want, $have));
+
+        case 'category_purchased':
+            $want = array_map('intval', (array) ($segment_meta['category_ids'] ?? []));
+            $have = array_map('intval', (array) ($order['category_ids'] ?? []));
+            return !empty(array_intersect($want, $have));
+
+        case 'location':
+            $want = array_map('strtoupper', array_map('strval', (array) ($segment_meta['countries'] ?? [])));
+            $have = strtoupper((string) ($order['country'] ?? ''));
+            return $have !== '' && in_array($have, $want, true);
+
+        default:
+            return false;
+    }
+}
+
+/**
+ * Whether an aggregated customer qualifies for the segment. Pure.
+ *
+ * @param array  $entry        {spend:float, last_ts:int, matched:bool}.
+ * @param string $segment_type
+ * @param array  $segment_meta
+ * @param int    $now_ts       Current unix timestamp.
+ * @return bool
+ */
+function zignites_chat_campaign_phone_qualifies($entry, $segment_type, $segment_meta, $now_ts) {
+    switch ($segment_type) {
+        case 'min_spend':
+            $min = (float) ($segment_meta['min_spend'] ?? 0);
+            return $min > 0 && (float) ($entry['spend'] ?? 0) >= $min;
+
+        case 'win_back':
+            $days   = max(1, (int) ($segment_meta['days'] ?? 30));
+            $cutoff = (int) $now_ts - ($days * DAY_IN_SECONDS);
+            $last   = (int) ($entry['last_ts'] ?? 0);
+            return $last > 0 && $last <= $cutoff;
+
+        case 'product_purchased':
+        case 'category_purchased':
+        case 'location':
+            return !empty($entry['matched']);
+
+        case 'recent_orders':
+        case 'all_customers':
+        default:
+            return true;
+    }
+}
+
+/**
+ * Flatten a WC order into the minimal shape the per-order matcher needs.
+ * Item/category lookups are skipped unless the segment requires them.
+ *
+ * @param WC_Order $order
+ * @param bool     $needs_items   Pull product + category ids from line items.
+ * @param bool     $needs_country Pull billing country.
+ * @return array{country:string, product_ids:int[], category_ids:int[]}
+ */
+function zignites_chat_campaign_normalize_order($order, $needs_items, $needs_country) {
+    $norm = ['country' => '', 'product_ids' => [], 'category_ids' => []];
+
+    if ($needs_country && method_exists($order, 'get_billing_country')) {
+        $norm['country'] = (string) $order->get_billing_country();
+    }
+
+    if ($needs_items && method_exists($order, 'get_items')) {
+        $pids = [];
+        $cids = [];
+        foreach ($order->get_items() as $item) {
+            if (method_exists($item, 'get_product_id') && $item->get_product_id()) {
+                $pids[] = (int) $item->get_product_id();
+            }
+            $product = method_exists($item, 'get_product') ? $item->get_product() : null;
+            if ($product && method_exists($product, 'get_category_ids')) {
+                foreach ((array) $product->get_category_ids() as $cid) {
+                    $cids[] = (int) $cid;
+                }
+            }
+        }
+        $norm['product_ids']  = array_values(array_unique($pids));
+        $norm['category_ids'] = array_values(array_unique($cids));
+    }
+
+    return $norm;
+}
+
+/**
+ * Resolve a segment to a recipient list by walking WC orders, aggregating
+ * per normalized phone (lifetime spend, last-order time, per-order match),
+ * then keeping the phones that qualify for the segment.
+ *
+ * Opt-outs are dropped; product/category/location use a per-order match,
+ * min_spend/win_back use the aggregate, recent_orders narrows the query.
  *
  * @return array<int, array{phone:string, name:string}>
  */
 function zignites_chat_campaign_resolve_segment($segment_type, $segment_meta = []) {
     if (!function_exists('wc_get_orders')) return [];
+
+    $now_ts        = time();
+    $needs_items   = in_array($segment_type, ['product_purchased', 'category_purchased'], true);
+    $needs_country = ($segment_type === 'location');
 
     $query = [
         'limit'  => 500,
@@ -366,33 +535,54 @@ function zignites_chat_campaign_resolve_segment($segment_type, $segment_meta = [
 
     if ($segment_type === 'recent_orders') {
         $days = isset($segment_meta['days']) ? max(1, (int) $segment_meta['days']) : 30;
-        $cutoff = gmdate('Y-m-d 00:00:00', time() - ($days * DAY_IN_SECONDS));
-        $query['date_created'] = '>=' . $cutoff;
+        $query['date_created'] = '>=' . gmdate('Y-m-d 00:00:00', $now_ts - ($days * DAY_IN_SECONDS));
     }
 
-    $seen = [];
-    $recipients = [];
+    $agg = [];
     while (true) {
         $orders = wc_get_orders($query);
         if (empty($orders) || !is_array($orders)) break;
 
         foreach ($orders as $order) {
             $phone = zignites_chat_normalize_phone($order->get_billing_phone());
-            if (!$phone || isset($seen[$phone])) continue;
-            if (zignites_chat_is_opted_out($phone)) continue;
-            $seen[$phone] = true;
-            $recipients[] = [
-                'phone' => $phone,
-                'name'  => sanitize_text_field($order->get_billing_first_name()),
-            ];
+            if (!$phone || zignites_chat_is_opted_out($phone)) continue;
+
+            if (!isset($agg[$phone])) {
+                // Hard cap on distinct recipients to bound memory on very
+                // large stores; once hit we stop ingesting new customers.
+                if (count($agg) >= 25000) break 2;
+                $agg[$phone] = [
+                    'name'    => sanitize_text_field($order->get_billing_first_name()),
+                    'spend'   => 0.0,
+                    'last_ts' => 0,
+                    'matched' => false,
+                ];
+            }
+
+            $agg[$phone]['spend'] += (float) $order->get_total();
+            $created = $order->get_date_created();
+            $ts = $created ? (int) $created->getTimestamp() : 0;
+            if ($ts > $agg[$phone]['last_ts']) {
+                $agg[$phone]['last_ts'] = $ts;
+            }
+
+            if (!$agg[$phone]['matched'] && ($needs_items || $needs_country)) {
+                $order_norm = zignites_chat_campaign_normalize_order($order, $needs_items, $needs_country);
+                if (zignites_chat_campaign_order_contributes_match($order_norm, $segment_type, $segment_meta)) {
+                    $agg[$phone]['matched'] = true;
+                }
+            }
         }
 
         if (count($orders) < $query['limit']) break;
         $query['paged']++;
+    }
 
-        // Hard cap to prevent runaway memory on giant stores; campaigns
-        // with > 25k recipients are out of scope for this UI.
-        if (count($recipients) >= 25000) break;
+    $recipients = [];
+    foreach ($agg as $phone => $entry) {
+        if (zignites_chat_campaign_phone_qualifies($entry, $segment_type, $segment_meta, $now_ts)) {
+            $recipients[] = ['phone' => $phone, 'name' => $entry['name']];
+        }
     }
 
     // Optionally skip anyone who already received a bulk message recently,
