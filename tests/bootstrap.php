@@ -132,6 +132,7 @@ require_once __DIR__ . '/../includes/cart-recovery.php';
 require_once __DIR__ . '/../includes/campaigns.php';
 require_once __DIR__ . '/../includes/blocks.php';
 require_once __DIR__ . '/../includes/analytics.php';
+require_once __DIR__ . '/../includes/delivery-receipts.php';
 require_once __DIR__ . '/../includes/template-library.php';
 require_once __DIR__ . '/../includes/ab-testing.php';
 require_once __DIR__ . '/../includes/privacy.php';

@@ -42,6 +42,16 @@ if (!defined('ABSPATH')) exit;
             <td><input type="password" name="zignites_chat_cloud_app_secret" id="zignites_chat_cloud_app_secret" value="<?php echo esc_attr(get_option('zignites_chat_cloud_app_secret')); ?>" class="regular-text" autocomplete="off" />
                 <p class="description"><?php esc_html_e('Leave blank to skip Meta webhook signature verification (token check still applies).', 'zignites-chat'); ?></p></td>
         </tr>
+        <tr class="zignites-chat-cloud-fields" style="display:none;">
+            <th scope="row"><label for="zignites_chat_meta_verify_token"><?php esc_html_e('Webhook Verify Token', 'zignites-chat'); ?></label><span class="zignites-chat-help-icon">?<span class="zignites-chat-tooltip"><?php esc_html_e('A token you choose. Paste the same value into Meta when subscribing the webhook so delivery/read receipts and opt-out replies reach this site.', 'zignites-chat'); ?></span></span></th>
+            <td>
+                <input type="text" name="zignites_chat_meta_verify_token" id="zignites_chat_meta_verify_token" value="<?php echo esc_attr(get_option('zignites_chat_meta_verify_token')); ?>" class="regular-text" autocomplete="off" />
+                <p class="description">
+                    <?php esc_html_e('Callback URL to register in Meta (Webhooks → WhatsApp Business Account):', 'zignites-chat'); ?>
+                    <code><?php echo esc_html(rest_url('zignites-chat/v1/optout')); ?></code>
+                </p>
+            </td>
+        </tr>
         <tr>
             <th scope="row"><?php esc_html_e('Test Connection', 'zignites-chat'); ?><span class="zignites-chat-help-icon">?<span class="zignites-chat-tooltip"><?php esc_html_e('Validate the credentials on this page against the provider API without sending a message. Uses the values currently in the form, even before you save.', 'zignites-chat'); ?></span></span></th>
             <td>

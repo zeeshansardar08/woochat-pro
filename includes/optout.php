@@ -7,7 +7,36 @@ add_action('rest_api_init', function () {
         'callback' => 'zignites_chat_optout_webhook_handler',
         'permission_callback' => '__return_true',
     ]);
+    // Meta verifies a webhook subscription with a GET handshake to the same
+    // URL (hub.mode / hub.verify_token / hub.challenge).
+    register_rest_route('zignites-chat/v1', '/optout', [
+        'methods' => 'GET',
+        'callback' => 'zignites_chat_meta_webhook_verify',
+        'permission_callback' => '__return_true',
+    ]);
 });
+
+/**
+ * Meta webhook verification handshake. Echoes hub.challenge back when the
+ * caller presents the configured verify token, so Meta will accept the
+ * subscription. PHP rewrites the dotted query keys (hub.mode) to underscores
+ * (hub_mode), which is what WP_REST_Request sees.
+ *
+ * @param WP_REST_Request $request
+ * @return WP_REST_Response
+ */
+function zignites_chat_meta_webhook_verify(WP_REST_Request $request) {
+    $mode      = (string) $request->get_param('hub_mode');
+    $token     = (string) $request->get_param('hub_verify_token');
+    $challenge = (string) $request->get_param('hub_challenge');
+    $expected  = (string) get_option('zignites_chat_meta_verify_token', '');
+
+    if ($mode === 'subscribe' && $expected !== '' && hash_equals($expected, $token)) {
+        // Meta expects the bare challenge value echoed back.
+        return new WP_REST_Response((int) $challenge, 200);
+    }
+    return new WP_REST_Response(['message' => __('Verification failed', 'zignites-chat')], 403);
+}
 
 /**
  * Per-IP rate limit for the public opt-out webhook.
@@ -163,6 +192,23 @@ function zignites_chat_optout_webhook_handler(WP_REST_Request $request) {
         $expected = (string) get_option('zignites_chat_optout_webhook_token', '');
         if (!$expected || !hash_equals($expected, $token)) {
             return new WP_REST_Response(['message' => __('Unauthorized', 'zignites-chat')], 401);
+        }
+    }
+
+    // Meta delivers delivery/read receipts to this same webhook URL. Ingest
+    // any status objects first, then bail early if the callback carried no
+    // inbound message (status-only payload).
+    if (function_exists('zignites_chat_ingest_meta_statuses')) {
+        $status_raw  = (string) $request->get_body();
+        $status_json = $status_raw !== '' ? json_decode($status_raw, true) : null;
+        if (is_array($status_json)) {
+            $statuses = zignites_chat_extract_meta_statuses($status_json);
+            if (!empty($statuses)) {
+                zignites_chat_ingest_meta_statuses($statuses);
+                if (!zignites_chat_meta_payload_has_messages($status_json)) {
+                    return new WP_REST_Response(['message' => __('Receipts processed', 'zignites-chat')], 200);
+                }
+            }
         }
     }
 

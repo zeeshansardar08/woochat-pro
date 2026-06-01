@@ -33,6 +33,22 @@ class ZIGNITES_CHAT_Provider_Twilio extends ZIGNITES_CHAT_Provider {
         $from      = (string) get_option( 'zignites_chat_twilio_from' );
         $to_number = 'whatsapp:+' . preg_replace( '/[^0-9]/', '', (string) $to );
 
+        $body = [
+            'From' => $from,
+            'To'   => $to_number,
+            'Body' => $message,
+        ];
+
+        // Ask Twilio to POST delivery/read receipts back so the analytics
+        // funnel can advance past "sent". Harmless if the receipt endpoint
+        // isn't reachable — Twilio just retries then gives up.
+        if ( function_exists( 'zignites_chat_delivery_callback_url' ) ) {
+            $callback = zignites_chat_delivery_callback_url( 'twilio' );
+            if ( $callback !== '' ) {
+                $body['StatusCallback'] = $callback;
+            }
+        }
+
         $response = wp_remote_post(
             'https://api.twilio.com/2010-04-01/Accounts/' . rawurlencode( $sid ) . '/Messages.json',
             [
@@ -41,11 +57,7 @@ class ZIGNITES_CHAT_Provider_Twilio extends ZIGNITES_CHAT_Provider {
                 'headers' => [
                     'Authorization' => 'Basic ' . base64_encode( $sid . ':' . $token ),
                 ],
-                'body' => [
-                    'From' => $from,
-                    'To'   => $to_number,
-                    'Body' => $message,
-                ],
+                'body' => $body,
             ]
         );
 

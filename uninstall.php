@@ -42,6 +42,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_cloud_phone_id',
     'zignites_chat_cloud_from',
     'zignites_chat_cloud_app_secret',
+    'zignites_chat_meta_verify_token',
     'zignites_chat_cart_recovery_delay',
     'zignites_chat_cart_recovery_message',
     'zignites_chat_cart_recovery_require_consent',
