@@ -258,8 +258,21 @@ resolver to aggregate per customer:
 - [x] 13 new unit tests; 142 pass, PHPCS green; logic smoke-tested
 - [ ] live smoke test against a store with real orders (user action)
 
-### P2 — Media messages
-Images / PDF (receipts, product images) via provider media endpoints. — ⬜
+### P2 — Media messages — ✅ Code complete (`feat/pro-media-messages`; smoke test pending)
+Send images / documents over WhatsApp by public URL.
+- [x] reusable plumbing: includes/media.php (normalize_media_type,
+      validate_media_url with same-site host allowlist to block SSRF,
+      build_media_descriptor), provider send_media() (Cloud link envelope +
+      Twilio MediaUrl via a shared request()), dispatcher media-first routing
+- [x] consumer: campaign attachment — schema v5 (media_url/media_type),
+      campaign_create stores a validated descriptor, send attaches it with
+      the rendered text as caption (mutually exclusive with the bulk template)
+- [x] UI: WP Media Library picker on the campaign form (wp_enqueue_media),
+      AJAX passes media_url + mime
+- [x] 3 unit tests (type/host helpers); 148 pass, PHPCS green; smoke-tested
+- [ ] live send test of an image + a PDF campaign (user action)
+- Note: manual order-screen attachment + product-image auto-attach reuse the
+  same plumbing — left as later enhancements
 
 ### P2 — Revenue dashboard widget — ✅ Code complete (`feat/pro-revenue-widget`; smoke test pending)
 Surface attributed revenue per channel on Analytics.
@@ -284,6 +297,5 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-Merge `feat/pro-revenue-widget` into `pro`. Remaining: **two-way team
-inbox** (P1, the big one), **media messages** (P2), **GPT modernization**
-(P3).
+Merge `feat/pro-media-messages` into `pro`. Remaining: **two-way team
+inbox** (P1, the big one) and **GPT modernization** (P3).

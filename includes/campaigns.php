@@ -102,6 +102,8 @@ function zignites_chat_create_campaign_tables() {
         segment_type VARCHAR(40) NOT NULL,
         segment_meta TEXT NULL,
         scheduled_at DATETIME NULL,
+        media_url VARCHAR(500) NULL,
+        media_type VARCHAR(20) NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'queued',
         total_count INT UNSIGNED NOT NULL DEFAULT 0,
         sent_count INT UNSIGNED NOT NULL DEFAULT 0,
@@ -182,6 +184,18 @@ function zignites_chat_campaign_create($args) {
         $data['scheduled_at'] = $schedule['scheduled_at'];
         $format[] = '%s';
     }
+
+    // Optional media attachment (validated against this site's host).
+    $media = function_exists('zignites_chat_build_media_descriptor')
+        ? zignites_chat_build_media_descriptor($args['media_url'] ?? '', $args['media_mime'] ?? '')
+        : null;
+    if (is_array($media)) {
+        $data['media_url']  = $media['url'];
+        $data['media_type'] = $media['type'];
+        $format[] = '%s';
+        $format[] = '%s';
+    }
+
     $wpdb->insert(zignites_chat_campaigns_table_name(), $data, $format);
 
     $campaign_id = (int) $wpdb->insert_id;
@@ -681,14 +695,23 @@ function zignites_chat_campaign_process_chunk($campaign_id) {
 
         $message = zignites_chat_campaign_render_message($campaign['template'], $row['customer_name']);
 
-        $context = zignites_chat_maybe_apply_template('bulk', [
-            '{name}'            => $row['customer_name'],
-            '{site}'            => function_exists('get_bloginfo') ? get_bloginfo('name') : '',
-            '{currency_symbol}' => function_exists('zignites_chat_currency_symbol_text') ? zignites_chat_currency_symbol_text() : '',
-        ], [
-            'type' => 'bulk',
-            'campaign_id' => $campaign_id,
-        ]);
+        $context = ['type' => 'bulk', 'campaign_id' => $campaign_id];
+        if (!empty($campaign['media_url'])) {
+            // Media campaigns send an image/document with the rendered text as
+            // the caption (mutually exclusive with the template path).
+            $context['media'] = [
+                'url'      => (string) $campaign['media_url'],
+                'type'     => (($campaign['media_type'] ?? '') === 'image') ? 'image' : 'document',
+                'caption'  => $message,
+                'filename' => basename((string) wp_parse_url($campaign['media_url'], PHP_URL_PATH)),
+            ];
+        } else {
+            $context = zignites_chat_maybe_apply_template('bulk', [
+                '{name}'            => $row['customer_name'],
+                '{site}'            => function_exists('get_bloginfo') ? get_bloginfo('name') : '',
+                '{currency_symbol}' => function_exists('zignites_chat_currency_symbol_text') ? zignites_chat_currency_symbol_text() : '',
+            ], $context);
+        }
 
         $ok = zignites_chat_send_whatsapp_message($phone, $message, false, $context);
 

@@ -160,7 +160,11 @@ function zignites_chat_send_whatsapp_message( $to, $message, $manual = false, $c
     // free-form text. The rendered $message still drives the log/analytics
     // preview above. Falls back to free-form if the provider can't do
     // templates.
-    if ( ! empty( $context['template'] ) && is_array( $context['template'] ) && method_exists( $provider, 'send_template' ) ) {
+    if ( ! empty( $context['media'] ) && is_array( $context['media'] ) && method_exists( $provider, 'send_media' ) ) {
+        // Media (image/document) message — caption carries the text. Takes
+        // precedence over the template/free-form paths.
+        $result = $provider->send_media( $to, $context['media'] );
+    } elseif ( ! empty( $context['template'] ) && is_array( $context['template'] ) && method_exists( $provider, 'send_template' ) ) {
         $tpl    = $context['template'];
         $result = $provider->send_template(
             $to,
