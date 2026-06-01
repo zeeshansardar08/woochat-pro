@@ -117,6 +117,9 @@ final class Plugin {
         if (function_exists('zignites_chat_unschedule_cart_recovery_cron')) {
             zignites_chat_unschedule_cart_recovery_cron();
         }
+        if (function_exists('zignites_chat_unschedule_campaign_promoter_cron')) {
+            zignites_chat_unschedule_campaign_promoter_cron();
+        }
         wp_clear_scheduled_hook('zignites_chat_cleanup_analytics');
     }
 

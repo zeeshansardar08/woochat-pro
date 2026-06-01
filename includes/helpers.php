@@ -114,6 +114,7 @@ function zignites_chat_get_migrations() {
         1 => 'zignites_chat_migration_v1_secrets_autoload',
         2 => 'zignites_chat_migration_v2_analytics_to_table',
         3 => 'zignites_chat_migration_v3_campaign_tables',
+        4 => 'zignites_chat_migration_v4_campaign_scheduled_at',
     ];
 }
 
@@ -165,6 +166,19 @@ function zignites_chat_migration_v2_analytics_to_table() {
  * creator, so a re-activation rebuilds the tables if WC is added later.
  */
 function zignites_chat_migration_v3_campaign_tables() {
+    if (function_exists('zignites_chat_create_campaign_tables')) {
+        zignites_chat_create_campaign_tables();
+    }
+}
+
+/**
+ * v4: add the campaigns.scheduled_at column for send-at scheduling.
+ *
+ * Re-runs the dbDelta-based table creator, which is idempotent and adds the
+ * new column to existing installs without touching data. Same WC-state guard
+ * shape as v3 — the function is only defined once campaigns.php is loaded.
+ */
+function zignites_chat_migration_v4_campaign_scheduled_at() {
     if (function_exists('zignites_chat_create_campaign_tables')) {
         zignites_chat_create_campaign_tables();
     }

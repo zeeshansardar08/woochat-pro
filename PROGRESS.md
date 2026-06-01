@@ -225,9 +225,25 @@ endpoint). Now wired end-to-end:
 Ingest inbound Cloud API / Twilio messages (signatures already verified in
 `optout.php`) into a conversation view so agents can reply in-window. — ⬜
 
-### P1 — Scheduled & recurring campaigns
-Campaigns are send-now only; add "send at <datetime>" + recent-recipient
-exclusion. — ⬜
+### P1 — Scheduled campaigns — ✅ Code complete (`feat/pro-scheduled-campaigns`; smoke test pending)
+Campaigns were send-now only; added "send at <datetime>" + recent-recipient
+exclusion.
+- [x] schema: campaigns.scheduled_at column (migration v4, dbDelta)
+- [x] campaign_create() respects a future send time → status 'scheduled'
+      (pure resolve_schedule() + validating normalize_datetime())
+- [x] promoter cron (every 5 min) flips due 'scheduled' campaigns to queued
+      and kicks off the first chunk; unscheduled on deactivate, cleared on
+      uninstall
+- [x] recent-recipient exclusion: skip phones that got a bulk message in the
+      last N days (pure filter_excluded() + analytics lookup)
+- [x] UI: schedule (datetime-local) + skip-recent fields, Scheduled column in
+      the list, AJAX handler wired
+- [x] fixed a latent bug: campaigns.js guarded on a stale wrapper id
+      (`zignites-chat-tab-content-campaigns`) that no longer existed, so the
+      create form's JS never ran — restored the wrapper
+- [x] 11 unit tests (normalize/resolve/filter); 129 pass, PHPCS green
+- [ ] live smoke test (create a scheduled campaign on a real store)
+- Note: "recurring" (repeat weekly/monthly) deferred to a later enhancement
 
 ### P2 — Richer campaign segments
 By product/category purchased, lifetime spend, location, and win-back
@@ -251,6 +267,5 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**P1 / 8.1.7** — smoke-test receipts against live Twilio + Meta sandboxes,
-then merge `feat/pro-p1-delivery-receipts` into `pro`. After that, start
-**P1 (two-way team inbox)** or **scheduled campaigns** — pick next priority.
+Merge `feat/pro-scheduled-campaigns` into `pro`, then start **two-way team
+inbox** (P1, the big one) or **richer campaign segments** (P2, smaller).
