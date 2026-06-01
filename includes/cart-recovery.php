@@ -291,11 +291,18 @@ function zignites_chat_send_cart_recovery_whatsapp($phone, $cart_items, $consent
         return 'opted_out';
     }
 
-    $result = zignites_chat_send_whatsapp_message($phone, $message, false, [
+    $context = zignites_chat_maybe_apply_template('cart_recovery', [
+        '{items}'           => implode("\n", $items),
+        '{total}'           => $total,
+        '{currency_symbol}' => zignites_chat_currency_symbol_text(),
+        '{cart_url}'        => $tracked_cart_url,
+    ], [
         'type'       => 'cart_recovery',
         'event_id'   => $event_id,
         'ab_variant' => $picked['variant'],
     ]);
+
+    $result = zignites_chat_send_whatsapp_message($phone, $message, false, $context);
     if ($event_id) {
         zignites_chat_analytics_update_event($event_id, ['status' => $result === true ? 'sent' : 'failed', 'message_preview' => $preview]);
     }

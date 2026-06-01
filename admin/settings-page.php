@@ -66,6 +66,12 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_scheduler_group', 'zignites_chat_gpt_api_key', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_scheduler_group', 'zignites_chat_gpt_model', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 
+    // WhatsApp Templates (Pro) — approved-template (HSM) mapping per message type.
+    register_setting('zignites_chat_wa_templates_group', 'zignites_chat_wa_templates', [
+        'sanitize_callback' => 'zignites_chat_sanitize_wa_templates',
+        'default'           => [],
+    ]);
+
     // License.
     register_setting('zignites_chat_license_group', 'zignites_chat_license_key', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 }
@@ -91,6 +97,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-dashboard',     __('Dashboard', 'zignites-chat'),        'zignites_chat_render_dashboard_page'],
         ['zignites-chat-general',       __('General Settings', 'zignites-chat'), 'zignites_chat_render_general_page'],
         ['zignites-chat-messaging',     __('Messaging', 'zignites-chat'),        'zignites_chat_render_messaging_page'],
+        ['zignites-chat-wa-templates',  __('WhatsApp Templates', 'zignites-chat'), 'zignites_chat_render_wa_templates_page', true],
         ['zignites-chat-chatbot',       __('Chatbot', 'zignites-chat'),          'zignites_chat_render_chatbot_page'],
         ['zignites-chat-cart-recovery', __('Cart Recovery', 'zignites-chat'),    'zignites_chat_render_cart_recovery_page', true],
         ['zignites-chat-scheduler',     __('Scheduler', 'zignites-chat'),        'zignites_chat_render_scheduler_page',     true],
@@ -273,6 +280,24 @@ function zignites_chat_render_chatbot_page() {
     zignites_chat_render_settings_view(__('Chatbot', 'zignites-chat'), 'zignites_chat_chatbot_group', 'tab-chatbot.php');
 }
 
+function zignites_chat_render_wa_templates_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'));
+    }
+    zignites_chat_admin_page_open(__('WhatsApp Templates', 'zignites-chat'));
+    if (!zignites_chat_is_pro_active()) {
+        zignites_chat_render_pro_upgrade_notice('wa-templates');
+        zignites_chat_admin_page_close();
+        return;
+    }
+    echo '<form method="post" action="options.php">';
+    settings_fields('zignites_chat_wa_templates_group');
+    require ZIGNITES_CHAT_PATH . 'admin/views/tab-wa-templates.php';
+    submit_button();
+    echo '</form>';
+    zignites_chat_admin_page_close();
+}
+
 function zignites_chat_render_license_page() {
     zignites_chat_render_settings_view(__('License', 'zignites-chat'), 'zignites_chat_license_group', 'tab-license.php');
 }
@@ -418,6 +443,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Revenue attribution from WhatsApp messages', 'zignites-chat'),
                 __('A/B test performance comparison', 'zignites-chat'),
                 __('Exportable reports', 'zignites-chat'),
+            ],
+        ],
+        'wa-templates' => [
+            'title'       => __('WhatsApp Approved Templates', 'zignites-chat'),
+            'description' => __('Map your Meta-approved message templates so cart recovery, follow-ups and campaigns send as compliant templates — the only way to reliably reach customers outside the 24-hour window on the Cloud API.', 'zignites-chat'),
+            'benefits'    => [
+                __('Send pre-approved templates (HSM) on the Cloud API', 'zignites-chat'),
+                __('Per message-type template + language mapping', 'zignites-chat'),
+                __('Map order/cart/follow-up data to template variables', 'zignites-chat'),
+                __('Protects your sender number from quality downgrades', 'zignites-chat'),
             ],
         ],
         'webhooks' => [

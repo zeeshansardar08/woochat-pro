@@ -32,11 +32,18 @@ function zignites_chat_send_whatsapp_on_order_complete($order_id) {
         $template
     );
 
-    $result = zignites_chat_send_whatsapp_message($to, $message, false, [
+    $context = zignites_chat_maybe_apply_template('order', [
+        '{name}'            => $name,
+        '{order_id}'        => $order_id,
+        '{total}'           => $total,
+        '{currency_symbol}' => zignites_chat_currency_symbol_text(),
+    ], [
         'type'       => 'order',
         'order_id'   => $order_id,
         'ab_variant' => $picked['variant'],
     ]);
+
+    $result = zignites_chat_send_whatsapp_message($to, $message, false, $context);
     if ($result === true) {
         $order->update_meta_data('_zignites_chat_order_msg_sent', current_time('mysql'));
         $order->save();

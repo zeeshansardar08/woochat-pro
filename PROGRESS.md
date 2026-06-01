@@ -172,7 +172,72 @@ Current branch: `free`
 
 ---
 
+## PHASE 8 — Pro Enhancements Roadmap (post-1.1)
+
+Tracks the agreed Pro backlog. Work top-down by priority; each task ships
+on its own `feat/pro-*` branch off `pro`, with tests + PHPCS green before
+merge.
+
+### P0 — WhatsApp approved message templates (HSM) — ✅ Code complete (`feat/pro-p0-whatsapp-templates`; smoke test pending)
+Meta's Cloud API forbids free-form business-initiated messages outside the
+24h customer-service window — cart recovery, follow-ups, and bulk campaigns
+must use **pre-approved templates** or the sender number gets quality-rated
+down and eventually blocked. Add template (HSM) support so those sends are
+deliverable in production.
+- [x] 8.0.1 Data model + module (`includes/wa-templates.php`):
+      `zignites_chat_wa_templates` option (per message-type: enabled, name,
+      language, ordered variable map), getters, sanitizer, component
+      builder, `maybe_apply_template()` helper
+- [x] 8.0.2 Cloud provider `send_template()` (type=template envelope; shared
+      `dispatch()` with `send()`)
+- [x] 8.0.3 Dispatcher routes to template send when a descriptor is attached
+      (Cloud + Pro), free-form text stays the fallback/preview
+- [x] 8.0.4 Wire consumers: order confirmation, cart recovery, follow-up,
+      campaigns all routed through maybe_apply_template()
+- [x] 8.0.5 Settings UI — dedicated "WhatsApp Templates" Pro submenu
+      (`admin/views/tab-wa-templates.php`): per-type enable + template name +
+      language + ordered variable rows; Cloud-only notice; option cleaned on
+      uninstall
+- [x] 8.0.6 Tests — builder/sanitizer/routing (13 cases); PHPCS green; 108
+      tests pass
+- [ ] 8.0.7 Manual smoke test against a live Meta WABA with a real approved
+      template (user action)
+
+### P1 — Provider delivery/read receipts → analytics
+`delivered`/`read` are never ingested from providers today (only a generic
+AJAX endpoint). Wire Twilio StatusCallback + Meta status webhooks into the
+analytics event statuses. — ⬜ Not started
+
+### P1 — Two-way team inbox
+Ingest inbound Cloud API / Twilio messages (signatures already verified in
+`optout.php`) into a conversation view so agents can reply in-window. — ⬜
+
+### P1 — Scheduled & recurring campaigns
+Campaigns are send-now only; add "send at <datetime>" + recent-recipient
+exclusion. — ⬜
+
+### P2 — Richer campaign segments
+By product/category purchased, lifetime spend, location, and win-back
+(no order in N days). Extend the paginated resolver in `campaigns.php`. — ⬜
+
+### P2 — Media messages
+Images / PDF (receipts, product images) via provider media endpoints. — ⬜
+
+### P2 — Revenue dashboard widget
+Surface `match_conversions()` per campaign/cart/followup as a revenue panel
+on Analytics. — ⬜
+
+### P3 — Modernize GPT
+Replace `gpt-3.5-turbo` default with a current model; optional store-catalog
+context for the chatbot. — ⬜
+
+### Quality backlog (fold into the above as touched)
+- [ ] Retire legacy `license-manager.php` once Freemius migration completes
+- [ ] Central outbound rate limiter/queue shared by cart/scheduler/campaigns
+
+---
+
 ## Next Action
-**Phase 6.1** — paste real Freemius `id` and `public_key` into
-`includes/freemius.php` (lines 51, 56). Then run Phase 7.1 smoke
-test on a staging store.
+**P0 / 8.0.7** — smoke-test template sends against a live Meta WABA, then
+merge `feat/pro-p0-whatsapp-templates` into `pro`. After that, start **P1
+(provider delivery/read receipts → analytics)**.

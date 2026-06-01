@@ -10,6 +10,9 @@ Thumbs.db
 *.swp
 *.tmp
 
+# Local dev planning doc — never ship in the repo
+WooChat-Master-Development-Prompt.md
+
 # Ignore PHP tooling
 vendor/
 composer.lock

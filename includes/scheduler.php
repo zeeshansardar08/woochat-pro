@@ -59,11 +59,20 @@ function zignites_chat_send_followup_message_handler($order_id) {
         }
     }
 
-    $result = zignites_chat_send_whatsapp_message($to, $message, false, [
+    $context = zignites_chat_maybe_apply_template('followup', [
+        '{name}'            => $order->get_billing_first_name(),
+        '{order_id}'        => $order->get_id(),
+        '{total}'           => $order->get_total(),
+        '{status}'          => $order->get_status(),
+        '{date}'            => $order->get_date_created() ? $order->get_date_created()->date_i18n(get_option('date_format')) : '',
+        '{currency_symbol}' => zignites_chat_currency_symbol_text(),
+    ], [
         'type'       => 'followup',
         'order_id'   => $order_id,
         'ab_variant' => $picked['variant'],
     ]);
+
+    $result = zignites_chat_send_whatsapp_message($to, $message, false, $context);
     if ($result === true) {
         $order->update_meta_data('_zignites_chat_followup_sent', current_time('mysql'));
         $order->save();
