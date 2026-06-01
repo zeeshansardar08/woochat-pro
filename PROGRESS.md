@@ -178,7 +178,7 @@ Tracks the agreed Pro backlog. Work top-down by priority; each task ships
 on its own `feat/pro-*` branch off `pro`, with tests + PHPCS green before
 merge.
 
-### P0 — WhatsApp approved message templates (HSM) — ✅ Code complete (`feat/pro-p0-whatsapp-templates`; smoke test pending)
+### P0 — WhatsApp approved message templates (HSM) — ✅ Merged into `pro` (live smoke test pending)
 Meta's Cloud API forbids free-form business-initiated messages outside the
 24h customer-service window — cart recovery, follow-ups, and bulk campaigns
 must use **pre-approved templates** or the sender number gets quality-rated
@@ -203,7 +203,7 @@ deliverable in production.
 - [ ] 8.0.7 Manual smoke test against a live Meta WABA with a real approved
       template (user action)
 
-### P1 — Provider delivery/read receipts → analytics — ✅ Code complete (`feat/pro-p1-delivery-receipts`; smoke test pending)
+### P1 — Provider delivery/read receipts → analytics — ✅ Merged into `pro` (live smoke test pending)
 `delivered`/`read` were never ingested from providers (only a generic AJAX
 endpoint). Now wired end-to-end:
 - [x] 8.1.1 Monotonic analytics status core: status_rank(),
@@ -221,11 +221,36 @@ endpoint). Now wired end-to-end:
 - [x] 8.1.6 `message.read` webhook event; 16 unit tests; 121 pass, PHPCS green
 - [ ] 8.1.7 Smoke test against live Twilio + Meta sandboxes (user action)
 
-### P1 — Two-way team inbox
+### P1 — Two-way team inbox — ⬜ NEXT UP (the big one; build in reviewable increments)
 Ingest inbound Cloud API / Twilio messages (signatures already verified in
-`optout.php`) into a conversation view so agents can reply in-window. — ⬜
+`optout.php` / the receipts webhook) into conversation threads so agents can
+read and reply within WhatsApp's 24h service window.
 
-### P1 — Scheduled campaigns — ✅ Code complete (`feat/pro-scheduled-campaigns`; smoke test pending)
+Planned increments (each its own commit; tests + PHPCS green per step):
+- [ ] I1 — Schema + storage: `{prefix}zignites_chat_conversations` (one row
+      per phone: last_message_at, last_excerpt, unread_count, agent_id) and
+      `{prefix}zignites_chat_messages` (direction in/out, body, provider
+      message_id, status, created_at). Migration v6. Pure thread-upsert +
+      message-insert helpers.
+- [ ] I2 — Inbound capture: extend the Meta webhook (optout.php) +
+      add a Twilio inbound route to record incoming messages into threads
+      (reuse signature verification). Opt-out keyword handling stays. Pure
+      payload→message normalizers (Meta `messages[]`, Twilio form) with tests.
+- [ ] I3 — Admin Inbox view: new Pro submenu listing conversations
+      (unread first) + a thread panel; AJAX to fetch a thread and poll for
+      new messages.
+- [ ] I4 — Agent reply: send from the thread via the existing dispatcher
+      (free-form within the 24h window); record the outbound message; mark
+      read. Capability + nonce gated.
+- [ ] I5 — Outbound mirroring (optional): record order/cart/followup/campaign
+      sends into the matching thread so the inbox shows the full history.
+- [ ] Tests for all pure helpers; live smoke test against Twilio + Meta.
+
+Open questions to resolve at the start: thread retention vs. the existing
+`data_retention_days`; whether replies are gated to a single assigned agent
+or any manager; and how 24h-window expiry is surfaced in the UI.
+
+### P1 — Scheduled campaigns — ✅ Merged into `pro` (live smoke test pending)
 Campaigns were send-now only; added "send at <datetime>" + recent-recipient
 exclusion.
 - [x] schema: campaigns.scheduled_at column (migration v4, dbDelta)
@@ -245,7 +270,7 @@ exclusion.
 - [ ] live smoke test (create a scheduled campaign on a real store)
 - Note: "recurring" (repeat weekly/monthly) deferred to a later enhancement
 
-### P2 — Richer campaign segments — ✅ Code complete (`feat/pro-richer-segments`; smoke test pending)
+### P2 — Richer campaign segments — ✅ Merged into `pro` (live smoke test pending)
 Added five segments beyond all_customers/recent_orders by refactoring the
 resolver to aggregate per customer:
 - [x] product_purchased / category_purchased / location (per-order match)
@@ -258,7 +283,7 @@ resolver to aggregate per customer:
 - [x] 13 new unit tests; 142 pass, PHPCS green; logic smoke-tested
 - [ ] live smoke test against a store with real orders (user action)
 
-### P2 — Media messages — ✅ Code complete (`feat/pro-media-messages`; smoke test pending)
+### P2 — Media messages — ✅ Merged into `pro` (live smoke test pending)
 Send images / documents over WhatsApp by public URL.
 - [x] reusable plumbing: includes/media.php (normalize_media_type,
       validate_media_url with same-site host allowlist to block SSRF,
@@ -274,7 +299,7 @@ Send images / documents over WhatsApp by public URL.
 - Note: manual order-screen attachment + product-image auto-attach reuse the
   same plumbing — left as later enhancements
 
-### P2 — Revenue dashboard widget — ✅ Code complete (`feat/pro-revenue-widget`; smoke test pending)
+### P2 — Revenue dashboard widget — ✅ Merged into `pro` (live smoke test pending)
 Surface attributed revenue per channel on Analytics.
 - [x] get_revenue_by_type(): one global first-event-wins match (reusing
       match_conversions()), matched orders bucketed by the winning event's
@@ -297,5 +322,11 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-Merge `feat/pro-media-messages` into `pro`. Remaining: **two-way team
-inbox** (P1, the big one) and **GPT modernization** (P3).
+**START HERE → Two-way team inbox (P1).** Branch `feat/pro-inbox` off `pro`
+and begin increment **I1 (schema + storage + migration v6)**. Resolve the
+three open questions above first (retention, reply gating, 24h-window UI).
+
+Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above are **merged
+into `pro`**; only live smoke tests remain on those. The free build shipped
+from `master`. Remaining Pro backlog: **two-way inbox (P1)**, **GPT
+modernization (P3)**, plus the quality backlog.
