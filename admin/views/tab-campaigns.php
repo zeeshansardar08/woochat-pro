@@ -4,6 +4,16 @@ if (!defined('ABSPATH')) exit;
 
 $zignites_chat_segment_types = zignites_chat_campaign_segment_types();
 $zignites_chat_recent_campaigns = zignites_chat_campaign_list(20);
+
+// Option lists for the richer-segment pickers.
+$zignites_chat_product_cats = function_exists('get_terms') ? get_terms([
+    'taxonomy'   => 'product_cat',
+    'hide_empty' => false,
+]) : [];
+if (is_wp_error($zignites_chat_product_cats) || !is_array($zignites_chat_product_cats)) {
+    $zignites_chat_product_cats = [];
+}
+$zignites_chat_wc_countries = (function_exists('WC') && WC()->countries) ? WC()->countries->get_countries() : [];
 ?>
 <h2><?php esc_html_e('Bulk Campaigns', 'zignites-chat'); ?></h2>
     <p class="description">
@@ -26,11 +36,54 @@ $zignites_chat_recent_campaigns = zignites_chat_campaign_list(20);
                             <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <span id="zignites-chat-campaign-days-wrap" style="display:none; margin-left:8px;">
+
+                    <div class="zignites-chat-campaign-meta" data-segment="recent_orders" style="display:none; margin-top:8px;">
                         <?php esc_html_e('Last', 'zignites-chat'); ?>
                         <input type="number" id="zignites-chat-campaign-days" min="1" max="3650" value="30" class="small-text" />
                         <?php esc_html_e('days', 'zignites-chat'); ?>
-                    </span>
+                    </div>
+
+                    <div class="zignites-chat-campaign-meta" data-segment="product_purchased" style="display:none; margin-top:8px;">
+                        <label for="zignites-chat-campaign-product-ids"><?php esc_html_e('Product IDs (comma-separated)', 'zignites-chat'); ?></label><br />
+                        <input type="text" id="zignites-chat-campaign-product-ids" class="regular-text" placeholder="e.g. 42, 108, 256" />
+                        <p class="description"><?php esc_html_e('Find a product ID by hovering its row in Products.', 'zignites-chat'); ?></p>
+                    </div>
+
+                    <div class="zignites-chat-campaign-meta" data-segment="category_purchased" style="display:none; margin-top:8px;">
+                        <label for="zignites-chat-campaign-category-ids"><?php esc_html_e('Categories', 'zignites-chat'); ?></label><br />
+                        <select id="zignites-chat-campaign-category-ids" multiple size="6" style="min-width:240px;">
+                            <?php foreach ($zignites_chat_product_cats as $zignites_chat_cat) : ?>
+                                <option value="<?php echo esc_attr($zignites_chat_cat->term_id); ?>"><?php echo esc_html($zignites_chat_cat->name); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="description"><?php esc_html_e('Hold Ctrl/Cmd to select multiple.', 'zignites-chat'); ?></p>
+                    </div>
+
+                    <div class="zignites-chat-campaign-meta" data-segment="min_spend" style="display:none; margin-top:8px;">
+                        <label for="zignites-chat-campaign-min-spend"><?php esc_html_e('Minimum lifetime spend', 'zignites-chat'); ?></label><br />
+                        <input type="number" id="zignites-chat-campaign-min-spend" min="0" step="0.01" value="100" class="small-text" />
+                    </div>
+
+                    <div class="zignites-chat-campaign-meta" data-segment="location" style="display:none; margin-top:8px;">
+                        <label for="zignites-chat-campaign-countries"><?php esc_html_e('Countries', 'zignites-chat'); ?></label><br />
+                        <?php if (!empty($zignites_chat_wc_countries)) : ?>
+                            <select id="zignites-chat-campaign-countries" multiple size="6" style="min-width:240px;">
+                                <?php foreach ($zignites_chat_wc_countries as $zignites_chat_code => $zignites_chat_country) : ?>
+                                    <option value="<?php echo esc_attr($zignites_chat_code); ?>"><?php echo esc_html($zignites_chat_country); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="description"><?php esc_html_e('Hold Ctrl/Cmd to select multiple.', 'zignites-chat'); ?></p>
+                        <?php else : ?>
+                            <input type="text" id="zignites-chat-campaign-countries-text" class="regular-text" placeholder="US, GB, AE" />
+                            <p class="description"><?php esc_html_e('Two-letter country codes, comma-separated.', 'zignites-chat'); ?></p>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="zignites-chat-campaign-meta" data-segment="win_back" style="display:none; margin-top:8px;">
+                        <?php esc_html_e('No order in the last', 'zignites-chat'); ?>
+                        <input type="number" id="zignites-chat-campaign-winback-days" min="1" max="3650" value="60" class="small-text" />
+                        <?php esc_html_e('days', 'zignites-chat'); ?>
+                    </div>
                 </td>
             </tr>
             <tr>

@@ -245,9 +245,18 @@ exclusion.
 - [ ] live smoke test (create a scheduled campaign on a real store)
 - Note: "recurring" (repeat weekly/monthly) deferred to a later enhancement
 
-### P2 — Richer campaign segments
-By product/category purchased, lifetime spend, location, and win-back
-(no order in N days). Extend the paginated resolver in `campaigns.php`. — ⬜
+### P2 — Richer campaign segments — ✅ Code complete (`feat/pro-richer-segments`; smoke test pending)
+Added five segments beyond all_customers/recent_orders by refactoring the
+resolver to aggregate per customer:
+- [x] product_purchased / category_purchased / location (per-order match)
+- [x] min_spend (lifetime spend) / win_back (no order in N days) (aggregate)
+- [x] pure, tested helpers: order_contributes_match(), phone_qualifies(),
+      build_campaign_segment_meta(), csv_to_int_ids()
+- [x] UI: per-segment meta pickers (product IDs, category multiselect, min
+      spend, country multiselect, win-back days) toggled by segment; AJAX
+      builds segment_meta via the pure builder
+- [x] 13 new unit tests; 142 pass, PHPCS green; logic smoke-tested
+- [ ] live smoke test against a store with real orders (user action)
 
 ### P2 — Media messages
 Images / PDF (receipts, product images) via provider media endpoints. — ⬜
@@ -267,5 +276,6 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-Merge `feat/pro-scheduled-campaigns` into `pro`, then start **two-way team
-inbox** (P1, the big one) or **richer campaign segments** (P2, smaller).
+Merge `feat/pro-richer-segments` into `pro`. Remaining: **two-way team
+inbox** (P1, the big one), **media messages** (P2), **revenue widget** (P2),
+**GPT modernization** (P3).

@@ -8,7 +8,7 @@
         var i18n = config.i18n || {};
 
         var segmentEl = document.getElementById('zignites-chat-campaign-segment');
-        var daysWrap  = document.getElementById('zignites-chat-campaign-days-wrap');
+        var metaBlocks = root.querySelectorAll('.zignites-chat-campaign-meta');
         var nameEl    = document.getElementById('zignites-chat-campaign-name');
         var tmplEl    = document.getElementById('zignites-chat-campaign-template');
         var daysEl    = document.getElementById('zignites-chat-campaign-days');
@@ -17,14 +17,53 @@
         var submit    = document.getElementById('zignites-chat-campaign-submit');
         var feedback  = document.getElementById('zignites-chat-campaign-feedback');
 
-        function updateDaysVisibility() {
-            if (!segmentEl || !daysWrap) return;
-            daysWrap.style.display = segmentEl.value === 'recent_orders' ? 'inline-block' : 'none';
+        function updateSegmentMeta() {
+            if (!segmentEl) return;
+            var selected = segmentEl.value;
+            metaBlocks.forEach(function (block) {
+                block.style.display = block.getAttribute('data-segment') === selected ? 'block' : 'none';
+            });
         }
 
         if (segmentEl) {
-            segmentEl.addEventListener('change', updateDaysVisibility);
-            updateDaysVisibility();
+            segmentEl.addEventListener('change', updateSegmentMeta);
+            updateSegmentMeta();
+        }
+
+        // Comma-join the selected values of a multi-select, or read a text input.
+        function selectedCsv(selectId, textFallbackId) {
+            var sel = document.getElementById(selectId);
+            if (sel && sel.options) {
+                var vals = [];
+                for (var i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].selected) vals.push(sel.options[i].value);
+                }
+                return vals.join(',');
+            }
+            if (textFallbackId) {
+                var t = document.getElementById(textFallbackId);
+                return t ? t.value : '';
+            }
+            return '';
+        }
+
+        function appendSegmentMeta(body, segment) {
+            if (segment === 'recent_orders') {
+                body.append('segment_days', (daysEl && daysEl.value) || '30');
+            } else if (segment === 'product_purchased') {
+                var p = document.getElementById('zignites-chat-campaign-product-ids');
+                body.append('product_ids', (p && p.value) || '');
+            } else if (segment === 'category_purchased') {
+                body.append('category_ids', selectedCsv('zignites-chat-campaign-category-ids'));
+            } else if (segment === 'min_spend') {
+                var m = document.getElementById('zignites-chat-campaign-min-spend');
+                body.append('min_spend', (m && m.value) || '0');
+            } else if (segment === 'location') {
+                body.append('countries', selectedCsv('zignites-chat-campaign-countries', 'zignites-chat-campaign-countries-text'));
+            } else if (segment === 'win_back') {
+                var w = document.getElementById('zignites-chat-campaign-winback-days');
+                body.append('winback_days', (w && w.value) || '60');
+            }
         }
 
         if (submit) {
@@ -56,9 +95,7 @@
             body.append('name', name);
             body.append('template', template);
             body.append('segment_type', segmentEl.value);
-            if (segmentEl.value === 'recent_orders') {
-                body.append('segment_days', daysEl.value || '30');
-            }
+            appendSegmentMeta(body, segmentEl.value);
             if (scheduleEl && scheduleEl.value) {
                 body.append('scheduled_at', scheduleEl.value);
             }

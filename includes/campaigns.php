@@ -356,6 +356,60 @@ function zignites_chat_campaign_segment_types() {
 }
 
 /**
+ * Parse a comma-separated string into a list of unique positive ints. Pure.
+ *
+ * @param string $csv
+ * @return int[]
+ */
+function zignites_chat_csv_to_int_ids($csv) {
+    $out = [];
+    foreach (explode(',', (string) $csv) as $part) {
+        $n = (int) trim($part);
+        if ($n > 0) $out[] = $n;
+    }
+    return array_values(array_unique($out));
+}
+
+/**
+ * Build a campaign's segment_meta from already-sanitized string inputs. Pure.
+ *
+ * @param string                $segment_type
+ * @param array<string, string> $inputs Sanitized field values from the form.
+ * @return array Segment meta for the resolver.
+ */
+function zignites_chat_build_campaign_segment_meta($segment_type, $inputs) {
+    switch ($segment_type) {
+        case 'recent_orders':
+            return ['days' => max(1, (int) ($inputs['segment_days'] ?? 30))];
+
+        case 'product_purchased':
+            return ['product_ids' => zignites_chat_csv_to_int_ids($inputs['product_ids'] ?? '')];
+
+        case 'category_purchased':
+            return ['category_ids' => zignites_chat_csv_to_int_ids($inputs['category_ids'] ?? '')];
+
+        case 'min_spend':
+            return ['min_spend' => max(0, (float) ($inputs['min_spend'] ?? 0))];
+
+        case 'location':
+            $codes = [];
+            foreach (explode(',', (string) ($inputs['countries'] ?? '')) as $code) {
+                $code = strtoupper(trim($code));
+                if (preg_match('/^[A-Z]{2}$/', $code)) {
+                    $codes[] = $code;
+                }
+            }
+            return ['countries' => array_values(array_unique($codes))];
+
+        case 'win_back':
+            return ['days' => max(1, (int) ($inputs['winback_days'] ?? 60))];
+
+        default:
+            return [];
+    }
+}
+
+/**
  * Whether a single order contributes a "match" for the per-order match
  * segment types (product / category / location). Pure.
  *

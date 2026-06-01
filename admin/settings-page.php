@@ -808,11 +808,18 @@ function zignites_chat_ajax_create_campaign() {
     $name         = isset($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
     $template     = isset($_POST['template']) ? sanitize_textarea_field(wp_unslash($_POST['template'])) : '';
     $segment_type = isset($_POST['segment_type']) ? sanitize_key(wp_unslash($_POST['segment_type'])) : '';
-    $days         = isset($_POST['segment_days']) ? max(1, (int) $_POST['segment_days']) : 30;
     $scheduled_at = isset($_POST['scheduled_at']) ? sanitize_text_field(wp_unslash($_POST['scheduled_at'])) : '';
     $exclude_days = isset($_POST['exclude_recent_days']) ? max(0, (int) $_POST['exclude_recent_days']) : 0;
 
-    $segment_meta = $segment_type === 'recent_orders' ? ['days' => $days] : [];
+    $segment_inputs = [
+        'segment_days' => isset($_POST['segment_days']) ? sanitize_text_field(wp_unslash($_POST['segment_days'])) : '',
+        'product_ids'  => isset($_POST['product_ids']) ? sanitize_text_field(wp_unslash($_POST['product_ids'])) : '',
+        'category_ids' => isset($_POST['category_ids']) ? sanitize_text_field(wp_unslash($_POST['category_ids'])) : '',
+        'min_spend'    => isset($_POST['min_spend']) ? sanitize_text_field(wp_unslash($_POST['min_spend'])) : '',
+        'countries'    => isset($_POST['countries']) ? sanitize_text_field(wp_unslash($_POST['countries'])) : '',
+        'winback_days' => isset($_POST['winback_days']) ? sanitize_text_field(wp_unslash($_POST['winback_days'])) : '',
+    ];
+    $segment_meta = zignites_chat_build_campaign_segment_meta($segment_type, $segment_inputs);
     if ($exclude_days > 0) {
         $segment_meta['exclude_recent_days'] = $exclude_days;
     }
