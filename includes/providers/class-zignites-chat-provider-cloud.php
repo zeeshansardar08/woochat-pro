@@ -27,9 +27,59 @@ class ZIGNITES_CHAT_Provider_Cloud extends ZIGNITES_CHAT_Provider {
     }
 
     public function send( $to, $message ) {
-        $token     = (string) get_option( 'zignites_chat_cloud_token' );
-        $phone_id  = (string) get_option( 'zignites_chat_cloud_phone_id' );
         $to_number = preg_replace( '/[^0-9]/', '', (string) $to );
+
+        return $this->dispatch( [
+            'messaging_product' => 'whatsapp',
+            'to'                => $to_number,
+            'type'              => 'text',
+            'text'              => [ 'body' => $message ],
+        ] );
+    }
+
+    /**
+     * Send a pre-approved template (HSM) message.
+     *
+     * Required for business-initiated messages outside WhatsApp's 24-hour
+     * customer-service window (cart recovery, follow-ups, campaigns).
+     *
+     * @param string $to         Raw destination phone number.
+     * @param string $name       Exact approved template name in the WABA.
+     * @param string $language   BCP-47 / Meta language code (e.g. 'en_US').
+     * @param array  $components Optional Cloud API components array (body
+     *                           parameters, etc.). Omitted when empty.
+     * @return array{ok:bool, message_id?:string, error?:string}
+     */
+    public function send_template( $to, $name, $language = 'en_US', $components = [] ) {
+        $to_number = preg_replace( '/[^0-9]/', '', (string) $to );
+
+        $template = [
+            'name'     => (string) $name,
+            'language' => [ 'code' => $language !== '' ? (string) $language : 'en_US' ],
+        ];
+        if ( ! empty( $components ) ) {
+            $template['components'] = $components;
+        }
+
+        return $this->dispatch( [
+            'messaging_product' => 'whatsapp',
+            'to'                => $to_number,
+            'type'              => 'template',
+            'template'          => $template,
+        ] );
+    }
+
+    /**
+     * POST a message envelope to the Cloud API and normalise the response
+     * into the uniform { ok, message_id, error } shape. Shared by send()
+     * and send_template().
+     *
+     * @param array $payload Fully-formed Cloud API message body.
+     * @return array{ok:bool, message_id?:string, error?:string}
+     */
+    private function dispatch( array $payload ) {
+        $token    = (string) get_option( 'zignites_chat_cloud_token' );
+        $phone_id = (string) get_option( 'zignites_chat_cloud_phone_id' );
 
         $response = wp_remote_post(
             'https://graph.facebook.com/v19.0/' . rawurlencode( $phone_id ) . '/messages',
@@ -40,12 +90,7 @@ class ZIGNITES_CHAT_Provider_Cloud extends ZIGNITES_CHAT_Provider {
                     'Authorization' => 'Bearer ' . $token,
                     'Content-Type'  => 'application/json',
                 ],
-                'body' => wp_json_encode( [
-                    'messaging_product' => 'whatsapp',
-                    'to'                => $to_number,
-                    'type'              => 'text',
-                    'text'              => [ 'body' => $message ],
-                ] ),
+                'body' => wp_json_encode( $payload ),
             ]
         );
 

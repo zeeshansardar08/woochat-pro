@@ -184,16 +184,19 @@ Meta's Cloud API forbids free-form business-initiated messages outside the
 must use **pre-approved templates** or the sender number gets quality-rated
 down and eventually blocked. Add template (HSM) support so those sends are
 deliverable in production.
-- [ ] 8.0.1 Data model + module: `zignites_chat_wa_templates` option
-      (per message-type: enabled, name, language, ordered variable map),
-      getters, sanitizer, component builder, `maybe_apply_template()` helper
-- [ ] 8.0.2 Cloud provider `send_template()` (type=template envelope)
-- [ ] 8.0.3 Dispatcher routes to template send when configured (Cloud + Pro),
-      free-form text stays the fallback/preview
-- [ ] 8.0.4 Wire consumers: order confirmation, cart recovery, follow-up,
-      campaigns
+- [x] 8.0.1 Data model + module (`includes/wa-templates.php`):
+      `zignites_chat_wa_templates` option (per message-type: enabled, name,
+      language, ordered variable map), getters, sanitizer, component
+      builder, `maybe_apply_template()` helper
+- [x] 8.0.2 Cloud provider `send_template()` (type=template envelope; shared
+      `dispatch()` with `send()`)
+- [x] 8.0.3 Dispatcher routes to template send when a descriptor is attached
+      (Cloud + Pro), free-form text stays the fallback/preview
+- [🟡] 8.0.4 Wire consumers: order confirmation ✅ — cart recovery / follow-up
+      / campaigns ⬜
 - [ ] 8.0.5 Settings UI to map each message type → approved template + vars
-- [ ] 8.0.6 Tests (component builder, sanitizer, routing) + PHPCS
+- [🟡] 8.0.6 Tests — builder/sanitizer/routing ✅ (13 cases); consumer wiring
+      tests ⬜. PHPCS green.
 
 ### P1 — Provider delivery/read receipts → analytics
 `delivered`/`read` are never ingested from providers today (only a generic

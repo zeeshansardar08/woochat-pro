@@ -154,7 +154,23 @@ function zignites_chat_send_whatsapp_message( $to, $message, $manual = false, $c
         return false;
     }
 
-    $result = $provider->send( $to, $message );
+    // Approved-template (HSM) path: when a caller has attached a template
+    // descriptor (only happens for the Cloud provider on a Pro store, via
+    // zignites_chat_maybe_apply_template), send the template instead of
+    // free-form text. The rendered $message still drives the log/analytics
+    // preview above. Falls back to free-form if the provider can't do
+    // templates.
+    if ( ! empty( $context['template'] ) && is_array( $context['template'] ) && method_exists( $provider, 'send_template' ) ) {
+        $tpl    = $context['template'];
+        $result = $provider->send_template(
+            $to,
+            (string) ( $tpl['name'] ?? '' ),
+            (string) ( $tpl['language'] ?? 'en_US' ),
+            isset( $tpl['components'] ) && is_array( $tpl['components'] ) ? $tpl['components'] : []
+        );
+    } else {
+        $result = $provider->send( $to, $message );
+    }
 
     if ( empty( $result['ok'] ) ) {
         $log_write( "$log_prefix " . ( $result['error'] ?? 'Unknown error' ) . "\n" );
