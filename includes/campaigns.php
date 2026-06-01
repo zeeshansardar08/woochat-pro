@@ -327,10 +327,16 @@ function zignites_chat_campaign_process_chunk($campaign_id) {
 
         $message = zignites_chat_campaign_render_message($campaign['template'], $row['customer_name']);
 
-        $ok = zignites_chat_send_whatsapp_message($phone, $message, false, [
+        $context = zignites_chat_maybe_apply_template('bulk', [
+            '{name}'            => $row['customer_name'],
+            '{site}'            => function_exists('get_bloginfo') ? get_bloginfo('name') : '',
+            '{currency_symbol}' => function_exists('zignites_chat_currency_symbol_text') ? zignites_chat_currency_symbol_text() : '',
+        ], [
             'type' => 'bulk',
             'campaign_id' => $campaign_id,
         ]);
+
+        $ok = zignites_chat_send_whatsapp_message($phone, $message, false, $context);
 
         if ($ok === true) {
             $wpdb->update($rt, [

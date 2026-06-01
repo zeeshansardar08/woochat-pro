@@ -192,8 +192,8 @@ deliverable in production.
       `dispatch()` with `send()`)
 - [x] 8.0.3 Dispatcher routes to template send when a descriptor is attached
       (Cloud + Pro), free-form text stays the fallback/preview
-- [🟡] 8.0.4 Wire consumers: order confirmation ✅ — cart recovery / follow-up
-      / campaigns ⬜
+- [x] 8.0.4 Wire consumers: order confirmation, cart recovery, follow-up,
+      campaigns all routed through maybe_apply_template()
 - [ ] 8.0.5 Settings UI to map each message type → approved template + vars
 - [🟡] 8.0.6 Tests — builder/sanitizer/routing ✅ (13 cases); consumer wiring
       tests ⬜. PHPCS green.
