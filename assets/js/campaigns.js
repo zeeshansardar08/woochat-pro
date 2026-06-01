@@ -12,6 +12,8 @@
         var nameEl    = document.getElementById('zignites-chat-campaign-name');
         var tmplEl    = document.getElementById('zignites-chat-campaign-template');
         var daysEl    = document.getElementById('zignites-chat-campaign-days');
+        var scheduleEl = document.getElementById('zignites-chat-campaign-schedule');
+        var excludeEl  = document.getElementById('zignites-chat-campaign-exclude-days');
         var submit    = document.getElementById('zignites-chat-campaign-submit');
         var feedback  = document.getElementById('zignites-chat-campaign-feedback');
 
@@ -56,6 +58,12 @@
             body.append('segment_type', segmentEl.value);
             if (segmentEl.value === 'recent_orders') {
                 body.append('segment_days', daysEl.value || '30');
+            }
+            if (scheduleEl && scheduleEl.value) {
+                body.append('scheduled_at', scheduleEl.value);
+            }
+            if (excludeEl && excludeEl.value) {
+                body.append('exclude_recent_days', excludeEl.value);
             }
 
             fetch(config.ajaxUrl, {

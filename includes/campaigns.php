@@ -22,6 +22,54 @@ if (!defined('ABSPATH')) exit;
 
 add_action('zignites_chat_process_campaign', 'zignites_chat_campaign_process_chunk');
 
+// Promote scheduled campaigns to running once their send time arrives. Reuses
+// the 5-minute schedule registered by cart-recovery.php.
+add_action('init', 'zignites_chat_schedule_campaign_promoter_cron');
+add_action('zignites_chat_promote_scheduled_campaigns', 'zignites_chat_promote_due_campaigns');
+
+/**
+ * Ensure the recurring promoter event is scheduled.
+ */
+function zignites_chat_schedule_campaign_promoter_cron() {
+    if (!wp_next_scheduled('zignites_chat_promote_scheduled_campaigns')) {
+        wp_schedule_event(time() + 60, 'zignites_chat_five_minutes', 'zignites_chat_promote_scheduled_campaigns');
+    }
+}
+
+/**
+ * Clear the promoter event (deactivation / uninstall).
+ */
+function zignites_chat_unschedule_campaign_promoter_cron() {
+    $timestamp = wp_next_scheduled('zignites_chat_promote_scheduled_campaigns');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'zignites_chat_promote_scheduled_campaigns');
+    }
+}
+
+/**
+ * Cron callback: flip any due 'scheduled' campaigns to 'queued' and kick off
+ * their first chunk. Bounded per run so a backlog can't stall the cron.
+ */
+function zignites_chat_promote_due_campaigns() {
+    if (!zignites_chat_is_pro_active()) return;
+
+    global $wpdb;
+    $table = zignites_chat_campaigns_table_name();
+    $now   = current_time('mysql');
+
+    $ids = $wpdb->get_col($wpdb->prepare(
+        "SELECT id FROM {$table} WHERE status = 'scheduled' AND scheduled_at IS NOT NULL AND scheduled_at <= %s ORDER BY scheduled_at ASC LIMIT 20",
+        $now
+    ));
+    if (!$ids) return;
+
+    foreach ($ids as $id) {
+        $id = (int) $id;
+        $wpdb->update($table, ['status' => 'queued'], ['id' => $id], ['%s'], ['%d']);
+        wp_schedule_single_event(time() + 5, 'zignites_chat_process_campaign', [$id]);
+    }
+}
+
 /* -------------------------------------------------------------------------
  * Schema
  * ----------------------------------------------------------------------- */
@@ -53,6 +101,7 @@ function zignites_chat_create_campaign_tables() {
         template TEXT NOT NULL,
         segment_type VARCHAR(40) NOT NULL,
         segment_meta TEXT NULL,
+        scheduled_at DATETIME NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'queued',
         total_count INT UNSIGNED NOT NULL DEFAULT 0,
         sent_count INT UNSIGNED NOT NULL DEFAULT 0,
@@ -116,16 +165,24 @@ function zignites_chat_campaign_create($args) {
         return new WP_Error('zignites_chat_campaign_no_recipients', __('No matching customers — campaign not created.', 'zignites-chat'));
     }
 
-    $now = current_time('mysql');
-    $wpdb->insert(zignites_chat_campaigns_table_name(), [
+    $now      = current_time('mysql');
+    $schedule = zignites_chat_campaign_resolve_schedule($args['scheduled_at'] ?? '', $now);
+
+    $data = [
         'name'         => $name,
         'template'     => $template,
         'segment_type' => $segment_type,
         'segment_meta' => wp_json_encode($segment_meta),
-        'status'       => 'queued',
+        'status'       => $schedule['status'],
         'total_count'  => count($recipients),
         'created_at'   => $now,
-    ], ['%s', '%s', '%s', '%s', '%s', '%d', '%s']);
+    ];
+    $format = ['%s', '%s', '%s', '%s', '%s', '%d', '%s'];
+    if ($schedule['scheduled_at'] !== null) {
+        $data['scheduled_at'] = $schedule['scheduled_at'];
+        $format[] = '%s';
+    }
+    $wpdb->insert(zignites_chat_campaigns_table_name(), $data, $format);
 
     $campaign_id = (int) $wpdb->insert_id;
     if ($campaign_id <= 0) {
@@ -144,10 +201,107 @@ function zignites_chat_campaign_create($args) {
     }
 
     // Kick off the first chunk shortly after return so the admin sees
-    // immediate progress without sitting through an HTTP fan-out.
-    wp_schedule_single_event(time() + 5, 'zignites_chat_process_campaign', [$campaign_id]);
+    // immediate progress without sitting through an HTTP fan-out. Scheduled
+    // campaigns instead wait for the promoter cron to flip them to 'queued'
+    // at their send time.
+    if ($schedule['status'] === 'queued') {
+        wp_schedule_single_event(time() + 5, 'zignites_chat_process_campaign', [$campaign_id]);
+    }
 
     return $campaign_id;
+}
+
+/**
+ * Decide a new campaign's initial status from a requested send time. Pure.
+ *
+ * Times are compared as site-local 'Y-m-d H:i:s' strings (lexicographically
+ * chronological), matching how created_at / scheduled_at are stored.
+ *
+ * @param string $scheduled_at_raw Requested send time ('Y-m-d H:i', with or
+ *                                 without seconds, 'T' or space separator), or
+ *                                 '' to send immediately.
+ * @param string $now_mysql        Current site time as 'Y-m-d H:i:s'.
+ * @return array{status:string, scheduled_at:?string} 'scheduled' + normalized
+ *         time when a valid future time was given, else 'queued' + null.
+ */
+function zignites_chat_campaign_resolve_schedule($scheduled_at_raw, $now_mysql) {
+    $normalized = zignites_chat_normalize_datetime($scheduled_at_raw);
+    if ($normalized === '' || $normalized <= (string) $now_mysql) {
+        return ['status' => 'queued', 'scheduled_at' => null];
+    }
+    return ['status' => 'scheduled', 'scheduled_at' => $normalized];
+}
+
+/**
+ * Normalize a datetime-ish input to 'Y-m-d H:i:s', or '' if unparseable.
+ *
+ * Accepts the HTML datetime-local shape ('Y-m-d\TH:i') and space-separated
+ * forms with or without seconds. Deliberately does NOT shift timezone — the
+ * value is treated as site-local, same frame as current_time('mysql').
+ *
+ * @param string $raw
+ * @return string
+ */
+function zignites_chat_normalize_datetime($raw) {
+    $raw = trim(str_replace('T', ' ', (string) $raw));
+    if ($raw === '') return '';
+    if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/', $raw)) return '';
+    if (strlen($raw) === 16) $raw .= ':00';
+    // Reject impossible dates/times: createFromFormat overflows (e.g. month
+    // 13 → next year), so a value that doesn't round-trip is invalid.
+    $dt = DateTime::createFromFormat('Y-m-d H:i:s', $raw);
+    if (!$dt || $dt->format('Y-m-d H:i:s') !== $raw) return '';
+    return $raw;
+}
+
+/**
+ * Remove recipients whose normalized phone is in the exclusion set. Pure.
+ *
+ * @param array $recipients      List of {phone, name} dicts.
+ * @param array $excluded_phones Normalized phone numbers to drop.
+ * @return array Filtered recipients.
+ */
+function zignites_chat_campaign_filter_excluded($recipients, $excluded_phones) {
+    if (!is_array($recipients)) return [];
+    if (empty($excluded_phones) || !is_array($excluded_phones)) return $recipients;
+
+    $set = array_flip(array_map('strval', $excluded_phones));
+    $out = [];
+    foreach ($recipients as $r) {
+        $phone = isset($r['phone']) ? (string) $r['phone'] : '';
+        if ($phone !== '' && isset($set[$phone])) continue;
+        $out[] = $r;
+    }
+    return $out;
+}
+
+/**
+ * Normalized phone numbers that received a bulk-campaign message within the
+ * last $days — used to skip over-messaging the same customers.
+ *
+ * @param int $days Look-back window in days.
+ * @return string[] Normalized phone numbers.
+ */
+function zignites_chat_campaign_recently_messaged_phones($days) {
+    $days = (int) $days;
+    if ($days < 1 || !function_exists('zignites_chat_get_analytics_table_name')) {
+        return [];
+    }
+    global $wpdb;
+    $table  = zignites_chat_get_analytics_table_name();
+    $cutoff = gmdate('Y-m-d H:i:s', time() - ($days * DAY_IN_SECONDS));
+    $rows   = $wpdb->get_col($wpdb->prepare(
+        "SELECT DISTINCT phone FROM {$table} WHERE type = 'bulk' AND status IN ('sent','delivered','read') AND created_at >= %s",
+        $cutoff
+    ));
+    if (!$rows) return [];
+
+    $out = [];
+    foreach ($rows as $phone) {
+        $norm = zignites_chat_normalize_phone($phone);
+        if ($norm !== '') $out[] = $norm;
+    }
+    return $out;
 }
 
 /**
@@ -239,6 +393,16 @@ function zignites_chat_campaign_resolve_segment($segment_type, $segment_meta = [
         // Hard cap to prevent runaway memory on giant stores; campaigns
         // with > 25k recipients are out of scope for this UI.
         if (count($recipients) >= 25000) break;
+    }
+
+    // Optionally skip anyone who already received a bulk message recently,
+    // so back-to-back campaigns don't over-message the same customers.
+    $exclude_days = isset($segment_meta['exclude_recent_days']) ? (int) $segment_meta['exclude_recent_days'] : 0;
+    if ($exclude_days > 0) {
+        $recipients = zignites_chat_campaign_filter_excluded(
+            $recipients,
+            zignites_chat_campaign_recently_messaged_phones($exclude_days)
+        );
     }
 
     return $recipients;

@@ -10,6 +10,7 @@ $zignites_chat_recent_campaigns = zignites_chat_campaign_list(20);
         <?php esc_html_e('Send a one-shot WhatsApp message to a customer segment. Sends are throttled to 10 per minute by default and skip anyone on the suppression list.', 'zignites-chat'); ?>
     </p>
 
+<div id="zignites-chat-tab-content-campaigns">
     <div class="zignites-chat-campaign-create" id="zignites-chat-campaign-create">
         <h3><?php esc_html_e('New campaign', 'zignites-chat'); ?></h3>
         <table class="form-table">
@@ -43,6 +44,22 @@ $zignites_chat_recent_campaigns = zignites_chat_campaign_list(20);
                 </td>
             </tr>
             <tr>
+                <th scope="row"><label for="zignites-chat-campaign-schedule"><?php esc_html_e('Schedule send', 'zignites-chat'); ?></label></th>
+                <td>
+                    <input type="datetime-local" id="zignites-chat-campaign-schedule" />
+                    <p class="description"><?php esc_html_e('Leave blank to send now. A future time queues the campaign until then (checked every 5 minutes).', 'zignites-chat'); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="zignites-chat-campaign-exclude-days"><?php esc_html_e('Skip recently messaged', 'zignites-chat'); ?></label></th>
+                <td>
+                    <?php esc_html_e('Skip customers who got a campaign in the last', 'zignites-chat'); ?>
+                    <input type="number" id="zignites-chat-campaign-exclude-days" min="0" max="3650" value="0" class="small-text" />
+                    <?php esc_html_e('days', 'zignites-chat'); ?>
+                    <p class="description"><?php esc_html_e('Set to 0 to message everyone in the segment.', 'zignites-chat'); ?></p>
+                </td>
+            </tr>
+            <tr>
                 <td colspan="2">
                     <button type="button" class="button button-primary" id="zignites-chat-campaign-submit"><?php esc_html_e('Create campaign', 'zignites-chat'); ?></button>
                     <span class="zignites-chat-campaign-feedback" id="zignites-chat-campaign-feedback" role="status"></span>
@@ -64,6 +81,7 @@ $zignites_chat_recent_campaigns = zignites_chat_campaign_list(20);
                     <th><?php esc_html_e('Failed', 'zignites-chat'); ?></th>
                     <th><?php esc_html_e('Skipped', 'zignites-chat'); ?></th>
                     <th><?php esc_html_e('Total', 'zignites-chat'); ?></th>
+                    <th><?php esc_html_e('Scheduled', 'zignites-chat'); ?></th>
                     <th><?php esc_html_e('Created', 'zignites-chat'); ?></th>
                 </tr>
             </thead>
@@ -76,9 +94,12 @@ $zignites_chat_recent_campaigns = zignites_chat_campaign_list(20);
                         <td class="zignites-chat-campaign-failed"><?php echo esc_html(number_format_i18n((int) $c['failed_count'])); ?></td>
                         <td class="zignites-chat-campaign-skipped"><?php echo esc_html(number_format_i18n((int) $c['skipped_count'])); ?></td>
                         <td class="zignites-chat-campaign-total"><?php echo esc_html(number_format_i18n((int) $c['total_count'])); ?></td>
+                        <td><?php echo !empty($c['scheduled_at']) ? esc_html(mysql2date(get_option('date_format') . ' ' . get_option('time_format'), $c['scheduled_at'])) : '—'; ?></td>
                         <td><?php echo esc_html(mysql2date(get_option('date_format') . ' ' . get_option('time_format'), $c['created_at'])); ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     <?php endif; ?>
+</div>
+<?php // end #zignites-chat-tab-content-campaigns ?>

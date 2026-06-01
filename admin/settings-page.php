@@ -809,14 +809,20 @@ function zignites_chat_ajax_create_campaign() {
     $template     = isset($_POST['template']) ? sanitize_textarea_field(wp_unslash($_POST['template'])) : '';
     $segment_type = isset($_POST['segment_type']) ? sanitize_key(wp_unslash($_POST['segment_type'])) : '';
     $days         = isset($_POST['segment_days']) ? max(1, (int) $_POST['segment_days']) : 30;
+    $scheduled_at = isset($_POST['scheduled_at']) ? sanitize_text_field(wp_unslash($_POST['scheduled_at'])) : '';
+    $exclude_days = isset($_POST['exclude_recent_days']) ? max(0, (int) $_POST['exclude_recent_days']) : 0;
 
     $segment_meta = $segment_type === 'recent_orders' ? ['days' => $days] : [];
+    if ($exclude_days > 0) {
+        $segment_meta['exclude_recent_days'] = $exclude_days;
+    }
 
     $result = zignites_chat_campaign_create([
         'name'         => $name,
         'template'     => $template,
         'segment_type' => $segment_type,
         'segment_meta' => $segment_meta,
+        'scheduled_at' => $scheduled_at,
     ]);
 
     if (is_wp_error($result)) {

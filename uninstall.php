@@ -103,6 +103,7 @@ $zignites_chat_cron_hooks = array(
 	'zignites_chat_cleanup_analytics',
 	'zignites_chat_process_cart_recovery_queue',
 	'zignites_chat_process_campaign',
+	'zignites_chat_promote_scheduled_campaigns',
 	'zignites_chat_send_order_message',
 	'zignites_chat_send_followup_message',
 	'zignites_chat_webhook_retry',
