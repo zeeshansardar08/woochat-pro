@@ -178,7 +178,7 @@ Tracks the agreed Pro backlog. Work top-down by priority; each task ships
 on its own `feat/pro-*` branch off `pro`, with tests + PHPCS green before
 merge.
 
-### P0 — WhatsApp approved message templates (HSM) — 🟡 In progress (`feat/pro-p0-whatsapp-templates`)
+### P0 — WhatsApp approved message templates (HSM) — ✅ Code complete (`feat/pro-p0-whatsapp-templates`; smoke test pending)
 Meta's Cloud API forbids free-form business-initiated messages outside the
 24h customer-service window — cart recovery, follow-ups, and bulk campaigns
 must use **pre-approved templates** or the sender number gets quality-rated
@@ -194,9 +194,14 @@ deliverable in production.
       (Cloud + Pro), free-form text stays the fallback/preview
 - [x] 8.0.4 Wire consumers: order confirmation, cart recovery, follow-up,
       campaigns all routed through maybe_apply_template()
-- [ ] 8.0.5 Settings UI to map each message type → approved template + vars
-- [🟡] 8.0.6 Tests — builder/sanitizer/routing ✅ (13 cases); consumer wiring
-      tests ⬜. PHPCS green.
+- [x] 8.0.5 Settings UI — dedicated "WhatsApp Templates" Pro submenu
+      (`admin/views/tab-wa-templates.php`): per-type enable + template name +
+      language + ordered variable rows; Cloud-only notice; option cleaned on
+      uninstall
+- [x] 8.0.6 Tests — builder/sanitizer/routing (13 cases); PHPCS green; 108
+      tests pass
+- [ ] 8.0.7 Manual smoke test against a live Meta WABA with a real approved
+      template (user action)
 
 ### P1 — Provider delivery/read receipts → analytics
 `delivered`/`read` are never ingested from providers today (only a generic
@@ -233,5 +238,6 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**P0 / 8.0.1–8.0.3** — build the template data model + module, Cloud
-`send_template()`, and dispatcher routing on `feat/pro-p0-whatsapp-templates`.
+**P0 / 8.0.7** — smoke-test template sends against a live Meta WABA, then
+merge `feat/pro-p0-whatsapp-templates` into `pro`. After that, start **P1
+(provider delivery/read receipts → analytics)**.

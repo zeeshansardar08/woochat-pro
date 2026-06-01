@@ -52,6 +52,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_gpt_api_endpoint',
     'zignites_chat_gpt_api_key',
     'zignites_chat_gpt_model',
+    'zignites_chat_wa_templates',
     'zignites_chat_chatbot_bg',
     'zignites_chat_chatbot_text',
     'zignites_chat_chatbot_icon_color',
