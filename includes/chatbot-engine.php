@@ -51,7 +51,7 @@ function zignites_chat_chatbot_shortcode() {
 
 /**
  * Single source of truth for the chatbot JS payload.
- * Single-agent only in the free version; GPT is Pro.
+ * Single-agent only in the free version.
  */
 function zignites_chat_chatbot_localized_data() {
 	$faq_pairs = json_decode( get_option( 'zignites_chat_faq_pairs', '[]' ), true );
@@ -62,9 +62,6 @@ function zignites_chat_chatbot_localized_data() {
 	return [
 		'faq_pairs'    => $faq_pairs,
 		'noAnswerText' => __( "Sorry, I don't have an answer for that.", 'zignites-chat' ),
-		'gpt'          => [
-			'enabled' => false,
-		],
 		'agents'       => $agents,
 		'routing_mode' => 'single',
 	];

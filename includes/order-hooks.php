@@ -41,9 +41,9 @@ function zignites_chat_send_whatsapp_on_order_complete($order_id) {
         return;
     }
 
-    // Mirrors the followup retry queue (scheduler.php): 3-attempt cap with
-    // 5/15min backoff. Reschedules onto the same `zignites_chat_send_order_message`
-    // action this function is hooked to — no new cron schedule, no queue table.
+    // 3-attempt cap with 5/15min backoff. Reschedules onto the same
+    // `zignites_chat_send_order_message` action this function is hooked to —
+    // no new cron schedule, no queue table.
     $attempts     = intval($order->get_meta('_zignites_chat_order_msg_attempts')) + 1;
     $max_attempts = 3;
     $backoffs     = [5, 15];
@@ -179,6 +179,5 @@ add_action('admin_notices', function() {
 // Note: zignites_chat_send_whatsapp_message() and zignites_chat_maybe_log_notice() now
 // live in includes/messaging.php with the provider classes — see
 // includes/providers/. The public function signature is unchanged so
-// every caller in this file (and in cart-recovery.php / scheduler.php)
-// keeps working.
+// every caller in this file keeps working.
 

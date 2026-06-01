@@ -36,8 +36,8 @@ function zignites_chat_sanitize_provider($value) {
  * List of option keys that hold credentials / integration config.
  *
  * These are only read when sending a message, on the admin settings
- * page, or by the opt-out / license webhooks — never on every frontend
- * page load. Keeping them OUT of the autoload set means fewer bytes
+ * page, or by the opt-out webhook — never on every frontend page load.
+ * Keeping them OUT of the autoload set means fewer bytes
  * pulled into wp-cache 'alloptions' on every WordPress request, and
  * avoids unnecessarily exposing secret material in process memory.
  *
@@ -210,7 +210,7 @@ function zignites_chat_sanitize_agents_json($value) {
 }
 
 /**
- * Read the stored multi-agent routing list.
+ * Read the stored agent list (single agent in the free version).
  *
  * Rows with an empty name or phone are dropped so callers never get a
  * half-filled agent.
@@ -383,7 +383,7 @@ function zignites_chat_is_opted_out($phone) {
 }
 
 /**
- * Add a phone number to the opt-out list and fire the opt-out webhook.
+ * Add a phone number to the opt-out suppression list.
  *
  * @param string $phone Phone number (any format).
  * @return bool False when the phone is empty, true otherwise.
@@ -392,11 +392,9 @@ function zignites_chat_add_optout($phone) {
     $phone = zignites_chat_normalize_phone($phone);
     if (!$phone) return false;
     $list = zignites_chat_get_optout_list();
-    $newly_added = false;
     if (!in_array($phone, $list, true)) {
         $list[] = $phone;
         update_option('zignites_chat_optout_list', $list, false);
-        $newly_added = true;
     }
     return true;
 }

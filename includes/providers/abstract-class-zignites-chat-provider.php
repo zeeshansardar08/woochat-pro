@@ -6,8 +6,7 @@
  * 360dialog, etc.) and is responsible for: validating its own
  * credentials, formatting the destination number, and translating the
  * upstream response into a uniform { ok, message_id, error } shape that
- * the dispatcher in includes/messaging.php knows how to log + surface
- * through analytics.
+ * the dispatcher in includes/messaging.php knows how to log + surface.
  *
  * Adding a new provider is two steps:
  *   1. Subclass ZIGNITES_CHAT_Provider and implement the abstract methods.
@@ -23,7 +22,7 @@ abstract class ZIGNITES_CHAT_Provider {
      *
      * Implementations MUST NOT throw; return an array describing the
      * outcome instead. The dispatcher routes everything else (logging,
-     * analytics, opt-out, test mode).
+     * opt-out, test mode).
      *
      * @param string $to      Raw phone number from billing data.
      * @param string $message Message body.
@@ -37,7 +36,7 @@ abstract class ZIGNITES_CHAT_Provider {
     abstract public function is_configured();
 
     /**
-     * Stable, lowercase identifier (also stored on analytics rows).
+     * Stable, lowercase identifier for this provider.
      */
     abstract public function name();
 

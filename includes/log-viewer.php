@@ -6,8 +6,8 @@
  * zignites-chat.log` — see zignites_chat_get_log_file()) inside the Zignites Chat
  * Settings page so admins don't have to SFTP into uploads/ to debug a
  * failed send. Every write into that file already goes through the
- * shared `error_log($msg, 3, $log_file)` pattern in messaging.php and
- * cart-recovery.php; this module only adds *read* paths.
+ * shared `error_log($msg, 3, $log_file)` pattern in messaging.php;
+ * this module only adds *read* paths.
  *
  * Provides three operations:
  *   1. Tail-and-display: read the last N lines, parse each into
@@ -95,9 +95,8 @@ function zignites_chat_log_tail_lines($file, $max_lines = 200, $chunk_size = 409
 /**
  * Parse one log line into [tag, message, raw].
  *
- * Lines written by messaging.php / cart-recovery.php look like:
+ * Lines written by messaging.php look like:
  *   [Zignites Chat] message text
- *   [Zignites Chat - Cart Recovery] message text
  *   [Zignites Chat - MANUAL] message text
  *
  * The bracketed prefix is the "tag" we surface in the filter dropdown.
