@@ -242,7 +242,7 @@ function zignites_chat_analytics_get_totals() {
     // applicable. The table name comes from zignites_chat_get_analytics_table_name(),
     // which is derived from $wpdb->prefix and is not user-controlled.
     $rows = $wpdb->get_results( "SELECT status, COUNT(*) AS total FROM {$table} GROUP BY status" ); // phpcs:ignore WordPress.DB.PreparedSQL
-    $totals = [ 'sent' => 0, 'delivered' => 0, 'clicked' => 0 ];
+    $totals = [ 'sent' => 0, 'delivered' => 0, 'read' => 0, 'clicked' => 0 ];
     if ($rows) {
         foreach ($rows as $row) {
             if (isset($totals[$row->status])) {
@@ -308,11 +308,11 @@ function zignites_chat_analytics_get_events($limit = 50, $filters = []) {
  * coarse template/source dimension (order, cart_recovery, followup, bulk,
  * chatbot_gpt). Returned counts are raw per-status totals matching the
  * "latest state" semantics of `zignites_chat_analytics_get_totals()`; `total` sums
- * the four reportable terminal states (sent + delivered + clicked +
+ * the reportable terminal states (sent + delivered + read + clicked +
  * failed) and excludes operational states like pending / test / opted_out.
  *
  * @param array $filters Same shape as zignites_chat_analytics_get_events filters.
- * @return array<int, array{type:string,sent:int,delivered:int,clicked:int,failed:int,total:int}>
+ * @return array<int, array{type:string,sent:int,delivered:int,read:int,clicked:int,failed:int,total:int}>
  */
 function zignites_chat_analytics_get_per_type_breakdown($filters = []) {
     global $wpdb;
@@ -358,7 +358,7 @@ function zignites_chat_analytics_get_per_type_breakdown($filters = []) {
 
     if (!$rows) return [];
 
-    $reportable = ['sent', 'delivered', 'clicked', 'failed'];
+    $reportable = ['sent', 'delivered', 'read', 'clicked', 'failed'];
     $out = [];
     foreach ($rows as $row) {
         $type = (string) $row['type'];
@@ -368,6 +368,7 @@ function zignites_chat_analytics_get_per_type_breakdown($filters = []) {
                 'type' => $type,
                 'sent' => 0,
                 'delivered' => 0,
+                'read' => 0,
                 'clicked' => 0,
                 'failed' => 0,
                 'total' => 0,

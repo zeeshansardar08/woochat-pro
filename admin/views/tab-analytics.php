@@ -76,6 +76,10 @@ if (!defined('ABSPATH')) exit;
             <div class="zignites-chat-analytics-value"><?php echo esc_html($totals['delivered']); ?></div>
         </div>
         <div class="zignites-chat-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
+            <div class="zignites-chat-analytics-label"><?php esc_html_e('Read', 'zignites-chat'); ?></div>
+            <div class="zignites-chat-analytics-value"><?php echo esc_html($totals['read']); ?></div>
+        </div>
+        <div class="zignites-chat-analytics-card" style="background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;min-width:140px;">
             <div class="zignites-chat-analytics-label"><?php esc_html_e('Clicked', 'zignites-chat'); ?></div>
             <div class="zignites-chat-analytics-value"><?php echo esc_html($totals['clicked']); ?></div>
         </div>
@@ -110,6 +114,7 @@ if (!defined('ABSPATH')) exit;
                 <th><?php esc_html_e('Template / source', 'zignites-chat'); ?></th>
                 <th><?php esc_html_e('Sent', 'zignites-chat'); ?></th>
                 <th><?php esc_html_e('Delivered', 'zignites-chat'); ?></th>
+                <th><?php esc_html_e('Read', 'zignites-chat'); ?></th>
                 <th><?php esc_html_e('Clicked', 'zignites-chat'); ?></th>
                 <th><?php esc_html_e('Failed', 'zignites-chat'); ?></th>
                 <th><?php esc_html_e('Total', 'zignites-chat'); ?></th>
@@ -122,13 +127,14 @@ if (!defined('ABSPATH')) exit;
                         <td><code><?php echo esc_html($row['type']); ?></code></td>
                         <td><?php echo esc_html((string) $row['sent']); ?></td>
                         <td><?php echo esc_html((string) $row['delivered']); ?></td>
+                        <td><?php echo esc_html((string) $row['read']); ?></td>
                         <td><?php echo esc_html((string) $row['clicked']); ?></td>
                         <td><?php echo esc_html((string) $row['failed']); ?></td>
                         <td><strong><?php echo esc_html((string) $row['total']); ?></strong></td>
                     </tr>
                 <?php endforeach; ?>
             <?php else : ?>
-                <tr><td colspan="6"><?php esc_html_e('No events match the current filters.', 'zignites-chat'); ?></td></tr>
+                <tr><td colspan="7"><?php esc_html_e('No events match the current filters.', 'zignites-chat'); ?></td></tr>
             <?php endif; ?>
         </tbody>
     </table>
