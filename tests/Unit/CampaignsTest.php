@@ -40,8 +40,74 @@ final class CampaignsTest extends TestCase
     public function test_segment_types_lists_expected_segments(): void
     {
         $types = \zignites_chat_campaign_segment_types();
-        $this->assertArrayHasKey('all_customers', $types);
-        $this->assertArrayHasKey('recent_orders', $types);
+        foreach (['all_customers', 'recent_orders', 'product_purchased', 'category_purchased', 'min_spend', 'location', 'win_back'] as $key) {
+            $this->assertArrayHasKey($key, $types);
+        }
+    }
+
+    public function test_order_match_product(): void
+    {
+        $order = ['product_ids' => [10, 20, 30], 'category_ids' => [], 'country' => ''];
+        $this->assertTrue(\zignites_chat_campaign_order_contributes_match($order, 'product_purchased', ['product_ids' => [20]]));
+        $this->assertFalse(\zignites_chat_campaign_order_contributes_match($order, 'product_purchased', ['product_ids' => [99]]));
+        $this->assertFalse(\zignites_chat_campaign_order_contributes_match($order, 'product_purchased', ['product_ids' => []]));
+    }
+
+    public function test_order_match_category(): void
+    {
+        $order = ['product_ids' => [], 'category_ids' => [5, 7], 'country' => ''];
+        $this->assertTrue(\zignites_chat_campaign_order_contributes_match($order, 'category_purchased', ['category_ids' => [7, 8]]));
+        $this->assertFalse(\zignites_chat_campaign_order_contributes_match($order, 'category_purchased', ['category_ids' => [8]]));
+    }
+
+    public function test_order_match_location_is_case_insensitive(): void
+    {
+        $order = ['product_ids' => [], 'category_ids' => [], 'country' => 'gb'];
+        $this->assertTrue(\zignites_chat_campaign_order_contributes_match($order, 'location', ['countries' => ['US', 'GB']]));
+        $this->assertFalse(\zignites_chat_campaign_order_contributes_match($order, 'location', ['countries' => ['US']]));
+        $empty = ['product_ids' => [], 'category_ids' => [], 'country' => ''];
+        $this->assertFalse(\zignites_chat_campaign_order_contributes_match($empty, 'location', ['countries' => ['US']]));
+    }
+
+    public function test_order_match_returns_false_for_aggregate_segments(): void
+    {
+        $order = ['product_ids' => [1], 'category_ids' => [1], 'country' => 'US'];
+        $this->assertFalse(\zignites_chat_campaign_order_contributes_match($order, 'min_spend', []));
+        $this->assertFalse(\zignites_chat_campaign_order_contributes_match($order, 'all_customers', []));
+    }
+
+    public function test_qualifies_min_spend(): void
+    {
+        $now = 1_800_000_000;
+        $this->assertTrue(\zignites_chat_campaign_phone_qualifies(['spend' => 150.0], 'min_spend', ['min_spend' => 100], $now));
+        $this->assertFalse(\zignites_chat_campaign_phone_qualifies(['spend' => 50.0], 'min_spend', ['min_spend' => 100], $now));
+        // A zero/absent threshold qualifies nobody (misconfiguration guard).
+        $this->assertFalse(\zignites_chat_campaign_phone_qualifies(['spend' => 999.0], 'min_spend', ['min_spend' => 0], $now));
+    }
+
+    public function test_qualifies_win_back(): void
+    {
+        $now = 1_800_000_000;
+        $old = $now - (40 * DAY_IN_SECONDS);
+        $recent = $now - (5 * DAY_IN_SECONDS);
+        $this->assertTrue(\zignites_chat_campaign_phone_qualifies(['last_ts' => $old], 'win_back', ['days' => 30], $now));
+        $this->assertFalse(\zignites_chat_campaign_phone_qualifies(['last_ts' => $recent], 'win_back', ['days' => 30], $now));
+        // Never ordered (last_ts 0) does not qualify.
+        $this->assertFalse(\zignites_chat_campaign_phone_qualifies(['last_ts' => 0], 'win_back', ['days' => 30], $now));
+    }
+
+    public function test_qualifies_match_segments_use_matched_flag(): void
+    {
+        $now = 1_800_000_000;
+        $this->assertTrue(\zignites_chat_campaign_phone_qualifies(['matched' => true], 'product_purchased', [], $now));
+        $this->assertFalse(\zignites_chat_campaign_phone_qualifies(['matched' => false], 'location', [], $now));
+    }
+
+    public function test_qualifies_all_and_recent_always_true(): void
+    {
+        $now = 1_800_000_000;
+        $this->assertTrue(\zignites_chat_campaign_phone_qualifies([], 'all_customers', [], $now));
+        $this->assertTrue(\zignites_chat_campaign_phone_qualifies([], 'recent_orders', [], $now));
     }
 
     public function test_normalize_datetime(): void
