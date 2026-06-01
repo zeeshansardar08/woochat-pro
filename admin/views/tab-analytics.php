@@ -13,7 +13,10 @@ if (!defined('ABSPATH')) exit;
     ];
     $totals = zignites_chat_analytics_get_totals();
     $breakdown = zignites_chat_analytics_get_per_type_breakdown($filters);
-    $conversions = zignites_chat_analytics_get_conversions($filters);
+    // Per-type revenue attribution; also provides the totals for the
+    // "Attributed orders" card so orders are fetched only once.
+    $revenue = zignites_chat_analytics_get_revenue_by_type($filters);
+    $conversions = $revenue;
     $events = zignites_chat_analytics_get_events(25, $filters);
     $export_url = wp_nonce_url(
         add_query_arg(
@@ -138,6 +141,63 @@ if (!defined('ABSPATH')) exit;
             <?php endif; ?>
         </tbody>
     </table>
+
+    <h3 style="margin-top:24px;"><?php esc_html_e('Revenue by channel', 'zignites-chat'); ?></h3>
+    <p class="description" style="margin-top:4px;">
+        <?php
+        printf(
+            /* translators: %d is the attribution window in days */
+            esc_html__('Orders placed within %d days of a message, attributed to the channel that reached the customer first.', 'zignites-chat'),
+            (int) $revenue['window_days']
+        );
+        ?>
+    </p>
+    <?php if (empty($revenue['by_type'])) : ?>
+        <p><em><?php esc_html_e('No attributed revenue in this window yet.', 'zignites-chat'); ?></em></p>
+    <?php else : ?>
+        <table class="widefat striped" style="margin-top:10px;max-width:560px;">
+            <thead>
+                <tr>
+                    <th><?php esc_html_e('Channel', 'zignites-chat'); ?></th>
+                    <th><?php esc_html_e('Conversions', 'zignites-chat'); ?></th>
+                    <th><?php esc_html_e('Revenue', 'zignites-chat'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($revenue['by_type'] as $zignites_chat_rev_type => $zignites_chat_rev) : ?>
+                    <tr>
+                        <td><?php echo esc_html(zignites_chat_analytics_type_label($zignites_chat_rev_type)); ?></td>
+                        <td><?php echo esc_html(number_format_i18n((int) $zignites_chat_rev['conversions'])); ?></td>
+                        <td>
+                            <?php
+                            if (function_exists('wc_price')) {
+                                echo wp_kses_post(wc_price($zignites_chat_rev['revenue']));
+                            } else {
+                                echo esc_html(number_format_i18n((float) $zignites_chat_rev['revenue'], 2));
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <tr>
+                    <td><strong><?php esc_html_e('Total', 'zignites-chat'); ?></strong></td>
+                    <td><strong><?php echo esc_html(number_format_i18n((int) $revenue['conversions'])); ?></strong></td>
+                    <td>
+                        <strong>
+                        <?php
+                        if (function_exists('wc_price')) {
+                            echo wp_kses_post(wc_price($revenue['revenue']));
+                        } else {
+                            echo esc_html(number_format_i18n((float) $revenue['revenue'], 2));
+                        }
+                        ?>
+                        </strong>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    <?php endif; ?>
+
     <h3 style="margin-top:24px;"><?php esc_html_e('A/B test results', 'zignites-chat'); ?></h3>
     <?php
     $ab_kinds_cfg = zignites_chat_ab_kinds();

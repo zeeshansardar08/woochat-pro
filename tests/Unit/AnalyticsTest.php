@@ -125,4 +125,41 @@ final class AnalyticsTest extends TestCase
 
         $this->assertSame(0, $result['conversions']);
     }
+
+    public function test_bucket_revenue_by_type_groups_and_sums(): void
+    {
+        $matched = [
+            101 => 'e1', // cart_recovery
+            102 => 'e2', // cart_recovery
+            103 => 'e3', // followup
+        ];
+        $event_types = ['e1' => 'cart_recovery', 'e2' => 'cart_recovery', 'e3' => 'followup'];
+        $order_totals = [101 => 50.0, 102 => 25.0, 103 => 80.0];
+
+        $out = \zignites_chat_analytics_bucket_revenue_by_type($matched, $event_types, $order_totals);
+
+        $this->assertSame(2, $out['cart_recovery']['conversions']);
+        $this->assertEqualsWithDelta(75.0, $out['cart_recovery']['revenue'], 0.0001);
+        $this->assertSame(1, $out['followup']['conversions']);
+        $this->assertEqualsWithDelta(80.0, $out['followup']['revenue'], 0.0001);
+    }
+
+    public function test_bucket_revenue_unknown_type_and_missing_total(): void
+    {
+        $matched = [201 => 'eX', 202 => 'eY'];
+        $event_types = ['eX' => '']; // empty -> unknown; eY absent -> unknown
+        $order_totals = [201 => 10.0]; // 202 missing -> 0
+
+        $out = \zignites_chat_analytics_bucket_revenue_by_type($matched, $event_types, $order_totals);
+
+        $this->assertArrayHasKey('unknown', $out);
+        $this->assertSame(2, $out['unknown']['conversions']);
+        $this->assertEqualsWithDelta(10.0, $out['unknown']['revenue'], 0.0001);
+    }
+
+    public function test_bucket_revenue_handles_empty(): void
+    {
+        $this->assertSame([], \zignites_chat_analytics_bucket_revenue_by_type([], [], []));
+        $this->assertSame([], \zignites_chat_analytics_bucket_revenue_by_type('nope', [], []));
+    }
 }
