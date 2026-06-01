@@ -77,32 +77,6 @@ jQuery(document).ready(function ($) {
             return;
         }
 
-        var gpt = zignites_chat_chatbot_obj.gpt;
-        if (gpt && gpt.enabled && question) {
-            // Show transient placeholder while GPT call is in flight; the
-            // WhatsApp send button is hidden so users don't share the
-            // placeholder text.
-            $('#zignites-chat-chat-response').text(gpt.thinking || 'Thinking…');
-            $('#zignites-chat-send-wa').hide();
-
-            $.ajax({
-                url: gpt.url,
-                method: 'POST',
-                dataType: 'json',
-                data: {
-                    action: gpt.action,
-                    nonce: gpt.nonce,
-                    question: question
-                }
-            }).done(function (res) {
-                var reply = (res && res.success && res.data && res.data.reply) ? res.data.reply : noAnswer;
-                zignitesChatRenderChatReply(reply);
-            }).fail(function () {
-                zignitesChatRenderChatReply(noAnswer);
-            });
-            return;
-        }
-
         zignitesChatRenderChatReply(noAnswer);
     });
 });

@@ -30,8 +30,8 @@ function zignites_chat_register_blocks() {
 
 /**
  * Chatbot block — defers to the existing shortcode renderer so the widget
- * stays a single source of truth (FAQ matching, GPT fallback, agent
- * routing all happen in chatbot-engine.php).
+ * stays a single source of truth (FAQ matching and agent routing both
+ * happen in chatbot-engine.php).
  */
 function zignites_chat_render_chatbot_block($attributes = []) {
     if (!function_exists('zignites_chat_chatbot_shortcode')) return '';

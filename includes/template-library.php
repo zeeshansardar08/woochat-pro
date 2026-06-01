@@ -2,27 +2,21 @@
 /**
  * Pre-written template library.
  *
- * Static catalog of WhatsApp message starters organised by industry ×
- * message kind (order / cart_recovery / followup). Surfaced on the admin
- * tabs as a "Browse template library" modal next to each textarea so a
- * fresh install has a sensible starting point instead of staring at a
- * blank box.
+ * Static catalog of WhatsApp order-message starters organised by
+ * industry. Surfaced on the Messaging tab as a "Browse template library"
+ * modal next to the order-message textarea so a fresh install has a
+ * sensible starting point instead of staring at a blank box.
  *
- * Adding a new industry, kind, or template is a one-stop edit here; the
- * modal UI iterates whatever zignites_chat_get_template_library() returns.
+ * Adding a new industry or template is a one-stop edit here; the modal UI
+ * iterates whatever zignites_chat_get_template_library() returns.
  *
  * Each template entry:
- *   - kind: 'order' | 'cart_recovery' | 'followup'
+ *   - kind: 'order' (the only kind shipped in the free version)
  *   - name: short label shown on the card (translated)
  *   - body: message body with Zignites Chat placeholders (translated)
  *
- * Placeholders by kind (matching what the existing dispatchers
- * substitute — see tab-messaging.php / tab-cart-recovery.php /
- * tab-scheduler.php):
- *   - order:         {name}, {order_id}, {total}, {currency_symbol}
- *   - cart_recovery: {items}, {total}, {currency_symbol}, {cart_url}
- *   - followup:      {name}, {order_id}, {total}, {currency_symbol},
- *                    {status}, {date}
+ * Order placeholders (matching what tab-messaging.php substitutes):
+ *   {name}, {order_id}, {total}, {currency_symbol}
  */
 
 if (!defined('ABSPATH')) exit;
@@ -52,36 +46,6 @@ function zignites_chat_get_template_library() {
                     'name' => __('Drop-in confirmation', 'zignites-chat'),
                     'body' => __("Yay {name}! 🛍️ Order #{order_id} for {total} {currency_symbol} is in. New favourites incoming!", 'zignites-chat'),
                 ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('FOMO nudge', 'zignites-chat'),
-                    'body' => __("Hey, these gems are still waiting in your bag 👀\n\n{items}\n\nTotal: {total} {currency_symbol}\nGrab them before they sell out → {cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('Wishlist saved', 'zignites-chat'),
-                    'body' => __("Don't miss out — your wishlist items are saved:\n\n{items}\n\nTotal: {total} {currency_symbol}\nCheckout in seconds: {cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('Friendly reminder', 'zignites-chat'),
-                    'body' => __("👋 Quick reminder — your cart is saved.\n\n{items}\nTotal: {total} {currency_symbol}\n{cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __('Loving the look?', 'zignites-chat'),
-                    'body' => __("Hey {name}! 👋 How are you loving order #{order_id}? Reply with a 💖 if you want first dibs on next drops!", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __('Quick review ask', 'zignites-chat'),
-                    'body' => __("Hi {name}! It's been a few days since order #{order_id} — we'd love to hear what you think. Got a sec for a quick review?", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __('VIP invite', 'zignites-chat'),
-                    'body' => __("{name}! Hope you're rocking your new pieces 🌟 Order #{order_id} treating you well? Reply YES to join our VIP list.", 'zignites-chat'),
-                ],
             ],
         ],
         'food' => [
@@ -102,36 +66,6 @@ function zignites_chat_get_template_library() {
                     'name' => __('Made with love', 'zignites-chat'),
                     'body' => __("{name}, order received! 👨‍🍳 #{order_id} for {total} {currency_symbol}. Cooking with love.", 'zignites-chat'),
                 ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('Hungry yet?', 'zignites-chat'),
-                    'body' => __("Hi! Hungry yet? 🍽️\n\nYour cart:\n{items}\n\nTotal: {total} {currency_symbol}\nFinish your order: {cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('Selection saved', 'zignites-chat'),
-                    'body' => __("Still thinking about it? Your selection is saved:\n\n{items}\n\nTotal: {total} {currency_symbol}\n{cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('Quick checkout', 'zignites-chat'),
-                    'body' => __("Quick reminder! 🛒\n\n{items}\nTotal: {total} {currency_symbol}\n\nCheckout in 30 seconds: {cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __('How was the meal?', 'zignites-chat'),
-                    'body' => __("Hi {name}! Hope you enjoyed order #{order_id}. We'd love a quick review — reply with anything from 1-5 ⭐", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __('Favourites for next time', 'zignites-chat'),
-                    'body' => __("Hey {name}! 🍴 How was your meal from order #{order_id}? Got any favourites you'd like next time?", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __('Specials opt-in', 'zignites-chat'),
-                    'body' => __("{name}, thanks again for ordering with us! Order #{order_id} treating you well? Reply YES if you'd like to hear about specials.", 'zignites-chat'),
-                ],
             ],
         ],
         'services' => [
@@ -151,36 +85,6 @@ function zignites_chat_get_template_library() {
                     'kind' => 'order',
                     'name' => __('Open line', 'zignites-chat'),
                     'body' => __("Thank you {name}. Order #{order_id} ({total} {currency_symbol}) is confirmed. Please reply if you have any questions.", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('Unfinished booking', 'zignites-chat'),
-                    'body' => __("Hi, you have an unfinished booking with us:\n\n{items}\n\nTotal: {total} {currency_symbol}\n\nResume here: {cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('Selection saved', 'zignites-chat'),
-                    'body' => __("Hello, just a friendly reminder that your selection is still saved:\n\n{items}\n\nTotal: {total} {currency_symbol}\nComplete your booking: {cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'cart_recovery',
-                    'name' => __('Time-limited hold', 'zignites-chat'),
-                    'body' => __("Reminder: your cart is held for a limited time.\n\n{items}\nTotal: {total} {currency_symbol}\n{cart_url}", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __('Open for questions', 'zignites-chat'),
-                    'body' => __("Hi {name}, thank you again for choosing us. If you have any questions about order #{order_id}, simply reply to this message.", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __('Feedback request', 'zignites-chat'),
-                    'body' => __("Hello {name}, we hope everything went smoothly with order #{order_id}. We would appreciate any feedback you can share.", 'zignites-chat'),
-                ],
-                [
-                    'kind' => 'followup',
-                    'name' => __("What's next?", 'zignites-chat'),
-                    'body' => __("{name}, thanks for trusting us with your project. Order #{order_id} is now complete on our end. Let us know how we can help next.", 'zignites-chat'),
                 ],
             ],
         ],
@@ -204,7 +108,7 @@ function zignites_chat_get_template_library() {
  * Each returned entry adds `industry_id` and `industry_label` so the
  * caller can group / label without re-walking the library.
  *
- * @param string $kind One of: order, cart_recovery, followup.
+ * @param string $kind Template kind. Only 'order' ships in the free version.
  * @return array<int, array{kind:string,name:string,body:string,industry_id:string,industry_label:string}>
  */
 function zignites_chat_get_templates_by_kind($kind) {

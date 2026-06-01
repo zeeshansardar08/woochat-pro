@@ -29,7 +29,8 @@ final class TemplateLibraryTest extends TestCase
     public function test_each_template_has_required_fields_and_known_kind(): void
     {
         $library = \zignites_chat_get_template_library();
-        $valid_kinds = ['order', 'cart_recovery', 'followup'];
+        // The free version ships order templates only.
+        $valid_kinds = ['order'];
         foreach ($library as $industry_id => $industry) {
             foreach ($industry['templates'] as $i => $t) {
                 $where = "$industry_id template #$i";
@@ -43,16 +44,16 @@ final class TemplateLibraryTest extends TestCase
         }
     }
 
-    public function test_each_industry_covers_all_three_kinds(): void
+    public function test_each_industry_has_order_templates_only(): void
     {
         $library = \zignites_chat_get_template_library();
         foreach ($library as $industry_id => $industry) {
             $kinds = array_unique(array_column($industry['templates'], 'kind'));
             sort($kinds);
             $this->assertSame(
-                ['cart_recovery', 'followup', 'order'],
+                ['order'],
                 $kinds,
-                "Industry $industry_id should have at least one template of each kind."
+                "Industry $industry_id should ship order templates only in the free version."
             );
         }
     }
@@ -79,24 +80,20 @@ final class TemplateLibraryTest extends TestCase
         $this->assertSame([], \zignites_chat_get_templates_by_kind(''));
     }
 
-    public function test_cart_recovery_templates_reference_cart_url_placeholder(): void
+    public function test_order_templates_reference_order_id_placeholder(): void
     {
-        // Sanity check: cart_recovery messages without {cart_url} would
-        // ship without a clickable link to the cart, defeating the
-        // purpose of the message.
-        $cart = \zignites_chat_get_templates_by_kind('cart_recovery');
-        $this->assertNotEmpty($cart);
-        foreach ($cart as $t) {
-            $this->assertStringContainsString('{cart_url}', $t['body'], "Cart recovery template '{$t['name']}' missing {cart_url} placeholder.");
+        $orders = \zignites_chat_get_templates_by_kind('order');
+        $this->assertNotEmpty($orders);
+        foreach ($orders as $t) {
+            $this->assertStringContainsString('{order_id}', $t['body'], "Order template '{$t['name']}' missing {order_id} placeholder.");
         }
     }
 
-    public function test_followup_templates_reference_order_id_placeholder(): void
+    public function test_pro_only_kinds_are_not_shipped(): void
     {
-        $followup = \zignites_chat_get_templates_by_kind('followup');
-        $this->assertNotEmpty($followup);
-        foreach ($followup as $t) {
-            $this->assertStringContainsString('{order_id}', $t['body'], "Follow-up template '{$t['name']}' missing {order_id} placeholder.");
-        }
+        // Cart recovery and follow-up are Pro-only; the free library must
+        // not surface them.
+        $this->assertSame([], \zignites_chat_get_templates_by_kind('cart_recovery'));
+        $this->assertSame([], \zignites_chat_get_templates_by_kind('followup'));
     }
 }
