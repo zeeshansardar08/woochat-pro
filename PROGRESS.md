@@ -221,7 +221,7 @@ endpoint). Now wired end-to-end:
 - [x] 8.1.6 `message.read` webhook event; 16 unit tests; 121 pass, PHPCS green
 - [ ] 8.1.7 Smoke test against live Twilio + Meta sandboxes (user action)
 
-### P1 — Two-way team inbox — ⬜ NEXT UP (the big one; build in reviewable increments)
+### P1 — Two-way team inbox — ✅ Merged-ready on `feat/pro-inbox` (I1–I5 done; live smoke test pending)
 Ingest inbound Cloud API / Twilio messages (signatures already verified in
 `optout.php` / the receipts webhook) into conversation threads so agents can
 read and reply within WhatsApp's 24h service window.
@@ -263,9 +263,17 @@ Planned increments (each its own commit; tests + PHPCS green per step):
       read. The 24h window is enforced server-side (rejects when closed) and
       in the UI (composer disabled + "template required" note when
       `window_is_open` is false; Ctrl/Cmd+Enter sends). 164 pass, PHPCS green.
-- [ ] I5 — Outbound mirroring (optional): record order/cart/followup/campaign
-      sends into the matching thread so the inbox shows the full history.
-- [ ] Tests for all pure helpers; live smoke test against Twilio + Meta.
+- [x] I5 — Outbound mirroring: `zignites_chat_send_whatsapp_message()` mirrors
+      successful sends (order/cart/follow-up/campaign) into the matching thread
+      via `record_message` (direction 'out'). Default mirrors into **existing
+      threads only** so one-way notifications don't flood the inbox; the
+      `zignites_chat_inbox_mirror_create_threads` filter opts into creating new
+      threads, and `zignites_chat_inbox_mirror_outbound` can disable it
+      entirely. The I4 reply path sets `skip_inbox_mirror` to avoid
+      double-recording. Test-mode sends short-circuit before the mirror.
+- [x] Tests for all pure helpers (18 inbox unit tests across
+      InboxTest/InboxCaptureTest); 164 pass, PHPCS green.
+- [ ] Live smoke test against Twilio + Meta sandboxes (user action).
 
 Open questions — **resolved 2026-06-02**: (1) retention reuses the existing
 `data_retention_days` (a prune pass will drop inbox rows on the same window —
@@ -347,14 +355,15 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**Two-way team inbox (P1) — I1–I4 done on `feat/pro-inbox`.** Next (final
-increment): **I5 (outbound mirroring, optional)** — record order / cart /
-follow-up / campaign sends into the matching thread (via
-`zignites_chat_inbox_record_message`, direction 'out') so the inbox shows the
-full history, not just inbound + agent replies. Cleanest hook point is a
-single call from `zignites_chat_send_whatsapp_message()` on success (guarded
-on Pro + the inbox module), or per-consumer. After I5: open the PR and hand
-off the live smoke test (Twilio + Meta sandboxes) to the user.
+**Two-way team inbox (P1) — I1–I5 complete on `feat/pro-inbox`; PR open.**
+Remaining: live smoke test against Twilio + Meta sandboxes (user action) —
+send an inbound message from a test number, confirm it threads in the Inbox,
+reply within the 24h window, and confirm an order/campaign send mirrors into
+an existing thread.
+
+After this merges, the open Pro backlog is **GPT modernization (P3)** plus the
+quality backlog (retire `license-manager.php` post-Freemius; central outbound
+rate limiter).
 
 Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above are **merged
 into `pro`**; only live smoke tests remain on those. The free build shipped

@@ -219,6 +219,33 @@ function zignites_chat_send_whatsapp_message( $to, $message, $manual = false, $c
         ] );
     }
 
+    // Inbox mirroring (Pro): record this outbound send into the customer's
+    // conversation thread so the inbox shows the full history. By default we
+    // only mirror into a thread that already exists — i.e. customers who are
+    // already in a two-way conversation — so one-way order/cart notifications
+    // don't flood the inbox with new threads. Sites that want every outbound
+    // send threaded can return true from the create-threads filter. The inbox
+    // reply path (I4) sets skip_inbox_mirror because it records its own row.
+    if ( empty( $context['skip_inbox_mirror'] )
+        && function_exists( 'zignites_chat_inbox_record_message' )
+        && zignites_chat_is_pro_active()
+        && apply_filters( 'zignites_chat_inbox_mirror_outbound', true, $event_type, $context )
+    ) {
+        $thread_exists = zignites_chat_inbox_get_thread_by_phone( $to ) !== null;
+        /** @var bool $create_threads Whether to mirror into a brand-new thread when none exists. Default false. */
+        $create_threads = (bool) apply_filters( 'zignites_chat_inbox_mirror_create_threads', false, $event_type, $context );
+        if ( $thread_exists || $create_threads ) {
+            zignites_chat_inbox_record_message( [
+                'phone'      => $to,
+                'direction'  => 'out',
+                'body'       => $message,
+                'provider'   => $provider_id,
+                'message_id' => (string) ( $result['message_id'] ?? '' ),
+                'status'     => 'sent',
+            ] );
+        }
+    }
+
     return true;
 }
 

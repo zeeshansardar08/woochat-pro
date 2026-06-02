@@ -183,8 +183,11 @@ function zignites_chat_ajax_inbox_reply() {
 
     $phone = (string) $thread['phone'];
     $sent  = zignites_chat_send_whatsapp_message($phone, $body, true, [
-        'type'     => 'inbox',
-        'order_id' => 0,
+        'type'              => 'inbox',
+        'order_id'          => 0,
+        // This handler records its own outbound row below; don't let the
+        // dispatcher's inbox mirror double-record it.
+        'skip_inbox_mirror' => true,
     ]);
     if (!$sent) {
         wp_send_json_error(['message' => __('The message could not be sent. Check the log for details.', 'zignites-chat')], 502);
