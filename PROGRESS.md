@@ -431,10 +431,26 @@ Planned increments:
   works inside the 24h window), so the buttons live in the Meta-approved
   template; the plugin fills variables + reads the button reply.
 
-#### T1.2 — Order-status + shipping/tracking notifications — ⬜
+#### T1.2 — Order-status + shipping/tracking notifications — ✅ Done on `feat/pro-status-tracking-notifications` (live smoke test pending)
 Notify on every status (shipped, out-for-delivery, on-hold, refunded,
 cancelled), not just processing/completed, with per-status templates and an
 injected tracking link/number (pull from common shipment plugins).
+- [x] `includes/status-notifications.php`: hooks `woocommerce_order_status_changed`,
+      sends a WhatsApp message when an order enters an opted-in status. Master
+      toggle + per-status `{enabled, template}` config; all-off by default so it
+      never overlaps the classic confirmation until enabled.
+- [x] Tracking injection from `_wc_shipment_tracking_items` (WooCommerce
+      Shipment Tracking + Advanced Shipment Tracking), exposed as
+      `{tracking_number}`/`{tracking_url}`/`{carrier}`; filterable via
+      `zignites_chat_order_tracking`.
+- [x] Pure, tested helpers: `status_normalize`, `should_notify`,
+      `extract_tracking`, `status_render`, `sanitize_notifications`.
+- [x] Pro "Status Notifications" submenu/tab: master toggle + a per-status
+      table (checkbox + template) over every eligible WC status; upsell card;
+      settings cleaned on uninstall.
+- [x] 6 unit tests; 192 pass, PHPCS + lint green.
+- [ ] Live smoke test: move an order to a tracked status, confirm the WhatsApp
+      lands with the tracking link (user action).
 
 #### T1.3 — WhatsApp opt-in capture — ⬜
 Proactive consent: checkout checkbox / widget + a consent log, complementing
@@ -465,14 +481,12 @@ Build on the merged two-way inbox (P1):
 ---
 
 ## Next Action
-**COD order confirmation (T1.1) — COMPLETE (C1–C3) on
-`feat/pro-cod-confirmation-c3`.** Only a live smoke test remains (place a COD
-order against a real WABA with an approved buttoned template; reply
-Confirm/Cancel; confirm the order status flips and the badge updates).
+**T1.2 — Order-status + tracking notifications — DONE on
+`feat/pro-status-tracking-notifications`** (live smoke test pending). T1.1 (COD)
+is also complete and merged.
 
-Next feature: **T1.2 — Order-status + shipping/tracking notifications** (notify
-on shipped / out-for-delivery / on-hold / refunded / cancelled with per-status
-templates + an injected tracking link). Then T1.3 (opt-in capture), Tier 2
+Next feature: **T1.3 — WhatsApp opt-in capture** (checkout checkbox / widget +
+a consent log, complementing the existing opt-out pipeline). Then Tier 2
 (inbox→helpdesk), Tier 3 (automation), and the quick wins — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item

@@ -149,6 +149,7 @@ require_once __DIR__ . '/../includes/inbox-capture.php';
 require_once __DIR__ . '/../includes/catalog-context.php';
 require_once __DIR__ . '/../includes/rate-limiter.php';
 require_once __DIR__ . '/../includes/cod-confirmation.php';
+require_once __DIR__ . '/../includes/status-notifications.php';
 require_once __DIR__ . '/../includes/blocks.php';
 require_once __DIR__ . '/../includes/analytics.php';
 require_once __DIR__ . '/../includes/delivery-receipts.php';

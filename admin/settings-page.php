@@ -45,6 +45,10 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_cod_group', 'zignites_chat_cod_on_confirm_status', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_cod_group', 'zignites_chat_cod_on_cancel_status', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 
+    // Order-status + tracking notifications.
+    register_setting('zignites_chat_status_group', 'zignites_chat_status_notify_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+    register_setting('zignites_chat_status_group', 'zignites_chat_status_notifications', ['sanitize_callback' => 'zignites_chat_status_sanitize_notifications', 'default' => []]);
+
     // Chatbot.
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_gpt_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
@@ -113,6 +117,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-cart-recovery', __('Cart Recovery', 'zignites-chat'),    'zignites_chat_render_cart_recovery_page', true],
         ['zignites-chat-cod',           __('COD Confirmation', 'zignites-chat'), 'zignites_chat_render_cod_page',           true],
         ['zignites-chat-scheduler',     __('Scheduler', 'zignites-chat'),        'zignites_chat_render_scheduler_page',     true],
+        ['zignites-chat-status',        __('Status Notifications', 'zignites-chat'), 'zignites_chat_render_status_page',     true],
         ['zignites-chat-campaigns',     __('Campaigns', 'zignites-chat'),        'zignites_chat_render_campaigns_page',     true],
         ['zignites-chat-inbox',         __('Inbox', 'zignites-chat'),            'zignites_chat_render_inbox_page',         true],
         ['zignites-chat-analytics',     __('Analytics', 'zignites-chat'),        'zignites_chat_render_analytics_page',     true],
@@ -368,6 +373,24 @@ function zignites_chat_render_campaigns_page() {
     zignites_chat_admin_page_close();
 }
 
+function zignites_chat_render_status_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'));
+    }
+    zignites_chat_admin_page_open(__('Order Status Notifications', 'zignites-chat'));
+    if (!zignites_chat_is_pro_active()) {
+        zignites_chat_render_pro_upgrade_notice('status');
+        zignites_chat_admin_page_close();
+        return;
+    }
+    echo '<form method="post" action="options.php">';
+    settings_fields('zignites_chat_status_group');
+    require ZIGNITES_CHAT_PATH . 'admin/views/tab-status.php';
+    submit_button();
+    echo '</form>';
+    zignites_chat_admin_page_close();
+}
+
 function zignites_chat_render_cod_page() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'));
@@ -485,6 +508,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Per message-type template + language mapping', 'zignites-chat'),
                 __('Map order/cart/follow-up data to template variables', 'zignites-chat'),
                 __('Protects your sender number from quality downgrades', 'zignites-chat'),
+            ],
+        ],
+        'status' => [
+            'title'       => __('Order Status & Tracking Notifications', 'zignites-chat'),
+            'description' => __('Keep customers updated on WhatsApp at every step — shipped, out for delivery, on hold, refunded — with the tracking link right in the message.', 'zignites-chat'),
+            'benefits'    => [
+                __('Per-status WhatsApp messages with their own templates', 'zignites-chat'),
+                __('Inject tracking number, carrier and link automatically', 'zignites-chat'),
+                __('Works with WooCommerce Shipment Tracking & AST', 'zignites-chat'),
+                __('Fewer "where is my order?" support tickets', 'zignites-chat'),
             ],
         ],
         'cod' => [
