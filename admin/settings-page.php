@@ -68,6 +68,9 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_icon', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_welcome', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 
+    // Inbox — canned/quick replies.
+    register_setting('zignites_chat_inbox_group', 'zignites_chat_inbox_canned_replies', ['sanitize_callback' => 'zignites_chat_inbox_parse_canned_replies', 'default' => []]);
+
     // Cart Recovery.
     register_setting('zignites_chat_cart_recovery_group', 'zignites_chat_cart_recovery_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_cart_recovery_group', 'zignites_chat_cart_recovery_delay', ['sanitize_callback' => 'zignites_chat_sanitize_int']);

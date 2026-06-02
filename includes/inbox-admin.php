@@ -35,6 +35,96 @@ function zignites_chat_render_inbox_page() {
 }
 
 /* ---------------------------------------------------------------------------
+ * Canned / quick replies
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Parse the canned-replies textarea (one "Title | Body" per line) into a
+ * normalized list of [{title, body}]. Pure.
+ *
+ * A line without a "|" is treated as body-only, with the title derived from
+ * the start of the body. Empty lines are skipped; the list is capped.
+ *
+ * @param string|array $value Raw textarea string (or an already-structured array).
+ * @return array<int, array{title:string, body:string}>
+ */
+function zignites_chat_inbox_parse_canned_replies($value) {
+    $rows = [];
+    if (is_array($value)) {
+        foreach ($value as $entry) {
+            if (is_array($entry)) {
+                $rows[] = [
+                    'title' => isset($entry['title']) ? (string) $entry['title'] : '',
+                    'body'  => isset($entry['body']) ? (string) $entry['body'] : '',
+                ];
+            }
+        }
+    } else {
+        foreach (preg_split('/\r\n|\r|\n/', (string) $value) as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            if (strpos($line, '|') !== false) {
+                list($title, $body) = explode('|', $line, 2);
+            } else {
+                $title = '';
+                $body  = $line;
+            }
+            $rows[] = ['title' => trim($title), 'body' => trim($body)];
+        }
+    }
+
+    $out = [];
+    foreach ($rows as $row) {
+        $body = function_exists('sanitize_textarea_field') ? sanitize_textarea_field($row['body']) : trim($row['body']);
+        if ($body === '') {
+            continue;
+        }
+        $title = function_exists('sanitize_text_field') ? sanitize_text_field($row['title']) : trim($row['title']);
+        if ($title === '') {
+            // Derive a short label from the body.
+            $title = function_exists('mb_substr') ? mb_substr($body, 0, 40) : substr($body, 0, 40);
+        }
+        $out[] = ['title' => $title, 'body' => $body];
+        if (count($out) >= 50) {
+            break;
+        }
+    }
+    return $out;
+}
+
+/**
+ * Render a canned-replies list back into the "Title | Body" textarea form. Pure.
+ *
+ * @param array $entries [{title, body}].
+ * @return string
+ */
+function zignites_chat_inbox_canned_replies_to_text($entries) {
+    if (!is_array($entries)) {
+        return '';
+    }
+    $lines = [];
+    foreach ($entries as $entry) {
+        if (!is_array($entry) || empty($entry['body'])) {
+            continue;
+        }
+        $title = isset($entry['title']) ? (string) $entry['title'] : '';
+        $lines[] = ($title !== '' ? $title . ' | ' : '') . (string) $entry['body'];
+    }
+    return implode("\n", $lines);
+}
+
+/**
+ * Read the saved canned replies.
+ *
+ * @return array<int, array{title:string, body:string}>
+ */
+function zignites_chat_inbox_get_canned_replies() {
+    return zignites_chat_inbox_parse_canned_replies(get_option('zignites_chat_inbox_canned_replies', []));
+}
+
+/* ---------------------------------------------------------------------------
  * Agents (assignment)
  * ------------------------------------------------------------------------ */
 
@@ -119,7 +209,9 @@ function zignites_chat_inbox_enqueue_assets($hook) {
         'pollInterval' => (int) apply_filters('zignites_chat_inbox_poll_interval', 15000),
         'currentUser'  => get_current_user_id(),
         'agents'       => $agent_options,
+        'cannedReplies' => array_values(zignites_chat_inbox_get_canned_replies()),
         'i18n'         => [
+            'cannedInsert'  => __('Quick reply…', 'zignites-chat'),
             'assignedTo'    => __('Assigned to', 'zignites-chat'),
             'unassigned'    => __('Unassigned', 'zignites-chat'),
             'claim'         => __('Claim', 'zignites-chat'),
