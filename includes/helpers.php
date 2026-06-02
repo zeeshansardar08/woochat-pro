@@ -118,6 +118,7 @@ function zignites_chat_get_migrations() {
         5 => 'zignites_chat_migration_v5_campaign_media',
         6 => 'zignites_chat_migration_v6_inbox_tables',
         7 => 'zignites_chat_migration_v7_inbox_notes',
+        8 => 'zignites_chat_migration_v8_stock_subs',
     ];
 }
 
@@ -217,6 +218,16 @@ function zignites_chat_migration_v6_inbox_tables() {
 function zignites_chat_migration_v7_inbox_notes() {
     if (function_exists('zignites_chat_create_inbox_tables')) {
         zignites_chat_create_inbox_tables();
+    }
+}
+
+/**
+ * v8: create the back-in-stock subscriptions table. Idempotent dbDelta;
+ * same WC-state guard shape as the other table migrations.
+ */
+function zignites_chat_migration_v8_stock_subs() {
+    if (function_exists('zignites_chat_create_stock_subs_table')) {
+        zignites_chat_create_stock_subs_table();
     }
 }
 

@@ -81,6 +81,9 @@ $zignites_chat_option_keys = [
     'zignites_chat_quiet_hours_enabled',
     'zignites_chat_quiet_start',
     'zignites_chat_quiet_end',
+    'zignites_chat_stock_alerts_enabled',
+    'zignites_chat_stock_alert_message',
+    'zignites_chat_stock_form_heading',
     'zignites_chat_cod_enabled',
     'zignites_chat_cod_gateways',
     'zignites_chat_cod_message_template',
@@ -116,6 +119,7 @@ $zignites_chat_tables = array(
 	$wpdb->prefix . 'zignites_chat_campaigns',
 	$wpdb->prefix . 'zignites_chat_conversations',
 	$wpdb->prefix . 'zignites_chat_messages',
+	$wpdb->prefix . 'zignites_chat_stock_subs',
 );
 foreach ( $zignites_chat_tables as $zignites_chat_table ) {
 	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- One-time uninstall cleanup; table name is built from $wpdb->prefix, no user input.
@@ -131,6 +135,7 @@ $zignites_chat_cron_hooks = array(
 	'zignites_chat_send_order_message',
 	'zignites_chat_send_followup_message',
 	'zignites_chat_webhook_retry',
+	'zignites_chat_process_stock_alerts',
 );
 foreach ($zignites_chat_cron_hooks as $zignites_chat_hook) {
 	wp_clear_scheduled_hook($zignites_chat_hook);
