@@ -187,6 +187,144 @@ function zignites_chat_cod_phone_matches($a, $b, $min_suffix = 9) {
 }
 
 /* -------------------------------------------------------------------------
+ * Admin surface (C3): orders-screen column + status counts
+ * ----------------------------------------------------------------------- */
+
+/**
+ * Human label for a stored COD status. Pure.
+ *
+ * @param string $status One of pending|confirmed|cancelled|send_failed.
+ * @return string Translated label, or '' for an unknown/empty status.
+ */
+function zignites_chat_cod_status_label($status) {
+    switch ((string) $status) {
+        case 'pending':
+            return __('Awaiting reply', 'zignites-chat');
+        case 'confirmed':
+            return __('Confirmed', 'zignites-chat');
+        case 'cancelled':
+            return __('Cancelled', 'zignites-chat');
+        case 'send_failed':
+            return __('Send failed', 'zignites-chat');
+        default:
+            return '';
+    }
+}
+
+/**
+ * Count COD orders by confirmation status (cached 5 min).
+ *
+ * Uses paginated wc_get_orders so each value is a cheap COUNT query, HPOS-safe.
+ *
+ * @return array{pending:int, confirmed:int, cancelled:int, send_failed:int}
+ */
+function zignites_chat_cod_status_counts() {
+    $cached = get_transient('zignites_chat_cod_counts');
+    if (is_array($cached)) {
+        return $cached;
+    }
+    $counts = ['pending' => 0, 'confirmed' => 0, 'cancelled' => 0, 'send_failed' => 0];
+    if (function_exists('wc_get_orders')) {
+        foreach (array_keys($counts) as $status) {
+            $res = wc_get_orders([
+                'limit'      => 1,
+                'paginate'   => true,
+                'return'     => 'ids',
+                'meta_key'   => '_zignites_chat_cod_status', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                'meta_value' => $status,                     // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+            ]);
+            $counts[$status] = is_object($res) ? (int) $res->total : 0;
+        }
+    }
+    set_transient('zignites_chat_cod_counts', $counts, 5 * MINUTE_IN_SECONDS);
+    return $counts;
+}
+
+/**
+ * Drop the cached counts after a COD status change.
+ */
+function zignites_chat_cod_flush_counts_cache() {
+    delete_transient('zignites_chat_cod_counts');
+}
+
+// Orders-list column — registered for both HPOS and legacy post-based screens.
+add_filter('manage_woocommerce_page_wc-orders_columns', 'zignites_chat_cod_add_order_column');
+add_filter('manage_edit-shop_order_columns', 'zignites_chat_cod_add_order_column');
+add_action('manage_woocommerce_page_wc-orders_custom_column', 'zignites_chat_cod_render_order_column', 10, 2);
+add_action('manage_shop_order_posts_custom_column', 'zignites_chat_cod_render_order_column', 10, 2);
+add_action('admin_head', 'zignites_chat_cod_admin_column_styles');
+
+/**
+ * Insert the COD column after the order-status column.
+ *
+ * @param array $columns
+ * @return array
+ */
+function zignites_chat_cod_add_order_column($columns) {
+    if (!is_array($columns)) {
+        return $columns;
+    }
+    $out = [];
+    foreach ($columns as $key => $label) {
+        $out[$key] = $label;
+        if ($key === 'order_status') {
+            $out['zignites_chat_cod'] = __('COD', 'zignites-chat');
+        }
+    }
+    if (!isset($out['zignites_chat_cod'])) {
+        $out['zignites_chat_cod'] = __('COD', 'zignites-chat');
+    }
+    return $out;
+}
+
+/**
+ * Render the COD badge cell. Works for both HPOS (passes a WC_Order) and
+ * legacy (passes a post id) custom-column hooks.
+ *
+ * @param string         $column
+ * @param int|\WC_Order  $order_or_id
+ * @return void
+ */
+function zignites_chat_cod_render_order_column($column, $order_or_id) {
+    if ($column !== 'zignites_chat_cod') {
+        return;
+    }
+    $order = is_object($order_or_id) ? $order_or_id : (function_exists('wc_get_order') ? wc_get_order($order_or_id) : null);
+    if (!$order) {
+        echo '&mdash;';
+        return;
+    }
+    $status = (string) $order->get_meta('_zignites_chat_cod_status');
+    $label  = zignites_chat_cod_status_label($status);
+    if ($label === '') {
+        echo '&mdash;';
+        return;
+    }
+    printf(
+        '<span class="zignites-chat-cod-badge zignites-chat-cod-%1$s">%2$s</span>',
+        esc_attr($status),
+        esc_html($label)
+    );
+}
+
+/**
+ * Tiny badge styling, printed only on the orders screens.
+ */
+function zignites_chat_cod_admin_column_styles() {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if (!$screen || !in_array($screen->id, ['woocommerce_page_wc-orders', 'edit-shop_order'], true)) {
+        return;
+    }
+    echo '<style>
+        .zignites-chat-cod-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;line-height:1.6;white-space:nowrap}
+        .zignites-chat-cod-pending{background:#fcf9e8;color:#8a6d3b}
+        .zignites-chat-cod-confirmed{background:#edfaef;color:#00650c}
+        .zignites-chat-cod-cancelled{background:#fcf0f1;color:#8a1f24}
+        .zignites-chat-cod-send_failed{background:#f0f0f1;color:#646970}
+    </style>';
+}
+
+/* -------------------------------------------------------------------------
  * Inbound reply → order-status transition (C2)
  * ----------------------------------------------------------------------- */
 
@@ -278,6 +416,7 @@ function zignites_chat_cod_handle_inbound_reply($msg) {
         $order->add_order_note($note);
         $order->save();
     }
+    zignites_chat_cod_flush_counts_cache();
 
     // Acknowledge in the now-open 24h window (the customer just messaged us, so
     // a free-form reply is allowed). Filterable text; empty disables the ack.
@@ -375,4 +514,5 @@ function zignites_chat_cod_maybe_send($order_id) {
     $order->update_meta_data('_zignites_chat_cod_status', $sent === true ? 'pending' : 'send_failed');
     $order->update_meta_data('_zignites_chat_cod_sent_at', current_time('mysql'));
     $order->save();
+    zignites_chat_cod_flush_counts_cache();
 }

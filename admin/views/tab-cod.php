@@ -28,6 +28,26 @@ $zignites_chat_cod_statuses = function_exists('wc_get_order_statuses') ? wc_get_
     <?php esc_html_e('Automatically ask customers to confirm a new cash-on-delivery order over WhatsApp. The confirmation goes out as your approved WhatsApp template (map it under WhatsApp Templates → COD order confirmation, ideally with Confirm / Cancel quick-reply buttons). The customer’s reply updates the order status.', 'zignites-chat'); ?>
 </p>
 
+<?php $zignites_chat_cod_counts = zignites_chat_cod_status_counts(); ?>
+<div class="zignites-chat-cod-stats" style="display:flex; gap:16px; margin:16px 0;">
+    <div style="background:#fcf9e8; padding:12px 18px; border-radius:6px; min-width:120px;">
+        <strong style="font-size:20px; display:block;"><?php echo esc_html(number_format_i18n($zignites_chat_cod_counts['pending'])); ?></strong>
+        <span class="description"><?php esc_html_e('Awaiting reply', 'zignites-chat'); ?></span>
+    </div>
+    <div style="background:#edfaef; padding:12px 18px; border-radius:6px; min-width:120px;">
+        <strong style="font-size:20px; display:block;"><?php echo esc_html(number_format_i18n($zignites_chat_cod_counts['confirmed'])); ?></strong>
+        <span class="description"><?php esc_html_e('Confirmed', 'zignites-chat'); ?></span>
+    </div>
+    <div style="background:#fcf0f1; padding:12px 18px; border-radius:6px; min-width:120px;">
+        <strong style="font-size:20px; display:block;"><?php echo esc_html(number_format_i18n($zignites_chat_cod_counts['cancelled'])); ?></strong>
+        <span class="description"><?php esc_html_e('Cancelled (RTO saved)', 'zignites-chat'); ?></span>
+    </div>
+    <div style="background:#f0f0f1; padding:12px 18px; border-radius:6px; min-width:120px;">
+        <strong style="font-size:20px; display:block;"><?php echo esc_html(number_format_i18n($zignites_chat_cod_counts['send_failed'])); ?></strong>
+        <span class="description"><?php esc_html_e('Send failed', 'zignites-chat'); ?></span>
+    </div>
+</div>
+
 <table class="form-table">
     <tr>
         <th scope="row"><label for="zignites_chat_cod_enabled"><?php esc_html_e('Enable COD confirmation', 'zignites-chat'); ?></label></th>
