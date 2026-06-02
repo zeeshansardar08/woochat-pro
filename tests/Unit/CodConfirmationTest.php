@@ -48,6 +48,28 @@ final class CodConfirmationTest extends TestCase
         $this->assertSame('', \zignites_chat_cod_classify_reply('yesterday', 'yes', 'no'));
     }
 
+    /* ---- phone matching ---- */
+
+    public function test_phone_matches_exact_and_formatted(): void
+    {
+        $this->assertTrue(\zignites_chat_cod_phone_matches('+1 (415) 555-0100', '14155550100'));
+        $this->assertTrue(\zignites_chat_cod_phone_matches('14155550100', '14155550100'));
+    }
+
+    public function test_phone_matches_tolerates_country_code_via_suffix(): void
+    {
+        // Local vs full international form, same subscriber number.
+        $this->assertTrue(\zignites_chat_cod_phone_matches('03001234567', '923001234567'));
+    }
+
+    public function test_phone_matches_rejects_different_numbers(): void
+    {
+        $this->assertFalse(\zignites_chat_cod_phone_matches('14155550100', '14155559999'));
+        $this->assertFalse(\zignites_chat_cod_phone_matches('', '14155550100'));
+        // Too short to risk a suffix false-positive.
+        $this->assertFalse(\zignites_chat_cod_phone_matches('123', '999123'));
+    }
+
     /* ---- gateways sanitizer ---- */
 
     public function test_sanitize_gateways_dedupes_and_cleans(): void

@@ -410,10 +410,16 @@ Planned increments:
       rendered text as fallback. Pure tested helpers: `is_cod_gateway`,
       `classify_reply` (whole-word, cancel-wins-ties), `sanitize_gateways`.
       Settings cleaned on uninstall. 6 unit tests; 182 pass, PHPCS green.
-- [ ] C2 — Inbound matching + status transition: map an inbound reply/button
-      from a phone to its most-recent pending COD order, classify
-      confirm/cancel, transition the order, add an order note, clear pending,
-      optionally send an acknowledgement. Reuse the inbox capture hook.
+- [x] C2 — Inbound matching + status transition: inbox capture now fires a
+      decoupled `zignites_chat_inbound_message` action per newly-recorded
+      inbound; `zignites_chat_cod_handle_inbound_reply` subscribes, matches the
+      sender to a pending COD order (`find_pending_order_by_phone` + pure
+      `cod_phone_matches`, suffix-tolerant for country-code differences),
+      classifies the reply, transitions the order to the configured
+      confirm/cancel status with an order note, sets
+      `_zignites_chat_cod_status = confirmed|cancelled`, and sends a filterable
+      ack in the now-open 24h window. 3 new unit tests (phone matching);
+      185 pass, PHPCS green.
 - [ ] C3 — Admin surface: COD-confirmation column/badge on the orders screen +
       a settings tab; analytics counters (sent / confirmed / cancelled / RTO-
       saved). Uninstall cleanup.
@@ -456,16 +462,12 @@ Build on the merged two-way inbox (P1):
 ---
 
 ## Next Action
-**COD order confirmation (T1.1) — C1 done on `feat/pro-cod-confirmation`.**
-Next: **C2 (inbound matching + status transition)** — when an inbound
-reply/button arrives (hook the existing inbox capture / opt-out webhook), find
-the sender's most-recent order with `_zignites_chat_cod_status = pending`,
-classify the reply via `zignites_chat_cod_classify_reply()`, transition the
-order to the configured on-confirm / on-cancel status, add an order note, set
-`_zignites_chat_cod_status = confirmed|cancelled`, and optionally send an ack.
-Then C3 (orders-screen column/badge + analytics counters). After T1.1: T1.2
-(status/tracking), T1.3 (opt-in capture), then Tiers 2–3 and the quick wins —
-see PHASE 9 above.
+**COD order confirmation (T1.1) — C1 + C2 done on `feat/pro-cod-confirmation-c2`.**
+Next: **C3 (admin surface)** — a COD-confirmation column/badge on the
+WooCommerce orders screen (pending / confirmed / cancelled / send-failed), and
+simple counters (sent / confirmed / cancelled, i.e. RTO saved). Then T1.2
+(status/tracking notifications), T1.3 (opt-in capture), then Tiers 2–3 and the
+quick wins — see PHASE 9 above.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

@@ -107,7 +107,7 @@ $zignites_chat_cod_statuses = function_exists('wc_get_order_statuses') ? wc_get_
             <?php else : ?>
                 <input type="text" name="zignites_chat_cod_on_cancel_status" value="<?php echo esc_attr($zignites_chat_cod_on_cancel); ?>" class="regular-text" />
             <?php endif; ?>
-            <p class="description"><?php esc_html_e('Order status applied when the customer confirms or cancels. Reply matching + status transitions ship in the next update.', 'zignites-chat'); ?></p>
+            <p class="description"><?php esc_html_e('Order status applied automatically when the customer replies CONFIRM or CANCEL on WhatsApp.', 'zignites-chat'); ?></p>
         </td>
     </tr>
 </table>
