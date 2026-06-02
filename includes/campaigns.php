@@ -656,6 +656,13 @@ function zignites_chat_campaign_process_chunk($campaign_id) {
     if (!$campaign) return;
     if (in_array($campaign['status'], ['completed', 'failed'], true)) return;
 
+    // Quiet hours: pause the campaign and resume the chunk when the window ends.
+    if (function_exists('zignites_chat_quiet_hours_active') && zignites_chat_quiet_hours_active()) {
+        $resume = function_exists('zignites_chat_quiet_hours_resume_seconds') ? zignites_chat_quiet_hours_resume_seconds() : 0;
+        wp_schedule_single_event(time() + max(60, $resume), 'zignites_chat_process_campaign', [$campaign_id]);
+        return;
+    }
+
     $chunk_size = (int) apply_filters('zignites_chat_campaign_chunk_size', 10);
     $chunk_size = max(1, min(100, $chunk_size));
 

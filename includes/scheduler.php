@@ -50,6 +50,14 @@ function zignites_chat_send_followup_message_handler($order_id) {
         return;
     }
 
+    // Quiet hours: defer marketing follow-ups out of the nightly window.
+    // Re-scheduled to when the window ends; not a failure, so no attempt bump.
+    if (function_exists('zignites_chat_quiet_hours_active') && zignites_chat_quiet_hours_active()) {
+        $resume = function_exists('zignites_chat_quiet_hours_resume_seconds') ? zignites_chat_quiet_hours_resume_seconds() : 0;
+        wp_schedule_single_event(time() + max(60, $resume), 'zignites_chat_send_followup_message', [$order_id]);
+        return;
+    }
+
     // Central outbound budget: if the shared per-minute cap is hit, defer this
     // follow-up by re-scheduling shortly. This is a deferral, not a failure —
     // attempts are NOT incremented — so a saturated window can't burn the

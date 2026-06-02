@@ -68,6 +68,11 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_icon', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_welcome', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 
+    // Quiet hours.
+    register_setting('zignites_chat_quiet_group', 'zignites_chat_quiet_hours_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+    register_setting('zignites_chat_quiet_group', 'zignites_chat_quiet_start', ['sanitize_callback' => 'zignites_chat_quiet_sanitize_time']);
+    register_setting('zignites_chat_quiet_group', 'zignites_chat_quiet_end', ['sanitize_callback' => 'zignites_chat_quiet_sanitize_time']);
+
     // Inbox — canned/quick replies.
     register_setting('zignites_chat_inbox_group', 'zignites_chat_inbox_canned_replies', ['sanitize_callback' => 'zignites_chat_inbox_parse_canned_replies', 'default' => []]);
 
@@ -133,6 +138,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-cod',           __('COD Confirmation', 'zignites-chat'), 'zignites_chat_render_cod_page',           true],
         ['zignites-chat-scheduler',     __('Scheduler', 'zignites-chat'),        'zignites_chat_render_scheduler_page',     true],
         ['zignites-chat-status',        __('Status Notifications', 'zignites-chat'), 'zignites_chat_render_status_page',     true],
+        ['zignites-chat-quiet',         __('Quiet Hours', 'zignites-chat'),      'zignites_chat_render_quiet_page',         true],
         ['zignites-chat-campaigns',     __('Campaigns', 'zignites-chat'),        'zignites_chat_render_campaigns_page',     true],
         ['zignites-chat-inbox',         __('Inbox', 'zignites-chat'),            'zignites_chat_render_inbox_page',         true],
         ['zignites-chat-analytics',     __('Analytics', 'zignites-chat'),        'zignites_chat_render_analytics_page',     true],
@@ -406,6 +412,24 @@ function zignites_chat_render_optin_page() {
     zignites_chat_admin_page_close();
 }
 
+function zignites_chat_render_quiet_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'));
+    }
+    zignites_chat_admin_page_open(__('Quiet Hours', 'zignites-chat'));
+    if (!zignites_chat_is_pro_active()) {
+        zignites_chat_render_pro_upgrade_notice('quiet');
+        zignites_chat_admin_page_close();
+        return;
+    }
+    echo '<form method="post" action="options.php">';
+    settings_fields('zignites_chat_quiet_group');
+    require ZIGNITES_CHAT_PATH . 'admin/views/tab-quiet.php';
+    submit_button();
+    echo '</form>';
+    zignites_chat_admin_page_close();
+}
+
 function zignites_chat_render_status_page() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'));
@@ -551,6 +575,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Timestamped consent log per phone number', 'zignites-chat'),
                 __('Require consent before cart recovery / campaigns / follow-ups', 'zignites-chat'),
                 __('Explicit opt-in clears a prior opt-out', 'zignites-chat'),
+            ],
+        ],
+        'quiet' => [
+            'title'       => __('Quiet Hours', 'zignites-chat'),
+            'description' => __('Respect your customers’ downtime. Pause marketing WhatsApp messages overnight; they resume automatically when the window ends.', 'zignites-chat'),
+            'benefits'    => [
+                __('Configurable nightly quiet window (store timezone)', 'zignites-chat'),
+                __('Holds cart recovery, campaigns and follow-ups', 'zignites-chat'),
+                __('Transactional messages (orders, COD, status) still send', 'zignites-chat'),
+                __('Deferred sends resume automatically — nothing is dropped', 'zignites-chat'),
             ],
         ],
         'status' => [

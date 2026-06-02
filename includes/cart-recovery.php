@@ -313,6 +313,10 @@ function zignites_chat_process_cart_recovery_queue() {
     if (get_option('zignites_chat_cart_recovery_enabled', 'yes') !== 'yes') return;
     if (!zignites_chat_is_pro_active()) return;
 
+    // Quiet hours: hold marketing sends until the window ends. Rows stay due
+    // and are picked up by the next 5-minute cron tick.
+    if (function_exists('zignites_chat_quiet_hours_active') && zignites_chat_quiet_hours_active()) return;
+
     global $wpdb;
     $table = zignites_chat_get_cart_table_name();
     $now = current_time('mysql');
