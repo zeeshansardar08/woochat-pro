@@ -22,8 +22,16 @@
         var replyEl = document.getElementById('zignites-chat-inbox-reply');
         var sendEl = document.getElementById('zignites-chat-inbox-send');
         var composerNote = document.getElementById('zignites-chat-inbox-composer-note');
+        var filterEl = document.getElementById('zignites-chat-inbox-filter');
+        var assigneeEl = document.getElementById('zignites-chat-inbox-assignee');
+        var claimEl = document.getElementById('zignites-chat-inbox-claim');
+        var assignSelect = document.getElementById('zignites-chat-inbox-assign-select');
+
+        var agents = config.agents || [];
+        var currentUser = parseInt(config.currentUser, 10) || 0;
 
         var activeId = 0;
+        var activeAgentId = 0;
         var lastMessageId = 0;
         var windowOpen = false;
         var searchTimer = null;
@@ -87,6 +95,13 @@
                 time.textContent = t.last_message_at || '';
                 li.appendChild(time);
 
+                if (t.agentName) {
+                    var who = document.createElement('span');
+                    who.className = 'zignites-chat-inbox-thread-agent';
+                    who.textContent = '@ ' + t.agentName;
+                    li.appendChild(who);
+                }
+
                 li.addEventListener('click', function () { openThread(t.id); });
                 listEl.appendChild(li);
             });
@@ -95,11 +110,52 @@
         function loadThreads() {
             var params = {};
             if (searchEl && searchEl.value) params.search = searchEl.value;
+            if (filterEl && filterEl.value) params.scope = filterEl.value;
             return ajaxGet('zignites_chat_inbox_threads', params).then(function (res) {
                 if (res && res.success) {
                     renderThreads(res.data.threads);
                 }
             }).catch(function () { /* transient network error — next poll retries */ });
+        }
+
+        // --- Assignment ------------------------------------------------------
+
+        function renderAssignment(agentId, agentName) {
+            activeAgentId = parseInt(agentId, 10) || 0;
+            if (assigneeEl) {
+                assigneeEl.textContent = (i18n.assignedTo || '') + ': ' + (agentName || (i18n.unassigned || ''));
+            }
+            if (claimEl) {
+                // Hide Claim when the current user already owns the thread.
+                claimEl.textContent = i18n.claim || '';
+                claimEl.style.display = (currentUser && activeAgentId === currentUser) ? 'none' : '';
+            }
+            if (assignSelect) assignSelect.value = String(activeAgentId);
+        }
+
+        function buildAssignSelect() {
+            if (!assignSelect) return;
+            assignSelect.innerHTML = '';
+            var unassigned = document.createElement('option');
+            unassigned.value = '0';
+            unassigned.textContent = i18n.unassigned || '';
+            assignSelect.appendChild(unassigned);
+            agents.forEach(function (a) {
+                var opt = document.createElement('option');
+                opt.value = String(a.id);
+                opt.textContent = a.name;
+                assignSelect.appendChild(opt);
+            });
+        }
+
+        function assign(agentId) {
+            if (!activeId) return;
+            ajaxPost('zignites_chat_inbox_assign', { conversation_id: activeId, agent_id: agentId }).then(function (res) {
+                if (res && res.success) {
+                    renderAssignment(res.data.agent_id, res.data.agentName);
+                    loadThreads();
+                }
+            }).catch(function () { /* ignore */ });
         }
 
         // --- Thread view -----------------------------------------------------
@@ -195,6 +251,7 @@
                 var t = res.data.thread;
                 titleEl.textContent = t.name || t.phone || (i18n.unknown || '');
                 phoneEl.textContent = t.phone || '';
+                renderAssignment(t.agent_id, t.agentName);
                 renderWindow(!!t.windowOpen);
 
                 messagesEl.innerHTML = '';
@@ -231,6 +288,17 @@
                 searchTimer = setTimeout(loadThreads, 300);
             });
         }
+        if (filterEl) {
+            filterEl.addEventListener('change', loadThreads);
+        }
+
+        buildAssignSelect();
+        if (claimEl) {
+            claimEl.addEventListener('click', function () { assign(currentUser); });
+        }
+        if (assignSelect) {
+            assignSelect.addEventListener('change', function () { assign(parseInt(assignSelect.value, 10) || 0); });
+        }
 
         if (sendEl) {
             sendEl.addEventListener('click', sendReply);
@@ -249,6 +317,9 @@
         Array.prototype.forEach.call(listEl.querySelectorAll('.zignites-chat-inbox-thread'), function (li) {
             li.addEventListener('click', function () { openThread(parseInt(li.getAttribute('data-id'), 10)); });
         });
+
+        // Refresh once on load so JS-rendered rows include assignee names.
+        loadThreads();
 
         window.setInterval(function () {
             loadThreads();

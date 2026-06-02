@@ -35,6 +35,69 @@ function zignites_chat_render_inbox_page() {
 }
 
 /* ---------------------------------------------------------------------------
+ * Agents (assignment)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Users who can be assigned inbox conversations: those who can manage the
+ * store (administrators + shop managers). Returns [user_id => display_name].
+ *
+ * @return array<int, string>
+ */
+function zignites_chat_inbox_assignable_agents() {
+    $agents = [];
+    $users  = get_users([
+        'role__in' => ['administrator', 'shop_manager'],
+        'orderby'  => 'display_name',
+        'fields'   => ['ID', 'display_name'],
+    ]);
+    foreach ($users as $user) {
+        $agents[(int) $user->ID] = (string) $user->display_name;
+    }
+    return apply_filters('zignites_chat_inbox_assignable_agents', $agents);
+}
+
+/**
+ * Resolve an agent id to a display name from the agents map.
+ *
+ * @param int   $agent_id
+ * @param array $agents   [id => name] map.
+ * @return string '' when unassigned, the name when known, else "User #id".
+ */
+function zignites_chat_inbox_agent_name($agent_id, $agents) {
+    $agent_id = (int) $agent_id;
+    if ($agent_id <= 0) {
+        return '';
+    }
+    if (isset($agents[$agent_id])) {
+        return (string) $agents[$agent_id];
+    }
+    /* translators: %d: WordPress user id. */
+    return sprintf(__('User #%d', 'zignites-chat'), $agent_id);
+}
+
+/**
+ * Translate a list-scope param into a get_threads() agent_id filter.
+ *
+ * @param string $scope   'all' | 'mine' | 'unassigned' | numeric agent id.
+ * @param int    $user_id Current user id (for 'mine').
+ * @return int|null null = no filter, 0 = unassigned, >0 = that agent.
+ */
+function zignites_chat_inbox_scope_to_agent_filter($scope, $user_id) {
+    $scope = (string) $scope;
+    if ($scope === 'mine') {
+        return (int) $user_id;
+    }
+    if ($scope === 'unassigned') {
+        return 0;
+    }
+    if ($scope !== '' && ctype_digit($scope)) {
+        return (int) $scope;
+    }
+    return null; // 'all' / empty
+}
+
+/* ---------------------------------------------------------------------------
  * Assets
  * ------------------------------------------------------------------------ */
 
@@ -45,11 +108,25 @@ function zignites_chat_inbox_enqueue_assets($hook) {
     }
     wp_enqueue_style('zignites-chat-inbox-css', ZIGNITES_CHAT_URL . 'assets/css/inbox.css', [], ZIGNITES_CHAT_VERSION);
     wp_enqueue_script('zignites-chat-inbox-js', ZIGNITES_CHAT_URL . 'assets/js/inbox.js', [], ZIGNITES_CHAT_VERSION, true);
+    $agents = zignites_chat_inbox_assignable_agents();
+    $agent_options = [];
+    foreach ($agents as $id => $name) {
+        $agent_options[] = ['id' => (int) $id, 'name' => (string) $name];
+    }
     wp_localize_script('zignites-chat-inbox-js', 'zignitesChatInbox', [
         'ajaxUrl'      => admin_url('admin-ajax.php'),
         'nonce'        => wp_create_nonce('zignites_chat_inbox'),
         'pollInterval' => (int) apply_filters('zignites_chat_inbox_poll_interval', 15000),
+        'currentUser'  => get_current_user_id(),
+        'agents'       => $agent_options,
         'i18n'         => [
+            'assignedTo'    => __('Assigned to', 'zignites-chat'),
+            'unassigned'    => __('Unassigned', 'zignites-chat'),
+            'claim'         => __('Claim', 'zignites-chat'),
+            'assign'        => __('Assign…', 'zignites-chat'),
+            'filterAll'     => __('All conversations', 'zignites-chat'),
+            'filterMine'    => __('Assigned to me', 'zignites-chat'),
+            'filterUnassigned' => __('Unassigned', 'zignites-chat'),
             'loading'       => __('Loading…', 'zignites-chat'),
             'noThreads'     => __('No conversations yet. Inbound WhatsApp messages will appear here.', 'zignites-chat'),
             'noMessages'    => __('No messages in this conversation.', 'zignites-chat'),
@@ -86,11 +163,21 @@ function zignites_chat_ajax_inbox_threads() {
     }
 
     $search = isset($_GET['search']) ? sanitize_text_field(wp_unslash($_GET['search'])) : '';
-    $rows   = zignites_chat_inbox_get_threads(['limit' => 100, 'search' => $search]);
+    $scope  = isset($_GET['scope']) ? sanitize_key(wp_unslash($_GET['scope'])) : '';
+    $agent_filter = zignites_chat_inbox_scope_to_agent_filter($scope, get_current_user_id());
 
+    $rows = zignites_chat_inbox_get_threads([
+        'limit'    => 100,
+        'search'   => $search,
+        'agent_id' => $agent_filter,
+    ]);
+
+    $agents  = zignites_chat_inbox_assignable_agents();
     $threads = [];
     foreach ($rows as $row) {
-        $threads[] = zignites_chat_inbox_present_thread($row);
+        $thread = zignites_chat_inbox_present_thread($row);
+        $thread['agentName'] = zignites_chat_inbox_agent_name($thread['agent_id'], $agents);
+        $threads[] = $thread;
     }
 
     wp_send_json_success([
@@ -138,10 +225,48 @@ function zignites_chat_ajax_inbox_thread() {
 
     $present = zignites_chat_inbox_present_thread($thread);
     $present['windowOpen'] = zignites_chat_inbox_window_is_open($thread['last_inbound_at'] ?? '');
+    $present['agentName']  = zignites_chat_inbox_agent_name($present['agent_id'], zignites_chat_inbox_assignable_agents());
 
     wp_send_json_success([
         'thread'   => $present,
         'messages' => $messages,
+    ]);
+}
+
+/* ---------------------------------------------------------------------------
+ * AJAX — assign / claim / unassign a conversation
+ * ------------------------------------------------------------------------ */
+
+add_action('wp_ajax_zignites_chat_inbox_assign', 'zignites_chat_ajax_inbox_assign');
+function zignites_chat_ajax_inbox_assign() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Unauthorized', 'zignites-chat')], 403);
+    }
+    if (!check_ajax_referer('zignites_chat_inbox', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'zignites-chat')], 400);
+    }
+    if (!zignites_chat_is_pro_active()) {
+        wp_send_json_error(['message' => __('Pro required', 'zignites-chat')], 403);
+    }
+
+    $conversation_id = isset($_POST['conversation_id']) ? (int) $_POST['conversation_id'] : 0;
+    $agent_id        = isset($_POST['agent_id']) ? (int) $_POST['agent_id'] : 0;
+
+    if (zignites_chat_inbox_get_thread($conversation_id) === null) {
+        wp_send_json_error(['message' => __('Not found', 'zignites-chat')], 404);
+    }
+    // A non-zero assignee must be a real, eligible agent.
+    if ($agent_id > 0 && !isset(zignites_chat_inbox_assignable_agents()[$agent_id])) {
+        wp_send_json_error(['message' => __('Unknown agent', 'zignites-chat')], 422);
+    }
+
+    if (!zignites_chat_inbox_assign_thread($conversation_id, $agent_id)) {
+        wp_send_json_error(['message' => __('Could not update assignment.', 'zignites-chat')], 500);
+    }
+
+    wp_send_json_success([
+        'agent_id'  => $agent_id,
+        'agentName' => zignites_chat_inbox_agent_name($agent_id, zignites_chat_inbox_assignable_agents()),
     ]);
 }
 

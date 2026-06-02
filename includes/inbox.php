@@ -288,9 +288,11 @@ function zignites_chat_inbox_get_thread($conversation_id) {
  * List conversation threads, unread first then most-recently active.
  *
  * @param array $args {
- *   @type int    $limit  Max rows (1–200). Default 50.
- *   @type int    $offset Pagination offset. Default 0.
- *   @type string $search Optional phone/name LIKE filter.
+ *   @type int      $limit    Max rows (1–200). Default 50.
+ *   @type int      $offset   Pagination offset. Default 0.
+ *   @type string   $search   Optional phone/name LIKE filter.
+ *   @type int|null $agent_id Optional assignee filter: null = no filter,
+ *                           0 = unassigned only, >0 = that agent only.
  * }
  * @return array<int, array> Thread rows (ARRAY_A).
  */
@@ -299,23 +301,54 @@ function zignites_chat_inbox_get_threads($args = []) {
     $limit  = isset($args['limit']) ? max(1, min(200, (int) $args['limit'])) : 50;
     $offset = isset($args['offset']) ? max(0, (int) $args['offset']) : 0;
     $search = isset($args['search']) ? trim((string) $args['search']) : '';
+    $agent  = array_key_exists('agent_id', $args) && $args['agent_id'] !== null ? (int) $args['agent_id'] : null;
     $table  = zignites_chat_conversations_table_name();
 
+    $where  = [];
+    $params = [];
     if ($search !== '') {
         $like = '%' . $wpdb->esc_like($search) . '%';
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM {$table} WHERE phone LIKE %s OR customer_name LIKE %s ORDER BY unread_count DESC, last_message_at DESC LIMIT %d OFFSET %d",
-            $like, $like, $limit, $offset
-        ), ARRAY_A);
-    } else {
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM {$table} ORDER BY unread_count DESC, last_message_at DESC LIMIT %d OFFSET %d",
-            $limit, $offset
-        ), ARRAY_A);
+        $where[] = '(phone LIKE %s OR customer_name LIKE %s)';
+        $params[] = $like;
+        $params[] = $like;
     }
+    if ($agent !== null) {
+        $where[] = 'agent_id = %d';
+        $params[] = max(0, $agent);
+    }
+
+    $where_sql = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+    $params[]  = $limit;
+    $params[]  = $offset;
+
+    $sql = "SELECT * FROM {$table}{$where_sql} ORDER BY unread_count DESC, last_message_at DESC LIMIT %d OFFSET %d";
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
+    $rows = $wpdb->get_results($wpdb->prepare($sql, $params), ARRAY_A);
     return is_array($rows) ? $rows : [];
+}
+
+/**
+ * Assign (or clear) a thread's agent.
+ *
+ * @param int $conversation_id Thread id.
+ * @param int $agent_id        WP user id, or 0 to unassign.
+ * @return bool
+ */
+function zignites_chat_inbox_assign_thread($conversation_id, $agent_id) {
+    global $wpdb;
+    $conversation_id = (int) $conversation_id;
+    if ($conversation_id <= 0) {
+        return false;
+    }
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $updated = $wpdb->update(
+        zignites_chat_conversations_table_name(),
+        ['agent_id' => max(0, (int) $agent_id)],
+        ['id' => $conversation_id],
+        ['%d'],
+        ['%d']
+    );
+    return $updated !== false;
 }
 
 /**
@@ -427,6 +460,7 @@ function zignites_chat_inbox_present_thread($row) {
         'unread'          => isset($row['unread_count']) ? (int) $row['unread_count'] : 0,
         'last_message_at' => isset($row['last_message_at']) ? (string) $row['last_message_at'] : '',
         'last_inbound_at' => isset($row['last_inbound_at']) ? (string) $row['last_inbound_at'] : '',
+        'agent_id'        => isset($row['agent_id']) ? (int) $row['agent_id'] : 0,
     ];
 }
 
