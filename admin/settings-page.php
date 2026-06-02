@@ -71,6 +71,11 @@ function zignites_chat_register_settings() {
     // Inbox — canned/quick replies.
     register_setting('zignites_chat_inbox_group', 'zignites_chat_inbox_canned_replies', ['sanitize_callback' => 'zignites_chat_inbox_parse_canned_replies', 'default' => []]);
 
+    // Inbox — agent email notifications (separate group so saving it doesn't
+    // wipe the canned-replies option via options.php).
+    register_setting('zignites_chat_inbox_notify_group', 'zignites_chat_inbox_notify_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+    register_setting('zignites_chat_inbox_notify_group', 'zignites_chat_inbox_notify_email', ['sanitize_callback' => 'sanitize_email']);
+
     // Cart Recovery.
     register_setting('zignites_chat_cart_recovery_group', 'zignites_chat_cart_recovery_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_cart_recovery_group', 'zignites_chat_cart_recovery_delay', ['sanitize_callback' => 'zignites_chat_sanitize_int']);
