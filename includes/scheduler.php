@@ -44,6 +44,16 @@ function zignites_chat_send_followup_message_handler($order_id) {
     // burns attempts on the same `false` return.
     if (zignites_chat_is_opted_out($to)) return;
 
+    // Central outbound budget: if the shared per-minute cap is hit, defer this
+    // follow-up by re-scheduling shortly. This is a deferral, not a failure —
+    // attempts are NOT incremented — so a saturated window can't burn the
+    // 3-attempt cap. Done before the (possibly paid) GPT call below.
+    if (function_exists('zignites_chat_outbound_rate_acquire') && !zignites_chat_outbound_rate_acquire()) {
+        $defer = max(1, (int) apply_filters('zignites_chat_outbound_rate_defer_seconds', MINUTE_IN_SECONDS));
+        wp_schedule_single_event(time() + $defer, 'zignites_chat_send_followup_message', [$order_id]);
+        return;
+    }
+
     $picked  = zignites_chat_ab_get_template('followup', $order_id);
     $message = zignites_chat_build_followup_message($order, $picked['template']);
 

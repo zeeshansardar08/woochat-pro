@@ -693,6 +693,13 @@ function zignites_chat_campaign_process_chunk($campaign_id) {
             continue;
         }
 
+        // Central outbound budget: stop this chunk when the shared per-minute
+        // cap is hit. Remaining recipients stay 'pending', so the reschedule
+        // below fires another chunk on the next tick — nothing is marked failed.
+        if (function_exists('zignites_chat_outbound_rate_acquire') && !zignites_chat_outbound_rate_acquire()) {
+            break;
+        }
+
         $message = zignites_chat_campaign_render_message($campaign['template'], $row['customer_name']);
 
         $context = ['type' => 'bulk', 'campaign_id' => $campaign_id];

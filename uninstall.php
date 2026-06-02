@@ -77,6 +77,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_followup_ab_enabled',
     'zignites_chat_webhooks',
     'zignites_chat_webhook_log',
+    'zignites_chat_outbound_rate_state',
 ];
 
 foreach ($zignites_chat_option_keys as $zignites_chat_key) {

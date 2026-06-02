@@ -338,6 +338,13 @@ function zignites_chat_process_cart_recovery_queue() {
             continue;
         }
 
+        // Central outbound budget: stop this run when the shared per-minute cap
+        // is hit. The row stays pending/retry (next_send_at unchanged) and is
+        // picked up on the next cron tick — never marked failed by the limiter.
+        if (function_exists('zignites_chat_outbound_rate_acquire') && !zignites_chat_outbound_rate_acquire()) {
+            break;
+        }
+
         $result = zignites_chat_send_cart_recovery_whatsapp($phone, $cart_items, $row->consent, $row->consent_time, ['event_id' => $row->event_id]);
 
         if ($result === true) {
