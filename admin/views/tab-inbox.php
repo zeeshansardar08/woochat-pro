@@ -3,10 +3,21 @@ if (!defined('ABSPATH')) exit;
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View partial: these variables are scoped to the render function that includes this file, not the global namespace.
 
 $zignites_chat_threads = zignites_chat_inbox_get_threads(['limit' => 100]);
+$zignites_chat_canned  = zignites_chat_inbox_get_canned_replies();
 ?>
 <p class="description">
     <?php esc_html_e('Read and reply to WhatsApp conversations with your customers. Inbound messages are captured automatically from your connected provider.', 'zignites-chat'); ?>
 </p>
+
+<details class="zignites-chat-inbox-canned-manage" style="margin:8px 0 16px;">
+    <summary style="cursor:pointer; font-weight:600;"><?php esc_html_e('Manage quick replies', 'zignites-chat'); ?></summary>
+    <form method="post" action="options.php" style="margin-top:10px;">
+        <?php settings_fields('zignites_chat_inbox_group'); ?>
+        <p class="description"><?php esc_html_e('One reply per line as "Title | Message". The title is what agents pick from the composer; the message is inserted. Lines without a "|" use the message as both.', 'zignites-chat'); ?></p>
+        <textarea name="zignites_chat_inbox_canned_replies" rows="5" class="large-text" placeholder="<?php esc_attr_e('Shipping delay | Sorry for the delay — your order ships within 24 hours.', 'zignites-chat'); ?>"><?php echo esc_textarea(zignites_chat_inbox_canned_replies_to_text($zignites_chat_canned)); ?></textarea>
+        <?php submit_button(__('Save quick replies', 'zignites-chat'), 'secondary', 'submit', true); ?>
+    </form>
+</details>
 
 <div class="zignites-chat-inbox" id="zignites-chat-inbox">
     <div class="zignites-chat-inbox-list" id="zignites-chat-inbox-list">
@@ -60,6 +71,14 @@ $zignites_chat_threads = zignites_chat_inbox_get_threads(['limit' => 100]);
             <div class="zignites-chat-inbox-window" id="zignites-chat-inbox-window"></div>
             <div class="zignites-chat-inbox-messages" id="zignites-chat-inbox-messages"></div>
             <div class="zignites-chat-inbox-composer" id="zignites-chat-inbox-composer">
+                <?php if (!empty($zignites_chat_canned)) : ?>
+                    <select id="zignites-chat-inbox-canned" class="zignites-chat-inbox-canned-select">
+                        <option value=""><?php esc_html_e('Quick reply…', 'zignites-chat'); ?></option>
+                        <?php foreach ($zignites_chat_canned as $zignites_chat_cr) : ?>
+                            <option value="<?php echo esc_attr($zignites_chat_cr['body']); ?>"><?php echo esc_html($zignites_chat_cr['title']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
                 <textarea id="zignites-chat-inbox-reply" rows="2"
                           placeholder="<?php esc_attr_e('Type a reply…', 'zignites-chat'); ?>"></textarea>
                 <button type="button" class="button button-primary" id="zignites-chat-inbox-send">

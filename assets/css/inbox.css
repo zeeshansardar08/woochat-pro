@@ -244,6 +244,12 @@
     min-height: 38px;
 }
 
+.zignites-chat-inbox-canned-select {
+    grid-column: 1 / -1;
+    justify-self: start;
+    max-width: 260px;
+}
+
 .zignites-chat-inbox-composer textarea:disabled {
     background: #f0f0f1;
     color: #8c8f94;

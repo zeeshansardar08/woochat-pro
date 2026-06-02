@@ -92,6 +92,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_optin_default_checked',
     'zignites_chat_optin_required',
     'zignites_chat_optin_log',
+    'zignites_chat_inbox_canned_replies',
 ];
 
 foreach ($zignites_chat_option_keys as $zignites_chat_key) {

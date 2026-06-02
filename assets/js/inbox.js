@@ -23,6 +23,7 @@
         var sendEl = document.getElementById('zignites-chat-inbox-send');
         var composerNote = document.getElementById('zignites-chat-inbox-composer-note');
         var filterEl = document.getElementById('zignites-chat-inbox-filter');
+        var cannedEl = document.getElementById('zignites-chat-inbox-canned');
         var assigneeEl = document.getElementById('zignites-chat-inbox-assignee');
         var claimEl = document.getElementById('zignites-chat-inbox-claim');
         var assignSelect = document.getElementById('zignites-chat-inbox-assign-select');
@@ -290,6 +291,16 @@
         }
         if (filterEl) {
             filterEl.addEventListener('change', loadThreads);
+        }
+        if (cannedEl && replyEl) {
+            cannedEl.addEventListener('change', function () {
+                var snippet = cannedEl.value;
+                if (snippet) {
+                    replyEl.value = replyEl.value ? (replyEl.value.replace(/\s*$/, '') + ' ' + snippet) : snippet;
+                    replyEl.focus();
+                }
+                cannedEl.value = '';
+            });
         }
 
         buildAssignSelect();
