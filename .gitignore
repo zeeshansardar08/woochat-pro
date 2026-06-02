@@ -27,3 +27,7 @@ phpcs.xml
 node_modules/
 package.json
 package-lock.json
+
+# Freemius caches the plugin icon here at runtime (downloaded on admin load),
+# so it is a generated artifact, not source.
+freemius/assets/img/zignites-chat.png
