@@ -510,7 +510,14 @@ Build on the merged two-way inbox (P1):
       `zignites_chat_inbox_note`; composer "Internal note" toggle (works even
       when the 24h window is closed) with distinct note styling + author label.
       2 unit tests (note direction + author_id); 211 pass, PHPCS + JS clean.
-- [ ] T2.5 — New-message notifications (email / desktop) for agents.
+- [x] T2.5 — Agent email notifications — done on
+      `feat/pro-inbox-agent-notifications`. On a new inbound (via the
+      `zignites_chat_inbound_message` hook) emails the assigned agent, or all
+      managers when unassigned, or a configured override address. Throttled to
+      one email per conversation per 15 min (transient + pure
+      `notify_should_send`). Pure tested `notify_recipient_ids`. Settings live
+      in their own group (`zignites_chat_inbox_notify_group`) so saving them
+      doesn't wipe canned replies. 3 unit tests; 214 pass, PHPCS + lint green.
 
 ### Tier 3 — platform / automation
 - [ ] T3.1 — Drip & automation sequences (welcome, win-back, browse-abandon)
@@ -533,11 +540,12 @@ Build on the merged two-way inbox (P1):
 are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
-Tier 2 in progress: **T2.1–T2.4 DONE** (assignment, canned replies, customer
-context, internal notes). Next, the last Tier 2 item: **T2.5 — agent
-notifications** (email a relevant agent when a new inbound message arrives —
-the assigned agent, or all managers when unassigned; throttled to avoid spam).
-Then Tier 3 (automation) and the quick wins — see PHASE 9.
+**Tier 2 COMPLETE** (T2.1–T2.5: assignment, canned replies, customer context,
+internal notes, agent notifications) — the two-way inbox is now a full team
+helpdesk. Next: **Tier 3 — T3.1 drip & automation sequences** (the big one:
+multi-step, rule-based flows like welcome / win-back / browse-abandon), or
+pick off the **quick wins** (Q1 restock alerts, Q2 review/NPS, Q3 quiet hours,
+Q4 Meta template sync, Q5 sender-health) first — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

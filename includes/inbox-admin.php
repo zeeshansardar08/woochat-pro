@@ -35,6 +35,130 @@ function zignites_chat_render_inbox_page() {
 }
 
 /* ---------------------------------------------------------------------------
+ * Agent notifications (email on new inbound)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Decide which user ids to notify for a thread. Pure.
+ *
+ * An assigned thread notifies just its agent; an unassigned thread notifies
+ * every manager.
+ *
+ * @param int   $agent_id    Thread assignee (0 = unassigned).
+ * @param array $manager_ids All eligible manager user ids.
+ * @return array<int, int>
+ */
+function zignites_chat_inbox_notify_recipient_ids($agent_id, $manager_ids) {
+    $agent_id = (int) $agent_id;
+    if ($agent_id > 0) {
+        return [$agent_id];
+    }
+    if (!is_array($manager_ids)) {
+        return [];
+    }
+    return array_values(array_unique(array_map('intval', $manager_ids)));
+}
+
+/**
+ * Whether enough time has passed since the last notification for a thread. Pure.
+ *
+ * @param int $last_ts Unix timestamp of the last notification (0 = never).
+ * @param int $now     Current unix timestamp.
+ * @param int $window  Throttle window in seconds.
+ * @return bool True when a notification should be sent.
+ */
+function zignites_chat_inbox_notify_should_send($last_ts, $now, $window) {
+    $last = (int) $last_ts;
+    if ($last <= 0) {
+        return true;
+    }
+    return ((int) $now - $last) >= max(1, (int) $window);
+}
+
+add_action('zignites_chat_inbound_message', 'zignites_chat_inbox_notify_on_inbound', 10, 2);
+
+/**
+ * Email the relevant agent(s) when a new inbound message lands.
+ *
+ * Throttled per conversation so a burst of messages produces at most one email
+ * per window. Recipients: a configured override address, else the assigned
+ * agent, else all managers.
+ *
+ * @param array $msg    Normalized inbound message.
+ * @param array $result ['conversation_id'=>int, 'message_id'=>int].
+ * @return void
+ */
+function zignites_chat_inbox_notify_on_inbound($msg, $result = []) {
+    if (get_option('zignites_chat_inbox_notify_enabled', 'no') !== 'yes') {
+        return;
+    }
+    if (function_exists('zignites_chat_is_pro_active') && !zignites_chat_is_pro_active()) {
+        return;
+    }
+    if (!is_array($msg)) {
+        return;
+    }
+    $conversation_id = (is_array($result) && isset($result['conversation_id'])) ? (int) $result['conversation_id'] : 0;
+    if ($conversation_id <= 0) {
+        return;
+    }
+
+    // Per-conversation throttle.
+    $window = (int) apply_filters('zignites_chat_inbox_notify_throttle', 15 * MINUTE_IN_SECONDS);
+    $key    = 'zignites_chat_inbox_notify_' . $conversation_id;
+    $last   = (int) get_transient($key);
+    if (!zignites_chat_inbox_notify_should_send($last, time(), $window)) {
+        return;
+    }
+    set_transient($key, time(), $window);
+
+    $thread = zignites_chat_inbox_get_thread($conversation_id);
+    if ($thread === null) {
+        return;
+    }
+
+    // Resolve recipient emails.
+    $emails   = [];
+    $override = sanitize_email(get_option('zignites_chat_inbox_notify_email', ''));
+    if ($override !== '' && is_email($override)) {
+        $emails[] = $override;
+    } else {
+        $ids = zignites_chat_inbox_notify_recipient_ids(
+            (int) $thread['agent_id'],
+            array_keys(zignites_chat_inbox_assignable_agents())
+        );
+        foreach ($ids as $id) {
+            $user = get_userdata($id);
+            if ($user && is_email($user->user_email)) {
+                $emails[] = $user->user_email;
+            }
+        }
+    }
+    $emails = array_values(array_unique(array_filter($emails)));
+    if (empty($emails)) {
+        return;
+    }
+
+    $name    = ($thread['customer_name'] !== '') ? $thread['customer_name'] : $thread['phone'];
+    $snippet = zignites_chat_inbox_make_excerpt(isset($msg['body']) ? $msg['body'] : '', 200);
+    $link    = admin_url('admin.php?page=zignites-chat-inbox');
+
+    /* translators: %s: customer name or phone. */
+    $subject = sprintf(__('New WhatsApp message from %s', 'zignites-chat'), $name);
+    $body    = implode("\n", [
+        /* translators: %s: customer name or phone. */
+        sprintf(__('You have a new WhatsApp message from %s.', 'zignites-chat'), $name),
+        '',
+        $snippet,
+        '',
+        /* translators: %s: inbox URL. */
+        sprintf(__('Open the inbox: %s', 'zignites-chat'), $link),
+    ]);
+
+    wp_mail($emails, $subject, $body);
+}
+
+/* ---------------------------------------------------------------------------
  * Customer context (order history beside the thread)
  * ------------------------------------------------------------------------ */
 

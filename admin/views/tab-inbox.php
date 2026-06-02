@@ -19,6 +19,37 @@ $zignites_chat_canned  = zignites_chat_inbox_get_canned_replies();
     </form>
 </details>
 
+<details class="zignites-chat-inbox-notify-manage" style="margin:8px 0 16px;">
+    <summary style="cursor:pointer; font-weight:600;"><?php esc_html_e('Email notifications', 'zignites-chat'); ?></summary>
+    <form method="post" action="options.php" style="margin-top:10px;">
+        <?php settings_fields('zignites_chat_inbox_notify_group'); ?>
+        <?php
+        $zignites_chat_notify_on    = get_option('zignites_chat_inbox_notify_enabled', 'no');
+        $zignites_chat_notify_email = get_option('zignites_chat_inbox_notify_email', '');
+        ?>
+        <table class="form-table">
+            <tr>
+                <th scope="row"><label for="zignites_chat_inbox_notify_enabled"><?php esc_html_e('Notify on new message', 'zignites-chat'); ?></label></th>
+                <td>
+                    <select name="zignites_chat_inbox_notify_enabled" id="zignites_chat_inbox_notify_enabled">
+                        <option value="no" <?php selected($zignites_chat_notify_on, 'no'); ?>><?php esc_html_e('No', 'zignites-chat'); ?></option>
+                        <option value="yes" <?php selected($zignites_chat_notify_on, 'yes'); ?>><?php esc_html_e('Yes', 'zignites-chat'); ?></option>
+                    </select>
+                    <p class="description"><?php esc_html_e('Emails the assigned agent (or all managers when unassigned) when a customer replies. Throttled to one email per conversation every 15 minutes.', 'zignites-chat'); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="zignites_chat_inbox_notify_email"><?php esc_html_e('Override address', 'zignites-chat'); ?></label></th>
+                <td>
+                    <input type="email" name="zignites_chat_inbox_notify_email" id="zignites_chat_inbox_notify_email" value="<?php echo esc_attr($zignites_chat_notify_email); ?>" class="regular-text" placeholder="<?php esc_attr_e('team@example.com', 'zignites-chat'); ?>" />
+                    <p class="description"><?php esc_html_e('Optional. When set, all notifications go here instead of to individual agents.', 'zignites-chat'); ?></p>
+                </td>
+            </tr>
+        </table>
+        <?php submit_button(__('Save notification settings', 'zignites-chat'), 'secondary', 'submit', true); ?>
+    </form>
+</details>
+
 <div class="zignites-chat-inbox" id="zignites-chat-inbox">
     <div class="zignites-chat-inbox-list" id="zignites-chat-inbox-list">
         <div class="zignites-chat-inbox-search">
