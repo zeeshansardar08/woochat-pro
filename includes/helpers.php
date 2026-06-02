@@ -117,6 +117,7 @@ function zignites_chat_get_migrations() {
         4 => 'zignites_chat_migration_v4_campaign_scheduled_at',
         5 => 'zignites_chat_migration_v5_campaign_media',
         6 => 'zignites_chat_migration_v6_inbox_tables',
+        7 => 'zignites_chat_migration_v7_inbox_notes',
     ];
 }
 
@@ -203,6 +204,17 @@ function zignites_chat_migration_v5_campaign_media() {
  * boot_modules() runs, and the activation hook re-creates the tables too.
  */
 function zignites_chat_migration_v6_inbox_tables() {
+    if (function_exists('zignites_chat_create_inbox_tables')) {
+        zignites_chat_create_inbox_tables();
+    }
+}
+
+/**
+ * v7: widen messages.direction (for the 'note' value) and add
+ * messages.author_id for internal agent notes. Idempotent dbDelta re-run,
+ * same guard shape as v6.
+ */
+function zignites_chat_migration_v7_inbox_notes() {
     if (function_exists('zignites_chat_create_inbox_tables')) {
         zignites_chat_create_inbox_tables();
     }

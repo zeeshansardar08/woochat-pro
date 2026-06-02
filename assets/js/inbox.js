@@ -25,6 +25,7 @@
         var composerNote = document.getElementById('zignites-chat-inbox-composer-note');
         var filterEl = document.getElementById('zignites-chat-inbox-filter');
         var cannedEl = document.getElementById('zignites-chat-inbox-canned');
+        var noteModeEl = document.getElementById('zignites-chat-inbox-note-mode');
         var assigneeEl = document.getElementById('zignites-chat-inbox-assignee');
         var claimEl = document.getElementById('zignites-chat-inbox-claim');
         var assignSelect = document.getElementById('zignites-chat-inbox-assign-select');
@@ -209,8 +210,9 @@
         // --- Thread view -----------------------------------------------------
 
         function messageEl(m) {
+            var isNote = m.direction === 'note';
             var wrap = document.createElement('div');
-            wrap.className = 'zignites-chat-inbox-message is-' + (m.direction === 'in' ? 'in' : 'out');
+            wrap.className = 'zignites-chat-inbox-message is-' + (isNote ? 'note' : (m.direction === 'in' ? 'in' : 'out'));
 
             var body = document.createElement('div');
             body.className = 'zignites-chat-inbox-message-body';
@@ -219,7 +221,12 @@
 
             var meta = document.createElement('div');
             meta.className = 'zignites-chat-inbox-message-meta';
-            var who = (m.direction === 'in') ? (i18n.customer || '') : (i18n.you || '');
+            var who;
+            if (isNote) {
+                who = (i18n.noteLabel || '') + (m.authorName ? ' · ' + m.authorName : '');
+            } else {
+                who = (m.direction === 'in') ? (i18n.customer || '') : (i18n.you || '');
+            }
             meta.textContent = who + ' · ' + (m.created_at || '');
             wrap.appendChild(meta);
             return wrap;
@@ -233,23 +240,64 @@
             messagesEl.scrollTop = messagesEl.scrollHeight;
         }
 
+        function noteModeOn() {
+            return !!(noteModeEl && noteModeEl.checked);
+        }
+
+        // Composer is usable when the 24h window is open OR the agent is writing
+        // an internal note (notes are never sent to the customer).
+        function updateComposerState() {
+            var enabled = windowOpen || noteModeOn();
+            if (replyEl) replyEl.disabled = !enabled;
+            if (sendEl) {
+                sendEl.disabled = !enabled;
+                sendEl.textContent = noteModeOn() ? (i18n.addNote || '') : (i18n.send || '');
+            }
+            if (composerNote) {
+                composerNote.textContent = enabled ? '' : (i18n.windowClosedNote || '');
+            }
+        }
+
         function renderWindow(open) {
             windowOpen = !!open;
             windowEl.className = 'zignites-chat-inbox-window ' + (open ? 'is-open' : 'is-closed');
             windowEl.textContent = open ? (i18n.windowOpen || '') : (i18n.windowClosed || '');
-            // Disable the composer when the 24h window has closed.
-            if (replyEl) replyEl.disabled = !open;
-            if (sendEl) sendEl.disabled = !open;
-            if (composerNote) composerNote.textContent = open ? '' : (i18n.windowClosedNote || '');
+            updateComposerState();
+        }
+
+        function addNote(text) {
+            sendEl.disabled = true;
+            ajaxPost('zignites_chat_inbox_note', { conversation_id: activeId, body: text }).then(function (res) {
+                updateComposerState();
+                if (!res || !res.success) {
+                    if (composerNote) composerNote.textContent = (res && res.data && res.data.message) || (i18n.noteError || '');
+                    return;
+                }
+                replyEl.value = '';
+                if (res.data.message && res.data.message.id) {
+                    var ph = messagesEl.querySelector('.zignites-chat-inbox-empty');
+                    if (ph) ph.remove();
+                    appendMessages([res.data.message]);
+                }
+            }).catch(function () {
+                updateComposerState();
+                if (composerNote) composerNote.textContent = i18n.noteError || '';
+            });
         }
 
         function sendReply() {
-            if (!activeId || !windowOpen) return;
+            if (!activeId) return;
             var text = replyEl ? replyEl.value.trim() : '';
             if (!text) {
-                if (composerNote) composerNote.textContent = i18n.replyEmpty || '';
+                if (composerNote) composerNote.textContent = noteModeOn() ? (i18n.noteEmpty || '') : (i18n.replyEmpty || '');
                 return;
             }
+            if (noteModeOn()) {
+                if (composerNote) composerNote.textContent = '';
+                addNote(text);
+                return;
+            }
+            if (!windowOpen) return;
             sendEl.disabled = true;
             sendEl.textContent = i18n.sending || '';
             if (composerNote) composerNote.textContent = '';
@@ -339,6 +387,9 @@
         }
         if (filterEl) {
             filterEl.addEventListener('change', loadThreads);
+        }
+        if (noteModeEl) {
+            noteModeEl.addEventListener('change', updateComposerState);
         }
         if (cannedEl && replyEl) {
             cannedEl.addEventListener('change', function () {

@@ -79,11 +79,12 @@ function zignites_chat_create_inbox_tables() {
         id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         conversation_id BIGINT UNSIGNED NOT NULL,
         phone VARCHAR(40) NOT NULL,
-        direction VARCHAR(3) NOT NULL,
+        direction VARCHAR(8) NOT NULL,
         body TEXT NULL,
         provider VARCHAR(20) NOT NULL DEFAULT '',
         message_id VARCHAR(190) NOT NULL DEFAULT '',
         status VARCHAR(20) NOT NULL DEFAULT '',
+        author_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
         created_at DATETIME NOT NULL,
         PRIMARY KEY  (id),
         KEY conversation_created (conversation_id, created_at),
@@ -102,17 +103,23 @@ function zignites_chat_create_inbox_tables() {
 /**
  * Normalize a free-form direction string to the stored 'in'/'out' enum.
  *
- * Inbound (customer → store) maps to 'in'; everything else (the store's
- * outbound sends) maps to 'out'. Callers pass known values; the catch-all
+ * Inbound (customer → store) maps to 'in'; internal agent notes map to 'note';
+ * everything else (the store's outbound sends) maps to 'out'. The catch-all
  * 'out' default keeps a typo from being recorded as a customer message and
  * inflating the unread badge.
  *
- * @param string $direction Raw direction (in/inbound/incoming or out/...).
- * @return string 'in' or 'out'.
+ * @param string $direction Raw direction (in/inbound/incoming, note, or out/...).
+ * @return string 'in' | 'out' | 'note'.
  */
 function zignites_chat_inbox_normalize_direction($direction) {
     $direction = strtolower(trim((string) $direction));
-    return in_array($direction, ['in', 'inbound', 'incoming', 'received'], true) ? 'in' : 'out';
+    if (in_array($direction, ['in', 'inbound', 'incoming', 'received'], true)) {
+        return 'in';
+    }
+    if ($direction === 'note') {
+        return 'note';
+    }
+    return 'out';
 }
 
 /**
@@ -439,6 +446,46 @@ function zignites_chat_inbox_mark_read($conversation_id) {
 }
 
 /**
+ * Add an internal agent note to a thread.
+ *
+ * Stored as a message row with direction 'note' and the author's user id. Notes
+ * interleave with messages chronologically but never touch the conversation's
+ * customer-facing aggregates (last_excerpt / unread / last_message_at) and are
+ * never sent to the customer.
+ *
+ * @param int    $conversation_id Thread id.
+ * @param string $body            Note text.
+ * @param int    $author_id       WP user id of the author.
+ * @return int Inserted row id, or 0 on failure.
+ */
+function zignites_chat_inbox_add_note($conversation_id, $body, $author_id) {
+    global $wpdb;
+    $conversation_id = (int) $conversation_id;
+    $body = zignites_chat_sanitize_textarea($body);
+    if ($conversation_id <= 0 || $body === '') {
+        return 0;
+    }
+    $thread = zignites_chat_inbox_get_thread($conversation_id);
+    if ($thread === null) {
+        return 0;
+    }
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $wpdb->insert(
+        zignites_chat_messages_table_name(),
+        [
+            'conversation_id' => $conversation_id,
+            'phone'           => (string) $thread['phone'],
+            'direction'       => 'note',
+            'body'            => $body,
+            'author_id'       => max(0, (int) $author_id),
+            'created_at'      => current_time('mysql'),
+        ],
+        ['%d', '%s', '%s', '%s', '%d', '%s']
+    );
+    return (int) $wpdb->insert_id;
+}
+
+/**
  * Shape a conversation DB row into the array the admin/AJAX layer returns.
  *
  * Pure (no DB) so it can be unit-tested. Casts types and only exposes the
@@ -482,6 +529,7 @@ function zignites_chat_inbox_present_message($row) {
         'body'       => isset($row['body']) ? (string) $row['body'] : '',
         'status'     => isset($row['status']) ? (string) $row['status'] : '',
         'created_at' => isset($row['created_at']) ? (string) $row['created_at'] : '',
+        'author_id'  => isset($row['author_id']) ? (int) $row['author_id'] : 0,
     ];
 }
 
