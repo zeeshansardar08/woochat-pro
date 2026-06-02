@@ -333,7 +333,12 @@ function zignites_chat_process_cart_recovery_queue() {
             continue;
         }
 
-        if (zignites_chat_is_opted_out($phone)) {
+        // Suppress opt-outs and, when consent is required, non-consented
+        // numbers (cart recovery is marketing).
+        $zignites_chat_blocked = function_exists('zignites_chat_marketing_blocked')
+            ? zignites_chat_marketing_blocked($phone)
+            : zignites_chat_is_opted_out($phone);
+        if ($zignites_chat_blocked) {
             $wpdb->update($table, ['status' => 'opted_out', 'updated_at' => $now], ['id' => $row->id], ['%s','%s'], ['%d']);
             continue;
         }

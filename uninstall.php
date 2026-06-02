@@ -87,6 +87,11 @@ $zignites_chat_option_keys = [
     'zignites_chat_cod_on_cancel_status',
     'zignites_chat_status_notify_enabled',
     'zignites_chat_status_notifications',
+    'zignites_chat_optin_enabled',
+    'zignites_chat_optin_label',
+    'zignites_chat_optin_default_checked',
+    'zignites_chat_optin_required',
+    'zignites_chat_optin_log',
 ];
 
 foreach ($zignites_chat_option_keys as $zignites_chat_key) {

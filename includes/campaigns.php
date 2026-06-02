@@ -684,7 +684,10 @@ function zignites_chat_campaign_process_chunk($campaign_id) {
     foreach ($rows as $row) {
         $phone = $row['phone'];
 
-        if (zignites_chat_is_opted_out($phone)) {
+        $zignites_chat_blocked = function_exists('zignites_chat_marketing_blocked')
+            ? zignites_chat_marketing_blocked($phone)
+            : zignites_chat_is_opted_out($phone);
+        if ($zignites_chat_blocked) {
             $wpdb->update($rt, [
                 'status'  => 'skipped',
                 'sent_at' => current_time('mysql'),
