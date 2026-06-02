@@ -19,6 +19,7 @@
         var phoneEl = document.getElementById('zignites-chat-inbox-thread-phone');
         var windowEl = document.getElementById('zignites-chat-inbox-window');
         var messagesEl = document.getElementById('zignites-chat-inbox-messages');
+        var contextEl = document.getElementById('zignites-chat-inbox-context');
         var replyEl = document.getElementById('zignites-chat-inbox-reply');
         var sendEl = document.getElementById('zignites-chat-inbox-send');
         var composerNote = document.getElementById('zignites-chat-inbox-composer-note');
@@ -149,6 +150,52 @@
             });
         }
 
+        // --- Customer context ------------------------------------------------
+
+        function renderContext(ctx) {
+            if (!contextEl) return;
+            contextEl.innerHTML = '';
+            contextEl.style.display = '';
+            if (!ctx || !ctx.order_count) {
+                contextEl.textContent = i18n.ctxNoOrders || '';
+                return;
+            }
+
+            var summary = document.createElement('div');
+            summary.className = 'zignites-chat-inbox-context-summary';
+            summary.textContent = (i18n.ctxOrders || '') + ': ' + ctx.order_count + '  ·  ' + (i18n.ctxSpent || '') + ': ' + (ctx.total_spent || '');
+            contextEl.appendChild(summary);
+
+            if (ctx.orders && ctx.orders.length) {
+                var list = document.createElement('ul');
+                list.className = 'zignites-chat-inbox-context-orders';
+                ctx.orders.forEach(function (o) {
+                    var li = document.createElement('li');
+                    var a = document.createElement('a');
+                    a.href = o.edit_url;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    a.textContent = '#' + o.number;
+                    li.appendChild(a);
+                    var meta = document.createElement('span');
+                    meta.textContent = ' · ' + o.total + ' · ' + o.status + ' · ' + o.date;
+                    li.appendChild(meta);
+                    list.appendChild(li);
+                });
+                contextEl.appendChild(list);
+            }
+        }
+
+        function loadContext(id) {
+            if (!contextEl) return;
+            contextEl.style.display = 'none';
+            ajaxGet('zignites_chat_inbox_context', { conversation_id: id }).then(function (res) {
+                if (res && res.success) {
+                    renderContext(res.data.context);
+                }
+            }).catch(function () { /* context is best-effort */ });
+        }
+
         function assign(agentId) {
             if (!activeId) return;
             ajaxPost('zignites_chat_inbox_assign', { conversation_id: activeId, agent_id: agentId }).then(function (res) {
@@ -254,6 +301,7 @@
                 phoneEl.textContent = t.phone || '';
                 renderAssignment(t.agent_id, t.agentName);
                 renderWindow(!!t.windowOpen);
+                loadContext(id);
 
                 messagesEl.innerHTML = '';
                 if (!res.data.messages.length) {

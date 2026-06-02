@@ -35,6 +35,144 @@ function zignites_chat_render_inbox_page() {
 }
 
 /* ---------------------------------------------------------------------------
+ * Customer context (order history beside the thread)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Aggregate plain order rows into a customer-context summary. Pure.
+ *
+ * @param array $rows Each: ['id','number','status','date','total'(float),'edit_url'].
+ * @param int   $recent_limit How many recent orders to include in the list.
+ * @return array{order_count:int, total_spent:float, orders:array<int,array>}
+ */
+function zignites_chat_inbox_aggregate_customer_context($rows, $recent_limit = 5) {
+    if (!is_array($rows)) {
+        $rows = [];
+    }
+    $count = 0;
+    $total = 0.0;
+    foreach ($rows as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $count++;
+        $total += isset($row['total']) ? (float) $row['total'] : 0.0;
+    }
+    $recent_limit = max(0, (int) $recent_limit);
+    return [
+        'order_count' => $count,
+        'total_spent' => $total,
+        'orders'      => array_slice(array_values(array_filter($rows, 'is_array')), 0, $recent_limit),
+    ];
+}
+
+/**
+ * Build a customer-context summary for a phone from recent WooCommerce orders.
+ *
+ * Orders are matched by a last-digits LIKE query (tolerant of formatting /
+ * country code), then verified with the suffix matcher, then aggregated.
+ *
+ * @param string $phone Customer phone (any format).
+ * @return array Presented context (formatted strings) or an empty shell.
+ */
+function zignites_chat_inbox_get_customer_context($phone) {
+    $empty = ['order_count' => 0, 'total_spent' => '', 'orders' => []];
+    $digits = function_exists('zignites_chat_normalize_phone') ? zignites_chat_normalize_phone($phone) : preg_replace('/[^0-9]/', '', (string) $phone);
+    if ($digits === '' || !function_exists('wc_get_orders')) {
+        return $empty;
+    }
+
+    $suffix = substr($digits, -9);
+    $limit  = (int) apply_filters('zignites_chat_inbox_context_order_limit', 50);
+
+    $orders = wc_get_orders([
+        'limit'      => max(1, $limit),
+        'orderby'    => 'date',
+        'order'      => 'DESC',
+        'return'     => 'objects',
+        'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+            [
+                'key'     => '_billing_phone',
+                'value'   => $suffix,
+                'compare' => 'LIKE',
+            ],
+        ],
+    ]);
+    if (empty($orders) || !is_array($orders)) {
+        return $empty;
+    }
+
+    $rows = [];
+    foreach ($orders as $order) {
+        if (!is_object($order)) {
+            continue;
+        }
+        // Verify (drops a coincidental last-digits LIKE collision).
+        if (function_exists('zignites_chat_cod_phone_matches')
+            && !zignites_chat_cod_phone_matches($digits, $order->get_billing_phone())) {
+            continue;
+        }
+        $date = $order->get_date_created();
+        $rows[] = [
+            'id'       => $order->get_id(),
+            'number'   => $order->get_order_number(),
+            'status'   => function_exists('wc_get_order_status_name') ? wc_get_order_status_name($order->get_status()) : $order->get_status(),
+            'date'     => $date ? $date->date_i18n(get_option('date_format')) : '',
+            'total'    => (float) $order->get_total(),
+            'edit_url' => method_exists($order, 'get_edit_order_url') ? $order->get_edit_order_url() : admin_url('post.php?post=' . $order->get_id() . '&action=edit'),
+        ];
+    }
+
+    $agg = zignites_chat_inbox_aggregate_customer_context($rows);
+
+    $format = static function ($amount) {
+        if (function_exists('wc_price')) {
+            return html_entity_decode(wp_strip_all_tags(wc_price($amount)), ENT_QUOTES, 'UTF-8');
+        }
+        return number_format((float) $amount, 2);
+    };
+
+    $orders_out = [];
+    foreach ($agg['orders'] as $row) {
+        $orders_out[] = [
+            'id'       => (int) $row['id'],
+            'number'   => (string) $row['number'],
+            'status'   => (string) $row['status'],
+            'date'     => (string) $row['date'],
+            'total'    => $format($row['total']),
+            'edit_url' => esc_url_raw($row['edit_url']),
+        ];
+    }
+
+    return [
+        'order_count' => (int) $agg['order_count'],
+        'total_spent' => $format($agg['total_spent']),
+        'orders'      => $orders_out,
+    ];
+}
+
+add_action('wp_ajax_zignites_chat_inbox_context', 'zignites_chat_ajax_inbox_context');
+function zignites_chat_ajax_inbox_context() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Unauthorized', 'zignites-chat')], 403);
+    }
+    if (!check_ajax_referer('zignites_chat_inbox', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'zignites-chat')], 400);
+    }
+    if (!zignites_chat_is_pro_active()) {
+        wp_send_json_error(['message' => __('Pro required', 'zignites-chat')], 403);
+    }
+
+    $conversation_id = isset($_GET['conversation_id']) ? (int) $_GET['conversation_id'] : 0;
+    $thread = zignites_chat_inbox_get_thread($conversation_id);
+    if ($thread === null) {
+        wp_send_json_error(['message' => __('Not found', 'zignites-chat')], 404);
+    }
+
+    wp_send_json_success(['context' => zignites_chat_inbox_get_customer_context($thread['phone'])]);
+}
+
+/* ---------------------------------------------------------------------------
  * Canned / quick replies
  * ------------------------------------------------------------------------ */
 
@@ -212,6 +350,11 @@ function zignites_chat_inbox_enqueue_assets($hook) {
         'cannedReplies' => array_values(zignites_chat_inbox_get_canned_replies()),
         'i18n'         => [
             'cannedInsert'  => __('Quick reply…', 'zignites-chat'),
+            'ctxOrders'     => __('Orders', 'zignites-chat'),
+            'ctxSpent'      => __('Lifetime', 'zignites-chat'),
+            'ctxNoOrders'   => __('No matching orders found.', 'zignites-chat'),
+            'ctxRecent'     => __('Recent orders', 'zignites-chat'),
+            'ctxView'       => __('View', 'zignites-chat'),
             'assignedTo'    => __('Assigned to', 'zignites-chat'),
             'unassigned'    => __('Unassigned', 'zignites-chat'),
             'claim'         => __('Claim', 'zignites-chat'),
