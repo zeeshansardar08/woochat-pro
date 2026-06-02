@@ -527,7 +527,15 @@ Build on the merged two-way inbox (P1):
 ### Quick wins (reuse existing plumbing)
 - [ ] Q1 — Back-in-stock / restock alerts via WhatsApp.
 - [ ] Q2 — Review / NPS request post-delivery.
-- [ ] Q3 — Quiet hours + customer-timezone awareness (no 3am sends).
+- [x] Q3 — Quiet hours — done on `feat/pro-quiet-hours`.
+      `includes/quiet-hours.php`: a configurable nightly window (store timezone)
+      that defers marketing sends — cart-recovery queue skips the run, campaign
+      chunks + follow-ups reschedule to the window's end (resumes automatically,
+      nothing dropped). Transactional sends (order/COD/status) are untouched.
+      Pure tested helpers: `parse_time_to_minutes`, `in_quiet_hours` (handles
+      overnight), `quiet_minutes_until_end`, `quiet_sanitize_time`. Pro "Quiet
+      Hours" tab; settings cleaned on uninstall. 6 unit tests; 220 pass, PHPCS
+      + lint green.
 - [ ] Q4 — Template sync from the Meta Graph API (pull approved templates
       instead of manual mapping in `wa-templates.php`).
 - [ ] Q5 — Sender health panel: WABA quality rating + messaging tier on the
@@ -540,12 +548,12 @@ Build on the merged two-way inbox (P1):
 are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
-**Tier 2 COMPLETE** (T2.1–T2.5: assignment, canned replies, customer context,
-internal notes, agent notifications) — the two-way inbox is now a full team
-helpdesk. Next: **Tier 3 — T3.1 drip & automation sequences** (the big one:
-multi-step, rule-based flows like welcome / win-back / browse-abandon), or
-pick off the **quick wins** (Q1 restock alerts, Q2 review/NPS, Q3 quiet hours,
-Q4 Meta template sync, Q5 sender-health) first — see PHASE 9.
+**Tier 2 COMPLETE.** Quick win **Q3 (quiet hours) DONE** on
+`feat/pro-quiet-hours`. Remaining quick wins: **Q1 restock alerts**, **Q2
+review/NPS**, **Q4 Meta template sync**, **Q5 sender-health**. Plus the big
+**Tier 3 — T3.1 drip & automation sequences**. Suggested next: another quick
+win (Q1 back-in-stock alerts pairs well with the existing send plumbing) or
+start T3.1 — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

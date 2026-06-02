@@ -73,6 +73,7 @@ final class Plugin {
         require_once ZIGNITES_CHAT_PATH . 'includes/wa-templates.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/media.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/rate-limiter.php';
+        require_once ZIGNITES_CHAT_PATH . 'includes/quiet-hours.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/messaging.php';
 
         require_once ZIGNITES_CHAT_PATH . 'includes/analytics.php';
