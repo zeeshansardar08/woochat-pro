@@ -525,7 +525,16 @@ Build on the merged two-way inbox (P1):
       build; the strategic differentiator.
 
 ### Quick wins (reuse existing plumbing)
-- [ ] Q1 — Back-in-stock / restock alerts via WhatsApp.
+- [x] Q1 — Back-in-stock alerts — done on `feat/pro-back-in-stock`.
+      `includes/back-in-stock.php`: a `{prefix}zignites_chat_stock_subs` table
+      (migration v8); a "notify me on WhatsApp" form on out-of-stock product
+      pages (nopriv AJAX subscribe, re-arms on re-subscribe); on
+      `woocommerce_product_set_stock_status` → 'instock' a chunked cron
+      processor sends alerts (opt-out-aware, defers on quiet hours, consumes
+      the shared rate-limit budget). Pure tested helpers `stock_is_instock`,
+      `stock_render_message`. Pro "Back in Stock" tab (enable, heading, message
+      template). Table + options + cron cleaned on uninstall; table created on
+      activation. 3 unit tests; 223 pass, PHPCS + lint + JS clean.
 - [ ] Q2 — Review / NPS request post-delivery.
 - [x] Q3 — Quiet hours — done on `feat/pro-quiet-hours`.
       `includes/quiet-hours.php`: a configurable nightly window (store timezone)
@@ -548,12 +557,11 @@ Build on the merged two-way inbox (P1):
 are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
-**Tier 2 COMPLETE.** Quick win **Q3 (quiet hours) DONE** on
-`feat/pro-quiet-hours`. Remaining quick wins: **Q1 restock alerts**, **Q2
-review/NPS**, **Q4 Meta template sync**, **Q5 sender-health**. Plus the big
-**Tier 3 — T3.1 drip & automation sequences**. Suggested next: another quick
-win (Q1 back-in-stock alerts pairs well with the existing send plumbing) or
-start T3.1 — see PHASE 9.
+**Tier 2 COMPLETE.** Quick wins **Q3 (quiet hours) + Q1 (back-in-stock) DONE**
+(Q1 on `feat/pro-back-in-stock`). Remaining quick wins: **Q2 review/NPS**, **Q4
+Meta template sync**, **Q5 sender-health**. Plus the big **Tier 3 — T3.1 drip &
+automation sequences**. Suggested next: Q2 (review/NPS request — reuses the
+follow-up scheduler) or start T3.1 — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

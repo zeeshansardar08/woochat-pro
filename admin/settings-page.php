@@ -68,6 +68,11 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_icon', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_welcome', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 
+    // Back-in-stock alerts.
+    register_setting('zignites_chat_stock_group', 'zignites_chat_stock_alerts_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+    register_setting('zignites_chat_stock_group', 'zignites_chat_stock_alert_message', ['sanitize_callback' => 'zignites_chat_sanitize_textarea']);
+    register_setting('zignites_chat_stock_group', 'zignites_chat_stock_form_heading', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
+
     // Quiet hours.
     register_setting('zignites_chat_quiet_group', 'zignites_chat_quiet_hours_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_quiet_group', 'zignites_chat_quiet_start', ['sanitize_callback' => 'zignites_chat_quiet_sanitize_time']);
@@ -139,6 +144,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-scheduler',     __('Scheduler', 'zignites-chat'),        'zignites_chat_render_scheduler_page',     true],
         ['zignites-chat-status',        __('Status Notifications', 'zignites-chat'), 'zignites_chat_render_status_page',     true],
         ['zignites-chat-quiet',         __('Quiet Hours', 'zignites-chat'),      'zignites_chat_render_quiet_page',         true],
+        ['zignites-chat-stock',         __('Back in Stock', 'zignites-chat'),    'zignites_chat_render_stock_page',         true],
         ['zignites-chat-campaigns',     __('Campaigns', 'zignites-chat'),        'zignites_chat_render_campaigns_page',     true],
         ['zignites-chat-inbox',         __('Inbox', 'zignites-chat'),            'zignites_chat_render_inbox_page',         true],
         ['zignites-chat-analytics',     __('Analytics', 'zignites-chat'),        'zignites_chat_render_analytics_page',     true],
@@ -412,6 +418,24 @@ function zignites_chat_render_optin_page() {
     zignites_chat_admin_page_close();
 }
 
+function zignites_chat_render_stock_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'));
+    }
+    zignites_chat_admin_page_open(__('Back-in-Stock Alerts', 'zignites-chat'));
+    if (!zignites_chat_is_pro_active()) {
+        zignites_chat_render_pro_upgrade_notice('stock');
+        zignites_chat_admin_page_close();
+        return;
+    }
+    echo '<form method="post" action="options.php">';
+    settings_fields('zignites_chat_stock_group');
+    require ZIGNITES_CHAT_PATH . 'admin/views/tab-stock.php';
+    submit_button();
+    echo '</form>';
+    zignites_chat_admin_page_close();
+}
+
 function zignites_chat_render_quiet_page() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'));
@@ -575,6 +599,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Timestamped consent log per phone number', 'zignites-chat'),
                 __('Require consent before cart recovery / campaigns / follow-ups', 'zignites-chat'),
                 __('Explicit opt-in clears a prior opt-out', 'zignites-chat'),
+            ],
+        ],
+        'stock' => [
+            'title'       => __('Back-in-Stock Alerts', 'zignites-chat'),
+            'description' => __('Recover lost sales on sold-out products. Shoppers leave their WhatsApp number on an out-of-stock product and get pinged the moment it’s restocked.', 'zignites-chat'),
+            'benefits'    => [
+                __('“Notify me on WhatsApp” form on out-of-stock products', 'zignites-chat'),
+                __('Automatic alert the moment a product is restocked', 'zignites-chat'),
+                __('Throttled, opt-out-aware, respects quiet hours', 'zignites-chat'),
+                __('Turn dead stock-outs into recovered revenue', 'zignites-chat'),
             ],
         ],
         'quiet' => [
