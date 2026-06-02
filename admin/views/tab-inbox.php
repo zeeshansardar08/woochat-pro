@@ -68,6 +68,7 @@ $zignites_chat_canned  = zignites_chat_inbox_get_canned_replies();
                     <select id="zignites-chat-inbox-assign-select"></select>
                 </span>
             </div>
+            <div class="zignites-chat-inbox-context" id="zignites-chat-inbox-context" style="display:none;"></div>
             <div class="zignites-chat-inbox-window" id="zignites-chat-inbox-window"></div>
             <div class="zignites-chat-inbox-messages" id="zignites-chat-inbox-messages"></div>
             <div class="zignites-chat-inbox-composer" id="zignites-chat-inbox-composer">

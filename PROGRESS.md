@@ -495,7 +495,13 @@ Build on the merged two-way inbox (P1):
       `parse_canned_replies` (string/array → normalized list, first-pipe split,
       derives title, caps 50) + `canned_replies_to_text`. 6 unit tests; 206
       pass, PHPCS + JS clean; settings cleaned on uninstall.
-- [ ] T2.3 — Customer context panel (order history, LTV) beside the thread.
+- [x] T2.3 — Customer context panel — done on `feat/pro-inbox-customer-context`.
+      Opening a thread loads a context strip (orders count, lifetime spend,
+      recent orders with edit links) via AJAX `zignites_chat_inbox_context`.
+      Orders matched by a last-9-digits `_billing_phone` LIKE query (HPOS-safe)
+      then verified with the suffix matcher; aggregated by the pure, tested
+      `aggregate_customer_context` (count/sum/recent-limit). 3 unit tests; 209
+      pass, PHPCS + JS clean.
 - [ ] T2.4 — Internal notes on a conversation.
 - [ ] T2.5 — New-message notifications (email / desktop) for agents.
 
@@ -520,11 +526,11 @@ Build on the merged two-way inbox (P1):
 are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
-Tier 2 in progress: **T2.1 (agent assignment) + T2.2 (canned replies) DONE**.
-Next: **T2.3 — customer-context panel** (show the customer's order history /
-lifetime value beside the open thread, matched by phone), then T2.4 internal
-notes, T2.5 agent notifications. Then Tier 3 (automation) and the quick wins —
-see PHASE 9.
+Tier 2 in progress: **T2.1 (assignment) + T2.2 (canned replies) + T2.3
+(customer context) DONE**. Next: **T2.4 — internal notes** on a conversation
+(agent-only notes stored per thread, shown inline but never sent to the
+customer), then T2.5 agent notifications. Then Tier 3 (automation) and the
+quick wins — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —
