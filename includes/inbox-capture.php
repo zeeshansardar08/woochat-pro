@@ -225,6 +225,15 @@ function zignites_chat_inbox_capture_request($request) {
         $result = zignites_chat_inbox_record_message($msg);
         if (!is_wp_error($result)) {
             $recorded++;
+            /**
+             * Fires once per newly-recorded inbound message (deduped on the
+             * provider message id). Consumers like COD confirmation subscribe
+             * to act on a customer's reply.
+             *
+             * @param array $msg            Normalized inbound message.
+             * @param array $result         ['conversation_id'=>int, 'message_id'=>int].
+             */
+            do_action('zignites_chat_inbound_message', $msg, $result);
         }
     }
     return $recorded;
