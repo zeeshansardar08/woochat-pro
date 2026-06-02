@@ -90,6 +90,7 @@ final class Plugin {
 
         require_once ZIGNITES_CHAT_PATH . 'includes/order-hooks.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/cod-confirmation.php';
+        require_once ZIGNITES_CHAT_PATH . 'includes/status-notifications.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/cart-recovery.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/scheduler.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/campaigns.php';
