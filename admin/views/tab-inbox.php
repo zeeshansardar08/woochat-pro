@@ -85,6 +85,10 @@ $zignites_chat_canned  = zignites_chat_inbox_get_canned_replies();
                 <button type="button" class="button button-primary" id="zignites-chat-inbox-send">
                     <?php esc_html_e('Send', 'zignites-chat'); ?>
                 </button>
+                <label class="zignites-chat-inbox-note-toggle">
+                    <input type="checkbox" id="zignites-chat-inbox-note-mode" />
+                    <?php esc_html_e('Internal note (not sent to customer)', 'zignites-chat'); ?>
+                </label>
                 <p class="zignites-chat-inbox-composer-note" id="zignites-chat-inbox-composer-note"></p>
             </div>
         </div>

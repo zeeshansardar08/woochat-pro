@@ -355,6 +355,11 @@ function zignites_chat_inbox_enqueue_assets($hook) {
             'ctxNoOrders'   => __('No matching orders found.', 'zignites-chat'),
             'ctxRecent'     => __('Recent orders', 'zignites-chat'),
             'ctxView'       => __('View', 'zignites-chat'),
+            'noteToggle'    => __('Internal note', 'zignites-chat'),
+            'noteLabel'     => __('Note', 'zignites-chat'),
+            'addNote'       => __('Add note', 'zignites-chat'),
+            'noteEmpty'     => __('Type a note before saving.', 'zignites-chat'),
+            'noteError'     => __('Could not save the note.', 'zignites-chat'),
             'assignedTo'    => __('Assigned to', 'zignites-chat'),
             'unassigned'    => __('Unassigned', 'zignites-chat'),
             'claim'         => __('Claim', 'zignites-chat'),
@@ -448,7 +453,7 @@ function zignites_chat_ajax_inbox_thread() {
     $rows = zignites_chat_inbox_get_messages($conversation_id, ['after_id' => $after_id]);
     $messages = [];
     foreach ($rows as $row) {
-        $messages[] = zignites_chat_inbox_present_message($row);
+        $messages[] = zignites_chat_inbox_present_message_decorated($row);
     }
 
     // Opening (or polling) a thread clears its unread badge. Only do so on the
@@ -502,6 +507,77 @@ function zignites_chat_ajax_inbox_assign() {
     wp_send_json_success([
         'agent_id'  => $agent_id,
         'agentName' => zignites_chat_inbox_agent_name($agent_id, zignites_chat_inbox_assignable_agents()),
+    ]);
+}
+
+/**
+ * Resolve a note author's display name.
+ *
+ * @param int $author_id
+ * @return string
+ */
+function zignites_chat_inbox_author_name($author_id) {
+    $author_id = (int) $author_id;
+    if ($author_id <= 0) {
+        return '';
+    }
+    $user = get_userdata($author_id);
+    if ($user) {
+        return (string) $user->display_name;
+    }
+    /* translators: %d: WordPress user id. */
+    return sprintf(__('User #%d', 'zignites-chat'), $author_id);
+}
+
+/**
+ * Present a message row, attaching the author name for internal notes.
+ *
+ * @param array $row
+ * @return array
+ */
+function zignites_chat_inbox_present_message_decorated($row) {
+    $message = zignites_chat_inbox_present_message($row);
+    if (isset($message['direction']) && $message['direction'] === 'note') {
+        $message['authorName'] = zignites_chat_inbox_author_name($message['author_id'] ?? 0);
+    }
+    return $message;
+}
+
+/* ---------------------------------------------------------------------------
+ * AJAX — add an internal note
+ * ------------------------------------------------------------------------ */
+
+add_action('wp_ajax_zignites_chat_inbox_note', 'zignites_chat_ajax_inbox_note');
+function zignites_chat_ajax_inbox_note() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Unauthorized', 'zignites-chat')], 403);
+    }
+    if (!check_ajax_referer('zignites_chat_inbox', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'zignites-chat')], 400);
+    }
+    if (!zignites_chat_is_pro_active()) {
+        wp_send_json_error(['message' => __('Pro required', 'zignites-chat')], 403);
+    }
+
+    $conversation_id = isset($_POST['conversation_id']) ? (int) $_POST['conversation_id'] : 0;
+    $body            = isset($_POST['body']) ? sanitize_textarea_field(wp_unslash($_POST['body'])) : '';
+    if ($body === '') {
+        wp_send_json_error(['message' => __('Type a note before saving.', 'zignites-chat')], 422);
+    }
+
+    $note_id = zignites_chat_inbox_add_note($conversation_id, $body, get_current_user_id());
+    if ($note_id <= 0) {
+        wp_send_json_error(['message' => __('Could not save the note.', 'zignites-chat')], 500);
+    }
+
+    wp_send_json_success([
+        'message' => zignites_chat_inbox_present_message_decorated([
+            'id'         => $note_id,
+            'direction'  => 'note',
+            'body'       => $body,
+            'author_id'  => get_current_user_id(),
+            'created_at' => current_time('mysql'),
+        ]),
     ]);
 }
 

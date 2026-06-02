@@ -158,4 +158,24 @@ final class InboxTest extends TestCase
         $this->assertSame('out', \zignites_chat_inbox_present_message(['direction' => 'garbage'])['direction']);
         $this->assertSame([], \zignites_chat_inbox_present_message(null));
     }
+
+    public function test_normalize_direction_recognizes_note(): void
+    {
+        $this->assertSame('note', \zignites_chat_inbox_normalize_direction('note'));
+        $this->assertSame('note', \zignites_chat_inbox_normalize_direction(' NOTE '));
+    }
+
+    public function test_present_message_carries_note_and_author(): void
+    {
+        $present = \zignites_chat_inbox_present_message([
+            'id'        => 5,
+            'direction' => 'note',
+            'body'      => 'Called the carrier',
+            'author_id' => '12',
+        ]);
+        $this->assertSame('note', $present['direction']);
+        $this->assertSame(12, $present['author_id']);
+        // Default author_id is 0 when absent.
+        $this->assertSame(0, \zignites_chat_inbox_present_message(['id' => 1])['author_id']);
+    }
 }
