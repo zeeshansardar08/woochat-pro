@@ -1,0 +1,217 @@
+/* Zignites Chat – Two-way team Inbox. */
+
+.zignites-chat-inbox {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    height: 640px;
+    max-height: 75vh;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+
+/* --- Conversation list --- */
+
+.zignites-chat-inbox-list {
+    width: 320px;
+    flex: 0 0 320px;
+    border-right: 1px solid #dcdcde;
+    display: flex;
+    flex-direction: column;
+    background: #f6f7f7;
+}
+
+.zignites-chat-inbox-search {
+    padding: 10px;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.zignites-chat-inbox-search input {
+    width: 100%;
+}
+
+.zignites-chat-inbox-threads {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+.zignites-chat-inbox-thread {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        "name time"
+        "excerpt badge";
+    gap: 2px 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #ececec;
+    cursor: pointer;
+}
+
+.zignites-chat-inbox-thread:hover {
+    background: #fff;
+}
+
+.zignites-chat-inbox-thread.is-active {
+    background: #fff;
+    box-shadow: inset 3px 0 0 #2271b1;
+}
+
+.zignites-chat-inbox-thread-name {
+    grid-area: name;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.zignites-chat-inbox-thread.is-unread .zignites-chat-inbox-thread-name {
+    color: #1d2327;
+}
+
+.zignites-chat-inbox-thread-excerpt {
+    grid-area: excerpt;
+    color: #646970;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.zignites-chat-inbox-thread-time {
+    grid-area: time;
+    color: #8c8f94;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.zignites-chat-inbox-badge {
+    grid-area: badge;
+    justify-self: end;
+    align-self: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: #d63638;
+    color: #fff;
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+}
+
+.zignites-chat-inbox-empty,
+.zignites-chat-inbox-loading,
+.zignites-chat-inbox-error {
+    padding: 16px;
+    color: #646970;
+}
+
+.zignites-chat-inbox-error {
+    color: #d63638;
+}
+
+/* --- Thread panel --- */
+
+.zignites-chat-inbox-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.zignites-chat-inbox-panel-empty {
+    margin: auto;
+    color: #646970;
+}
+
+.zignites-chat-inbox-thread-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.zignites-chat-inbox-thread-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.zignites-chat-inbox-thread-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.zignites-chat-inbox-thread-phone {
+    margin-left: 8px;
+    color: #8c8f94;
+    font-size: 12px;
+}
+
+.zignites-chat-inbox-window {
+    padding: 6px 16px;
+    font-size: 12px;
+}
+
+.zignites-chat-inbox-window.is-open {
+    background: #edfaef;
+    color: #00650c;
+}
+
+.zignites-chat-inbox-window.is-closed {
+    background: #fcf0f1;
+    color: #8a1f24;
+}
+
+.zignites-chat-inbox-messages {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f0f0f1;
+}
+
+.zignites-chat-inbox-message {
+    max-width: 70%;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    word-wrap: break-word;
+}
+
+.zignites-chat-inbox-message.is-in {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    margin-right: auto;
+}
+
+.zignites-chat-inbox-message.is-out {
+    background: #d8f5d3;
+    margin-left: auto;
+}
+
+.zignites-chat-inbox-message-body {
+    white-space: pre-wrap;
+}
+
+.zignites-chat-inbox-message-meta {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #646970;
+}
+
+@media screen and (max-width: 782px) {
+    .zignites-chat-inbox {
+        flex-direction: column;
+        height: auto;
+    }
+    .zignites-chat-inbox-list {
+        width: 100%;
+        flex-basis: auto;
+        max-height: 280px;
+        border-right: none;
+        border-bottom: 1px solid #dcdcde;
+    }
+}

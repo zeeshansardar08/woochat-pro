@@ -285,6 +285,173 @@ function zignites_chat_inbox_get_thread($conversation_id) {
 }
 
 /**
+ * List conversation threads, unread first then most-recently active.
+ *
+ * @param array $args {
+ *   @type int    $limit  Max rows (1–200). Default 50.
+ *   @type int    $offset Pagination offset. Default 0.
+ *   @type string $search Optional phone/name LIKE filter.
+ * }
+ * @return array<int, array> Thread rows (ARRAY_A).
+ */
+function zignites_chat_inbox_get_threads($args = []) {
+    global $wpdb;
+    $limit  = isset($args['limit']) ? max(1, min(200, (int) $args['limit'])) : 50;
+    $offset = isset($args['offset']) ? max(0, (int) $args['offset']) : 0;
+    $search = isset($args['search']) ? trim((string) $args['search']) : '';
+    $table  = zignites_chat_conversations_table_name();
+
+    if ($search !== '') {
+        $like = '%' . $wpdb->esc_like($search) . '%';
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$table} WHERE phone LIKE %s OR customer_name LIKE %s ORDER BY unread_count DESC, last_message_at DESC LIMIT %d OFFSET %d",
+            $like, $like, $limit, $offset
+        ), ARRAY_A);
+    } else {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$table} ORDER BY unread_count DESC, last_message_at DESC LIMIT %d OFFSET %d",
+            $limit, $offset
+        ), ARRAY_A);
+    }
+    return is_array($rows) ? $rows : [];
+}
+
+/**
+ * Total number of conversation threads (for pagination / the empty state).
+ *
+ * @return int
+ */
+function zignites_chat_inbox_count_threads() {
+    global $wpdb;
+    $table = zignites_chat_conversations_table_name();
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    return (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}");
+}
+
+/**
+ * Sum of unread counts across all threads (menu badge / inbox heading).
+ *
+ * @return int
+ */
+function zignites_chat_inbox_total_unread() {
+    global $wpdb;
+    $table = zignites_chat_conversations_table_name();
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    return (int) $wpdb->get_var("SELECT COALESCE(SUM(unread_count), 0) FROM {$table}");
+}
+
+/**
+ * Fetch messages for a thread in chronological order.
+ *
+ * With $after_id > 0 returns only newer messages (the polling path). Otherwise
+ * returns the most recent $limit messages, still oldest-first for display.
+ *
+ * @param int   $conversation_id Thread id.
+ * @param array $args {
+ *   @type int $limit    Max rows (1–500). Default 200.
+ *   @type int $after_id Return only messages with id greater than this. Default 0.
+ * }
+ * @return array<int, array> Message rows (ARRAY_A), ascending by id.
+ */
+function zignites_chat_inbox_get_messages($conversation_id, $args = []) {
+    global $wpdb;
+    $conversation_id = (int) $conversation_id;
+    if ($conversation_id <= 0) {
+        return [];
+    }
+    $limit    = isset($args['limit']) ? max(1, min(500, (int) $args['limit'])) : 200;
+    $after_id = isset($args['after_id']) ? max(0, (int) $args['after_id']) : 0;
+    $table    = zignites_chat_messages_table_name();
+
+    if ($after_id > 0) {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$table} WHERE conversation_id = %d AND id > %d ORDER BY id ASC LIMIT %d",
+            $conversation_id, $after_id, $limit
+        ), ARRAY_A);
+        return is_array($rows) ? $rows : [];
+    }
+
+    // Most recent $limit, re-sorted ascending so the thread reads top-to-bottom.
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM (SELECT * FROM {$table} WHERE conversation_id = %d ORDER BY id DESC LIMIT %d) sub ORDER BY id ASC",
+        $conversation_id, $limit
+    ), ARRAY_A);
+    return is_array($rows) ? $rows : [];
+}
+
+/**
+ * Clear a thread's unread count (agent opened/read it).
+ *
+ * @param int $conversation_id Thread id.
+ * @return void
+ */
+function zignites_chat_inbox_mark_read($conversation_id) {
+    global $wpdb;
+    $conversation_id = (int) $conversation_id;
+    if ($conversation_id <= 0) {
+        return;
+    }
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $wpdb->update(
+        zignites_chat_conversations_table_name(),
+        ['unread_count' => 0],
+        ['id' => $conversation_id],
+        ['%d'],
+        ['%d']
+    );
+}
+
+/**
+ * Shape a conversation DB row into the array the admin/AJAX layer returns.
+ *
+ * Pure (no DB) so it can be unit-tested. Casts types and only exposes the
+ * fields the Inbox UI needs.
+ *
+ * @param array $row Conversation row (ARRAY_A).
+ * @return array Presented thread.
+ */
+function zignites_chat_inbox_present_thread($row) {
+    if (!is_array($row)) {
+        return [];
+    }
+    return [
+        'id'              => isset($row['id']) ? (int) $row['id'] : 0,
+        'phone'           => isset($row['phone']) ? (string) $row['phone'] : '',
+        'name'            => isset($row['customer_name']) ? (string) $row['customer_name'] : '',
+        'excerpt'         => isset($row['last_excerpt']) ? (string) $row['last_excerpt'] : '',
+        'last_direction'  => isset($row['last_direction']) ? (string) $row['last_direction'] : '',
+        'unread'          => isset($row['unread_count']) ? (int) $row['unread_count'] : 0,
+        'last_message_at' => isset($row['last_message_at']) ? (string) $row['last_message_at'] : '',
+        'last_inbound_at' => isset($row['last_inbound_at']) ? (string) $row['last_inbound_at'] : '',
+    ];
+}
+
+/**
+ * Shape a message DB row into the array the admin/AJAX layer returns.
+ *
+ * Pure (no DB) so it can be unit-tested.
+ *
+ * @param array $row Message row (ARRAY_A).
+ * @return array Presented message.
+ */
+function zignites_chat_inbox_present_message($row) {
+    if (!is_array($row)) {
+        return [];
+    }
+    return [
+        'id'         => isset($row['id']) ? (int) $row['id'] : 0,
+        'direction'  => isset($row['direction']) ? zignites_chat_inbox_normalize_direction($row['direction']) : 'out',
+        'body'       => isset($row['body']) ? (string) $row['body'] : '',
+        'status'     => isset($row['status']) ? (string) $row['status'] : '',
+        'created_at' => isset($row['created_at']) ? (string) $row['created_at'] : '',
+    ];
+}
+
+/**
  * Whether an inbound message with this provider message id is already stored.
  *
  * Providers re-deliver webhooks until they get a 200, so inbound capture

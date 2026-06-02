@@ -245,9 +245,16 @@ Planned increments (each its own commit; tests + PHPCS green per step):
       Dedupes on provider message id (`zignites_chat_inbox_inbound_exists`) so
       webhook retries don't double-insert; Pro-gated. 6 unit tests; 162 pass,
       PHPCS green.
-- [ ] I3 — Admin Inbox view: new Pro submenu listing conversations
-      (unread first) + a thread panel; AJAX to fetch a thread and poll for
-      new messages.
+- [x] I3 — Admin Inbox view (`includes/inbox-admin.php`, `admin/views/tab-inbox.php`,
+      `assets/js/inbox.js`, `assets/css/inbox.css`): new Pro "Inbox" submenu —
+      two-pane layout (conversation list, unread-first + search; thread panel).
+      Read helpers: `get_threads`, `count_threads`, `total_unread`,
+      `get_messages` (latest N or after_id for polling), `mark_read`; pure
+      presenters `present_thread`/`present_message`. AJAX:
+      `zignites_chat_inbox_threads` (list) + `zignites_chat_inbox_thread`
+      (messages; clears unread on open, supports after_id polling). 24h window
+      banner via `window_is_open`. Pro-gated upsell card added. 4 unit tests
+      for the presenters; 164 pass, PHPCS green.
 - [ ] I4 — Agent reply: send from the thread via the existing dispatcher
       (free-form within the 24h window); record the outbound message; mark
       read. Capability + nonce gated.
@@ -335,12 +342,12 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**Two-way team inbox (P1) — I1 + I2 done on `feat/pro-inbox`.** Next: **I3
-(admin Inbox view)** — a new Pro submenu listing conversations (unread first)
-with a thread panel; AJAX to fetch a thread and poll for new messages. Read
-helpers needed: list threads (ordered, paginated) + fetch a thread's messages.
-Surface the 24h window via `zignites_chat_inbox_window_is_open()` (banner +
-disabled reply, per resolved decision). Mark-as-read on open.
+**Two-way team inbox (P1) — I1 + I2 + I3 done on `feat/pro-inbox`.** Next:
+**I4 (agent reply)** — a composer in the thread panel that sends a free-form
+reply through the existing dispatcher (within the 24h window), records the
+outbound message via `zignites_chat_inbox_record_message()`, and refreshes the
+thread. New AJAX `zignites_chat_inbox_reply` (cap + nonce gated); disable the
+box + show the template-required note when `window_is_open()` is false.
 
 Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above are **merged
 into `pro`**; only live smoke tests remain on those. The free build shipped

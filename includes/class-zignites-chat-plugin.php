@@ -92,6 +92,7 @@ final class Plugin {
         require_once ZIGNITES_CHAT_PATH . 'includes/campaigns.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/inbox.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/inbox-capture.php';
+        require_once ZIGNITES_CHAT_PATH . 'includes/inbox-admin.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/blocks.php';
     }
 

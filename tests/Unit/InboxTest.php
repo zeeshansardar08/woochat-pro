@@ -119,4 +119,43 @@ final class InboxTest extends TestCase
         );
         $this->assertSame(1, $update['unread_count']);
     }
+
+    public function test_present_thread_shapes_and_casts(): void
+    {
+        $present = \zignites_chat_inbox_present_thread([
+            'id'              => '7',
+            'phone'           => '14155550100',
+            'customer_name'   => 'Jane',
+            'last_excerpt'    => 'see you then',
+            'last_direction'  => 'in',
+            'unread_count'    => '3',
+            'last_message_at' => '2026-06-02 10:00:00',
+            'last_inbound_at' => '2026-06-02 09:00:00',
+        ]);
+
+        $this->assertSame(7, $present['id']);
+        $this->assertSame('Jane', $present['name']);
+        $this->assertSame('see you then', $present['excerpt']);
+        $this->assertSame(3, $present['unread']);
+        $this->assertSame('14155550100', $present['phone']);
+        // Missing input → empty, well-formed shape (no notices).
+        $this->assertSame([], \zignites_chat_inbox_present_thread('nope'));
+    }
+
+    public function test_present_message_shapes_and_normalizes_direction(): void
+    {
+        $present = \zignites_chat_inbox_present_message([
+            'id'         => '12',
+            'direction'  => 'inbound',
+            'body'       => 'hi',
+            'status'     => 'received',
+            'created_at' => '2026-06-02 10:00:00',
+        ]);
+        $this->assertSame(12, $present['id']);
+        $this->assertSame('in', $present['direction']);
+        $this->assertSame('hi', $present['body']);
+        // Unknown direction defaults to 'out'.
+        $this->assertSame('out', \zignites_chat_inbox_present_message(['direction' => 'garbage'])['direction']);
+        $this->assertSame([], \zignites_chat_inbox_present_message(null));
+    }
 }

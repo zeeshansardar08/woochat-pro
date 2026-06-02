@@ -103,6 +103,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-cart-recovery', __('Cart Recovery', 'zignites-chat'),    'zignites_chat_render_cart_recovery_page', true],
         ['zignites-chat-scheduler',     __('Scheduler', 'zignites-chat'),        'zignites_chat_render_scheduler_page',     true],
         ['zignites-chat-campaigns',     __('Campaigns', 'zignites-chat'),        'zignites_chat_render_campaigns_page',     true],
+        ['zignites-chat-inbox',         __('Inbox', 'zignites-chat'),            'zignites_chat_render_inbox_page',         true],
         ['zignites-chat-analytics',     __('Analytics', 'zignites-chat'),        'zignites_chat_render_analytics_page',     true],
         ['zignites-chat-logs',          __('Logs', 'zignites-chat'),             'zignites_chat_render_logs_page'],
         ['zignites-chat-webhooks',      __('Webhooks', 'zignites-chat'),         'zignites_chat_render_webhooks_page',      true],
@@ -455,6 +456,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Per message-type template + language mapping', 'zignites-chat'),
                 __('Map order/cart/follow-up data to template variables', 'zignites-chat'),
                 __('Protects your sender number from quality downgrades', 'zignites-chat'),
+            ],
+        ],
+        'inbox' => [
+            'title'       => __('Two-way Team Inbox', 'zignites-chat'),
+            'description' => __('Read and reply to customer WhatsApp messages from inside WordPress. Inbound messages are captured automatically and threaded per customer.', 'zignites-chat'),
+            'benefits'    => [
+                __('Unified inbox for inbound WhatsApp messages', 'zignites-chat'),
+                __('Per-customer conversation threads with unread badges', 'zignites-chat'),
+                __('Reply within the 24-hour customer-service window', 'zignites-chat'),
+                __('Works with both Twilio and Meta Cloud API', 'zignites-chat'),
             ],
         ],
         'webhooks' => [
