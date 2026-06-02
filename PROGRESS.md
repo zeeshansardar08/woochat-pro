@@ -366,24 +366,34 @@ context for the chatbot.
 
 ### Quality backlog (fold into the above as touched)
 - [ ] Retire legacy `license-manager.php` once Freemius migration completes
-- [ ] Central outbound rate limiter/queue shared by cart/scheduler/campaigns
+      (blocked: needs real Freemius credentials — user action)
+- [x] Central outbound rate limiter shared by cart/scheduler/campaigns —
+      done on `feat/pro-outbound-rate-limiter`. `includes/rate-limiter.php`:
+      pure fixed-window evaluator (`zignites_chat_rate_window_evaluate`) +
+      option-backed `zignites_chat_outbound_rate_acquire()`. Default 60/min
+      (~1 msg/sec), filterable (`zignites_chat_outbound_rate_per_minute` /
+      `_window` / `_limit_enabled`). **Advisory**: each bulk cron loop
+      (cart-recovery queue, campaign chunk, follow-up handler) consults
+      acquire() before a send and, when the cap is hit, stops the run / defers
+      the event so remaining rows are picked up next tick — nothing is marked
+      failed by the limiter. State option cleaned on uninstall. 6 unit tests;
+      176 pass, PHPCS green. (Order confirmations are intentionally not gated —
+      transactional, low-volume.)
 
 ---
 
 ## Next Action
-**GPT modernization (P3) — in progress on `feat/pro-gpt-modernization`.**
-Model bump + opt-in catalog context are done with tests; open the PR against
-`pro`, then run the live verification (enable GPT fallback + catalog context,
-ask the bot a product/price question).
+**Central outbound rate limiter — done on `feat/pro-outbound-rate-limiter`.**
+Open the PR against `pro`. The only remaining backlog item is retiring
+`license-manager.php`, which is **blocked** on the Freemius credentials
+migration (user action) — nothing actionable until those are in.
 
-Two-way inbox (P1) is **merged into `pro`** (PR #71); only its live Twilio/Meta
-smoke test remains (user action).
+Pending live verifications (user action): two-way inbox Twilio/Meta smoke test
+(PR #71, merged); GPT catalog context (PR #72, merged); and observing the rate
+limiter defer under a saturated burst.
 
-After P3 the open Pro backlog is the quality backlog only: retire
-`license-manager.php` post-Freemius; central outbound rate limiter shared by
-cart/scheduler/campaigns.
-
-Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above + the two-way
-inbox (P1) are **merged into `pro`**; only live smoke tests remain on those.
-The free build shipped from `master`. Remaining Pro backlog: **GPT
-modernization (P3, in progress)** plus the quality backlog.
+Status snapshot (as of 2026-06-02): P0, all P1/P2, the two-way inbox (P1), and
+GPT modernization (P3) are **merged into `pro`**; the central rate limiter is
+the latest branch awaiting PR. The free build shipped from `master`. The Pro
+feature backlog is now empty apart from the Freemius-blocked license cleanup
+and the outstanding live smoke tests.
