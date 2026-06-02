@@ -392,7 +392,7 @@ the two-way inbox.
 
 ### Tier 1 — highest leverage
 
-#### T1.1 — COD order confirmation / verification — 🟡 IN PROGRESS on `feat/pro-cod-confirmation`
+#### T1.1 — COD order confirmation / verification — ✅ Complete (C1–C3); live smoke test pending
 The #1 lever in WhatsApp-heavy, cash-on-delivery markets (India, MENA, SEA,
 LATAM): cut fake/abandoned COD orders and return-to-origin (RTO) cost by asking
 the customer to confirm via WhatsApp. Sends an approved template with quick-reply
@@ -420,9 +420,12 @@ Planned increments:
       `_zignites_chat_cod_status = confirmed|cancelled`, and sends a filterable
       ack in the now-open 24h window. 3 new unit tests (phone matching);
       185 pass, PHPCS green.
-- [ ] C3 — Admin surface: COD-confirmation column/badge on the orders screen +
-      a settings tab; analytics counters (sent / confirmed / cancelled / RTO-
-      saved). Uninstall cleanup.
+- [x] C3 — Admin surface: COD badge column on the WooCommerce orders screen
+      (HPOS + legacy hooks; awaiting/confirmed/cancelled/send-failed with
+      coloured pills) + a status-counts stats block on the settings tab
+      (`zignites_chat_cod_status_counts`, cheap paginated COUNT queries, cached
+      5 min, flushed on each status change). Pure `cod_status_label` helper.
+      1 new unit test; 186 pass, PHPCS green.
 - Open question resolved at build: business-initiated confirmation must use an
   approved HSM template with quick-reply buttons (free-form interactive only
   works inside the 24h window), so the buttons live in the Meta-approved
@@ -462,12 +465,15 @@ Build on the merged two-way inbox (P1):
 ---
 
 ## Next Action
-**COD order confirmation (T1.1) — C1 + C2 done on `feat/pro-cod-confirmation-c2`.**
-Next: **C3 (admin surface)** — a COD-confirmation column/badge on the
-WooCommerce orders screen (pending / confirmed / cancelled / send-failed), and
-simple counters (sent / confirmed / cancelled, i.e. RTO saved). Then T1.2
-(status/tracking notifications), T1.3 (opt-in capture), then Tiers 2–3 and the
-quick wins — see PHASE 9 above.
+**COD order confirmation (T1.1) — COMPLETE (C1–C3) on
+`feat/pro-cod-confirmation-c3`.** Only a live smoke test remains (place a COD
+order against a real WABA with an approved buttoned template; reply
+Confirm/Cancel; confirm the order status flips and the badge updates).
+
+Next feature: **T1.2 — Order-status + shipping/tracking notifications** (notify
+on shipped / out-for-delivery / on-hold / refunded / cancelled with per-status
+templates + an injected tracking link). Then T1.3 (opt-in capture), Tier 2
+(inbox→helpdesk), Tier 3 (automation), and the quick wins — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

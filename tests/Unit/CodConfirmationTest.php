@@ -70,6 +70,18 @@ final class CodConfirmationTest extends TestCase
         $this->assertFalse(\zignites_chat_cod_phone_matches('123', '999123'));
     }
 
+    /* ---- status label ---- */
+
+    public function test_status_label(): void
+    {
+        $this->assertSame('Awaiting reply', \zignites_chat_cod_status_label('pending'));
+        $this->assertSame('Confirmed', \zignites_chat_cod_status_label('confirmed'));
+        $this->assertSame('Cancelled', \zignites_chat_cod_status_label('cancelled'));
+        $this->assertSame('Send failed', \zignites_chat_cod_status_label('send_failed'));
+        $this->assertSame('', \zignites_chat_cod_status_label('whatever'));
+        $this->assertSame('', \zignites_chat_cod_status_label(''));
+    }
+
     /* ---- gateways sanitizer ---- */
 
     public function test_sanitize_gateways_dedupes_and_cleans(): void
