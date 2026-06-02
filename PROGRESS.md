@@ -382,11 +382,94 @@ context for the chatbot.
 
 ---
 
+## PHASE 9 — Pro Roadmap v2 (category-leader features)
+
+Tiered roadmap agreed 2026-06-02 after a product review. The plugin already
+covers a full WhatsApp suite; this phase pushes from "complete" to "category
+leader." Work top-down; each item ships on its own `feat/pro-*` branch off
+`pro`, tests + PHPCS green before merge. Build in reviewable increments like
+the two-way inbox.
+
+### Tier 1 — highest leverage
+
+#### T1.1 — COD order confirmation / verification — 🟡 IN PROGRESS on `feat/pro-cod-confirmation`
+The #1 lever in WhatsApp-heavy, cash-on-delivery markets (India, MENA, SEA,
+LATAM): cut fake/abandoned COD orders and return-to-origin (RTO) cost by asking
+the customer to confirm via WhatsApp. Sends an approved template with quick-reply
+buttons (Confirm / Cancel) on a new COD order; the customer's button tap (already
+captured inbound by the inbox in I2) flips the WooCommerce order status.
+Planned increments:
+- [x] C1 — Module + settings + send-on-COD-order (`includes/cod-confirmation.php`,
+      `admin/views/tab-cod.php`): a `cod_confirmation` template type added to the
+      WA Templates page; a Pro "COD Confirmation" settings tab (enable, COD
+      gateways [default `cod`], fallback message, confirm/cancel keywords,
+      on-confirm [`processing`] / on-cancel [`cancelled`] statuses). Sends on
+      `woocommerce_checkout_order_processed` + the Store-API equivalent for COD
+      orders (idempotent via `_zignites_chat_cod_status` meta), attaching the
+      approved template via `maybe_apply_template('cod_confirmation')` with the
+      rendered text as fallback. Pure tested helpers: `is_cod_gateway`,
+      `classify_reply` (whole-word, cancel-wins-ties), `sanitize_gateways`.
+      Settings cleaned on uninstall. 6 unit tests; 182 pass, PHPCS green.
+- [ ] C2 — Inbound matching + status transition: map an inbound reply/button
+      from a phone to its most-recent pending COD order, classify
+      confirm/cancel, transition the order, add an order note, clear pending,
+      optionally send an acknowledgement. Reuse the inbox capture hook.
+- [ ] C3 — Admin surface: COD-confirmation column/badge on the orders screen +
+      a settings tab; analytics counters (sent / confirmed / cancelled / RTO-
+      saved). Uninstall cleanup.
+- Open question resolved at build: business-initiated confirmation must use an
+  approved HSM template with quick-reply buttons (free-form interactive only
+  works inside the 24h window), so the buttons live in the Meta-approved
+  template; the plugin fills variables + reads the button reply.
+
+#### T1.2 — Order-status + shipping/tracking notifications — ⬜
+Notify on every status (shipped, out-for-delivery, on-hold, refunded,
+cancelled), not just processing/completed, with per-status templates and an
+injected tracking link/number (pull from common shipment plugins).
+
+#### T1.3 — WhatsApp opt-in capture — ⬜
+Proactive consent: checkout checkbox / widget + a consent log, complementing
+the existing opt-out pipeline. Compliance + list growth.
+
+### Tier 2 — turn the inbox into a real helpdesk
+Build on the merged two-way inbox (P1):
+- [ ] T2.1 — Agent assignment + per-agent views (make `agent_id` actionable).
+- [ ] T2.2 — Canned / quick replies in the inbox composer.
+- [ ] T2.3 — Customer context panel (order history, LTV) beside the thread.
+- [ ] T2.4 — Internal notes on a conversation.
+- [ ] T2.5 — New-message notifications (email / desktop) for agents.
+
+### Tier 3 — platform / automation
+- [ ] T3.1 — Drip & automation sequences (welcome, win-back, browse-abandon)
+      as multi-step, rule-based flows rather than discrete features. Biggest
+      build; the strategic differentiator.
+
+### Quick wins (reuse existing plumbing)
+- [ ] Q1 — Back-in-stock / restock alerts via WhatsApp.
+- [ ] Q2 — Review / NPS request post-delivery.
+- [ ] Q3 — Quiet hours + customer-timezone awareness (no 3am sends).
+- [ ] Q4 — Template sync from the Meta Graph API (pull approved templates
+      instead of manual mapping in `wa-templates.php`).
+- [ ] Q5 — Sender health panel: WABA quality rating + messaging tier on the
+      dashboard.
+
+---
+
 ## Next Action
-**Central outbound rate limiter — done on `feat/pro-outbound-rate-limiter`.**
-Open the PR against `pro`. The only remaining backlog item is retiring
-`license-manager.php`, which is **blocked** on the Freemius credentials
-migration (user action) — nothing actionable until those are in.
+**COD order confirmation (T1.1) — C1 done on `feat/pro-cod-confirmation`.**
+Next: **C2 (inbound matching + status transition)** — when an inbound
+reply/button arrives (hook the existing inbox capture / opt-out webhook), find
+the sender's most-recent order with `_zignites_chat_cod_status = pending`,
+classify the reply via `zignites_chat_cod_classify_reply()`, transition the
+order to the configured on-confirm / on-cancel status, add an order note, set
+`_zignites_chat_cod_status = confirmed|cancelled`, and optionally send an ack.
+Then C3 (orders-screen column/badge + analytics counters). After T1.1: T1.2
+(status/tracking), T1.3 (opt-in capture), then Tiers 2–3 and the quick wins —
+see PHASE 9 above.
+
+The original Pro backlog is otherwise cleared into `pro`; the only blocked item
+is retiring `license-manager.php` (needs the Freemius credentials migration —
+user action).
 
 Pending live verifications (user action): two-way inbox Twilio/Meta smoke test
 (PR #71, merged); GPT catalog context (PR #72, merged); and observing the rate

@@ -78,6 +78,13 @@ $zignites_chat_option_keys = [
     'zignites_chat_webhooks',
     'zignites_chat_webhook_log',
     'zignites_chat_outbound_rate_state',
+    'zignites_chat_cod_enabled',
+    'zignites_chat_cod_gateways',
+    'zignites_chat_cod_message_template',
+    'zignites_chat_cod_confirm_keywords',
+    'zignites_chat_cod_cancel_keywords',
+    'zignites_chat_cod_on_confirm_status',
+    'zignites_chat_cod_on_cancel_status',
 ];
 
 foreach ($zignites_chat_option_keys as $zignites_chat_key) {
