@@ -92,6 +92,8 @@ $zignites_chat_tables = array(
 	$wpdb->prefix . 'zignites_chat_analytics_events',
 	$wpdb->prefix . 'zignites_chat_campaign_recipients',
 	$wpdb->prefix . 'zignites_chat_campaigns',
+	$wpdb->prefix . 'zignites_chat_conversations',
+	$wpdb->prefix . 'zignites_chat_messages',
 );
 foreach ( $zignites_chat_tables as $zignites_chat_table ) {
 	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- One-time uninstall cleanup; table name is built from $wpdb->prefix, no user input.

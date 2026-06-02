@@ -221,34 +221,67 @@ endpoint). Now wired end-to-end:
 - [x] 8.1.6 `message.read` webhook event; 16 unit tests; 121 pass, PHPCS green
 - [ ] 8.1.7 Smoke test against live Twilio + Meta sandboxes (user action)
 
-### P1 — Two-way team inbox — ⬜ NEXT UP (the big one; build in reviewable increments)
+### P1 — Two-way team inbox — ✅ Merged-ready on `feat/pro-inbox` (I1–I5 done; live smoke test pending)
 Ingest inbound Cloud API / Twilio messages (signatures already verified in
 `optout.php` / the receipts webhook) into conversation threads so agents can
 read and reply within WhatsApp's 24h service window.
 
 Planned increments (each its own commit; tests + PHPCS green per step):
-- [ ] I1 — Schema + storage: `{prefix}zignites_chat_conversations` (one row
-      per phone: last_message_at, last_excerpt, unread_count, agent_id) and
-      `{prefix}zignites_chat_messages` (direction in/out, body, provider
-      message_id, status, created_at). Migration v6. Pure thread-upsert +
-      message-insert helpers.
-- [ ] I2 — Inbound capture: extend the Meta webhook (optout.php) +
-      add a Twilio inbound route to record incoming messages into threads
-      (reuse signature verification). Opt-out keyword handling stays. Pure
-      payload→message normalizers (Meta `messages[]`, Twilio form) with tests.
-- [ ] I3 — Admin Inbox view: new Pro submenu listing conversations
-      (unread first) + a thread panel; AJAX to fetch a thread and poll for
-      new messages.
-- [ ] I4 — Agent reply: send from the thread via the existing dispatcher
-      (free-form within the 24h window); record the outbound message; mark
-      read. Capability + nonce gated.
-- [ ] I5 — Outbound mirroring (optional): record order/cart/followup/campaign
-      sends into the matching thread so the inbox shows the full history.
-- [ ] Tests for all pure helpers; live smoke test against Twilio + Meta.
+- [x] I1 — Schema + storage (`includes/inbox.php`): `{prefix}zignites_chat_conversations`
+      (one row per phone: last_message_at, **last_inbound_at**, last_excerpt,
+      last_direction, unread_count, agent_id) + `{prefix}zignites_chat_messages`
+      (direction in/out, body, provider, message_id, status, created_at).
+      Migration v6 (idempotent dbDelta, wired into the runner + activation hook
+      + uninstall drop). Pure helpers: normalize_direction, make_excerpt,
+      window_is_open (24h check), build_message_row, build_thread_update.
+      `zignites_chat_inbox_record_message()` upserts thread + inserts message.
+      8 unit tests; 156 pass, PHPCS green.
+- [x] I2 — Inbound capture (`includes/inbox-capture.php`): a `/inbound` REST
+      alias reusing the signature/token-verified opt-out handler; capture step
+      wired into `zignites_chat_optout_webhook_handler()` (runs before opt-out
+      so a keyword message is still threaded). Pure normalizers:
+      `normalize_twilio_inbound`, `normalize_meta_messages` (+ type-aware
+      `extract_meta_message_body`: text/button/interactive/media-caption).
+      Dedupes on provider message id (`zignites_chat_inbox_inbound_exists`) so
+      webhook retries don't double-insert; Pro-gated. 6 unit tests; 162 pass,
+      PHPCS green.
+- [x] I3 — Admin Inbox view (`includes/inbox-admin.php`, `admin/views/tab-inbox.php`,
+      `assets/js/inbox.js`, `assets/css/inbox.css`): new Pro "Inbox" submenu —
+      two-pane layout (conversation list, unread-first + search; thread panel).
+      Read helpers: `get_threads`, `count_threads`, `total_unread`,
+      `get_messages` (latest N or after_id for polling), `mark_read`; pure
+      presenters `present_thread`/`present_message`. AJAX:
+      `zignites_chat_inbox_threads` (list) + `zignites_chat_inbox_thread`
+      (messages; clears unread on open, supports after_id polling). 24h window
+      banner via `window_is_open`. Pro-gated upsell card added. 4 unit tests
+      for the presenters; 164 pass, PHPCS green.
+- [x] I4 — Agent reply (`includes/inbox-admin.php` + composer in
+      `tab-inbox.php`/`inbox.js`): `zignites_chat_inbox_reply` AJAX (cap +
+      nonce + Pro gated) sends a free-form reply through
+      `zignites_chat_send_whatsapp_message()` (opt-out + analytics handled by
+      the dispatcher), records the outbound message, and marks the thread
+      read. The 24h window is enforced server-side (rejects when closed) and
+      in the UI (composer disabled + "template required" note when
+      `window_is_open` is false; Ctrl/Cmd+Enter sends). 164 pass, PHPCS green.
+- [x] I5 — Outbound mirroring: `zignites_chat_send_whatsapp_message()` mirrors
+      successful sends (order/cart/follow-up/campaign) into the matching thread
+      via `record_message` (direction 'out'). Default mirrors into **existing
+      threads only** so one-way notifications don't flood the inbox; the
+      `zignites_chat_inbox_mirror_create_threads` filter opts into creating new
+      threads, and `zignites_chat_inbox_mirror_outbound` can disable it
+      entirely. The I4 reply path sets `skip_inbox_mirror` to avoid
+      double-recording. Test-mode sends short-circuit before the mirror.
+- [x] Tests for all pure helpers (18 inbox unit tests across
+      InboxTest/InboxCaptureTest); 164 pass, PHPCS green.
+- [ ] Live smoke test against Twilio + Meta sandboxes (user action).
 
-Open questions to resolve at the start: thread retention vs. the existing
-`data_retention_days`; whether replies are gated to a single assigned agent
-or any manager; and how 24h-window expiry is surfaced in the UI.
+Open questions — **resolved 2026-06-02**: (1) retention reuses the existing
+`data_retention_days` (a prune pass will drop inbox rows on the same window —
+to wire in a later increment); (2) any `manage_woocommerce` user can read +
+reply to any thread, `agent_id` is informational only (no claim/assign gating);
+(3) the 24h service window is surfaced as a banner + disabled free-form reply
+box once `last_inbound_at` is >24h old (`zignites_chat_inbox_window_is_open()`
+is the pure check, landed in I1).
 
 ### P1 — Scheduled campaigns — ✅ Merged into `pro` (live smoke test pending)
 Campaigns were send-now only; added "send at <datetime>" + recent-recipient
@@ -322,9 +355,15 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**START HERE → Two-way team inbox (P1).** Branch `feat/pro-inbox` off `pro`
-and begin increment **I1 (schema + storage + migration v6)**. Resolve the
-three open questions above first (retention, reply gating, 24h-window UI).
+**Two-way team inbox (P1) — I1–I5 complete on `feat/pro-inbox`; PR open.**
+Remaining: live smoke test against Twilio + Meta sandboxes (user action) —
+send an inbound message from a test number, confirm it threads in the Inbox,
+reply within the 24h window, and confirm an order/campaign send mirrors into
+an existing thread.
+
+After this merges, the open Pro backlog is **GPT modernization (P3)** plus the
+quality backlog (retire `license-manager.php` post-Freemius; central outbound
+rate limiter).
 
 Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above are **merged
 into `pro`**; only live smoke tests remain on those. The free build shipped

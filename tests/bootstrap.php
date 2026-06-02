@@ -48,6 +48,16 @@ if (!function_exists('sanitize_text_field')) {
 if (!function_exists('sanitize_textarea_field')) {
     function sanitize_textarea_field($value) { return is_string($value) ? trim($value) : ''; }
 }
+if (!function_exists('wp_strip_all_tags')) {
+    function wp_strip_all_tags($string, $remove_breaks = false) {
+        $string = preg_replace('@<(script|style)[^>]*?>.*?</\\1>@si', '', (string) $string);
+        $string = strip_tags($string);
+        if ($remove_breaks) {
+            $string = preg_replace('/[\r\n\t ]+/', ' ', $string);
+        }
+        return trim($string);
+    }
+}
 if (!function_exists('wp_json_encode')) {
     function wp_json_encode($data, $options = 0, $depth = 512) {
         return json_encode($data, $options, $depth);
@@ -131,6 +141,8 @@ require_once __DIR__ . '/../includes/wa-templates.php';
 require_once __DIR__ . '/../includes/media.php';
 require_once __DIR__ . '/../includes/cart-recovery.php';
 require_once __DIR__ . '/../includes/campaigns.php';
+require_once __DIR__ . '/../includes/inbox.php';
+require_once __DIR__ . '/../includes/inbox-capture.php';
 require_once __DIR__ . '/../includes/blocks.php';
 require_once __DIR__ . '/../includes/analytics.php';
 require_once __DIR__ . '/../includes/delivery-receipts.php';
