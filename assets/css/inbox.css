@@ -202,6 +202,33 @@
     color: #646970;
 }
 
+.zignites-chat-inbox-composer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid #dcdcde;
+    background: #fff;
+}
+
+.zignites-chat-inbox-composer textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 38px;
+}
+
+.zignites-chat-inbox-composer textarea:disabled {
+    background: #f0f0f1;
+    color: #8c8f94;
+}
+
+.zignites-chat-inbox-composer-note {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 12px;
+    color: #8a1f24;
+}
+
 @media screen and (max-width: 782px) {
     .zignites-chat-inbox {
         flex-direction: column;

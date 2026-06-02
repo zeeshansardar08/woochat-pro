@@ -49,6 +49,14 @@ $zignites_chat_threads = zignites_chat_inbox_get_threads(['limit' => 100]);
             </div>
             <div class="zignites-chat-inbox-window" id="zignites-chat-inbox-window"></div>
             <div class="zignites-chat-inbox-messages" id="zignites-chat-inbox-messages"></div>
+            <div class="zignites-chat-inbox-composer" id="zignites-chat-inbox-composer">
+                <textarea id="zignites-chat-inbox-reply" rows="2"
+                          placeholder="<?php esc_attr_e('Type a reply…', 'zignites-chat'); ?>"></textarea>
+                <button type="button" class="button button-primary" id="zignites-chat-inbox-send">
+                    <?php esc_html_e('Send', 'zignites-chat'); ?>
+                </button>
+                <p class="zignites-chat-inbox-composer-note" id="zignites-chat-inbox-composer-note"></p>
+            </div>
         </div>
     </div>
 </div>

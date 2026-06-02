@@ -19,9 +19,13 @@
         var phoneEl = document.getElementById('zignites-chat-inbox-thread-phone');
         var windowEl = document.getElementById('zignites-chat-inbox-window');
         var messagesEl = document.getElementById('zignites-chat-inbox-messages');
+        var replyEl = document.getElementById('zignites-chat-inbox-reply');
+        var sendEl = document.getElementById('zignites-chat-inbox-send');
+        var composerNote = document.getElementById('zignites-chat-inbox-composer-note');
 
         var activeId = 0;
         var lastMessageId = 0;
+        var windowOpen = false;
         var searchTimer = null;
 
         function ajaxGet(action, params) {
@@ -30,6 +34,19 @@
                 url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
             });
             return fetch(url, { credentials: 'same-origin' }).then(function (r) { return r.json(); });
+        }
+
+        function ajaxPost(action, data) {
+            var body = 'action=' + encodeURIComponent(action) + '&nonce=' + encodeURIComponent(nonce);
+            Object.keys(data || {}).forEach(function (k) {
+                body += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(data[k]);
+            });
+            return fetch(ajaxUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body
+            }).then(function (r) { return r.json(); });
         }
 
         // --- Thread list -----------------------------------------------------
@@ -113,8 +130,52 @@
         }
 
         function renderWindow(open) {
+            windowOpen = !!open;
             windowEl.className = 'zignites-chat-inbox-window ' + (open ? 'is-open' : 'is-closed');
             windowEl.textContent = open ? (i18n.windowOpen || '') : (i18n.windowClosed || '');
+            // Disable the composer when the 24h window has closed.
+            if (replyEl) replyEl.disabled = !open;
+            if (sendEl) sendEl.disabled = !open;
+            if (composerNote) composerNote.textContent = open ? '' : (i18n.windowClosedNote || '');
+        }
+
+        function sendReply() {
+            if (!activeId || !windowOpen) return;
+            var text = replyEl ? replyEl.value.trim() : '';
+            if (!text) {
+                if (composerNote) composerNote.textContent = i18n.replyEmpty || '';
+                return;
+            }
+            sendEl.disabled = true;
+            sendEl.textContent = i18n.sending || '';
+            if (composerNote) composerNote.textContent = '';
+
+            ajaxPost('zignites_chat_inbox_reply', { conversation_id: activeId, body: text }).then(function (res) {
+                sendEl.textContent = i18n.send || '';
+                if (!res || !res.success) {
+                    var msg = (res && res.data && res.data.message) ? res.data.message : (i18n.replyError || '');
+                    if (composerNote) composerNote.textContent = msg;
+                    // A closed window comes back as windowOpen:false — reflect it.
+                    if (res && res.data && res.data.windowOpen === false) {
+                        renderWindow(false);
+                    } else {
+                        sendEl.disabled = false;
+                    }
+                    return;
+                }
+                replyEl.value = '';
+                sendEl.disabled = false;
+                if (res.data.message && res.data.message.id) {
+                    var ph = messagesEl.querySelector('.zignites-chat-inbox-empty');
+                    if (ph) ph.remove();
+                    appendMessages([res.data.message]);
+                }
+                loadThreads();
+            }).catch(function () {
+                sendEl.textContent = i18n.send || '';
+                sendEl.disabled = false;
+                if (composerNote) composerNote.textContent = i18n.replyError || '';
+            });
         }
 
         function openThread(id) {
@@ -122,6 +183,8 @@
             lastMessageId = 0;
             panelEmpty.style.display = 'none';
             threadView.style.display = '';
+            if (replyEl) replyEl.value = '';
+            if (composerNote) composerNote.textContent = '';
             messagesEl.innerHTML = '<p class="zignites-chat-inbox-loading">' + (i18n.loading || '') + '</p>';
 
             ajaxGet('zignites_chat_inbox_thread', { conversation_id: id }).then(function (res) {
@@ -166,6 +229,19 @@
             searchEl.addEventListener('input', function () {
                 if (searchTimer) clearTimeout(searchTimer);
                 searchTimer = setTimeout(loadThreads, 300);
+            });
+        }
+
+        if (sendEl) {
+            sendEl.addEventListener('click', sendReply);
+        }
+        if (replyEl) {
+            // Ctrl/Cmd+Enter sends.
+            replyEl.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    sendReply();
+                }
             });
         }
 

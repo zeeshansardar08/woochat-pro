@@ -255,9 +255,14 @@ Planned increments (each its own commit; tests + PHPCS green per step):
       (messages; clears unread on open, supports after_id polling). 24h window
       banner via `window_is_open`. Pro-gated upsell card added. 4 unit tests
       for the presenters; 164 pass, PHPCS green.
-- [ ] I4 — Agent reply: send from the thread via the existing dispatcher
-      (free-form within the 24h window); record the outbound message; mark
-      read. Capability + nonce gated.
+- [x] I4 — Agent reply (`includes/inbox-admin.php` + composer in
+      `tab-inbox.php`/`inbox.js`): `zignites_chat_inbox_reply` AJAX (cap +
+      nonce + Pro gated) sends a free-form reply through
+      `zignites_chat_send_whatsapp_message()` (opt-out + analytics handled by
+      the dispatcher), records the outbound message, and marks the thread
+      read. The 24h window is enforced server-side (rejects when closed) and
+      in the UI (composer disabled + "template required" note when
+      `window_is_open` is false; Ctrl/Cmd+Enter sends). 164 pass, PHPCS green.
 - [ ] I5 — Outbound mirroring (optional): record order/cart/followup/campaign
       sends into the matching thread so the inbox shows the full history.
 - [ ] Tests for all pure helpers; live smoke test against Twilio + Meta.
@@ -342,12 +347,14 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**Two-way team inbox (P1) — I1 + I2 + I3 done on `feat/pro-inbox`.** Next:
-**I4 (agent reply)** — a composer in the thread panel that sends a free-form
-reply through the existing dispatcher (within the 24h window), records the
-outbound message via `zignites_chat_inbox_record_message()`, and refreshes the
-thread. New AJAX `zignites_chat_inbox_reply` (cap + nonce gated); disable the
-box + show the template-required note when `window_is_open()` is false.
+**Two-way team inbox (P1) — I1–I4 done on `feat/pro-inbox`.** Next (final
+increment): **I5 (outbound mirroring, optional)** — record order / cart /
+follow-up / campaign sends into the matching thread (via
+`zignites_chat_inbox_record_message`, direction 'out') so the inbox shows the
+full history, not just inbound + agent replies. Cleanest hook point is a
+single call from `zignites_chat_send_whatsapp_message()` on success (guarded
+on Pro + the inbox module), or per-consumer. After I5: open the PR and hand
+off the live smoke test (Twilio + Meta sandboxes) to the user.
 
 Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above are **merged
 into `pro`**; only live smoke tests remain on those. The free build shipped

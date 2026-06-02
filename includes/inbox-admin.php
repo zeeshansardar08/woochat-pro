@@ -60,6 +60,11 @@ function zignites_chat_inbox_enqueue_assets($hook) {
             'windowClosed'  => __('The 24-hour service window has closed. A reply now requires an approved template.', 'zignites-chat'),
             'you'           => __('You', 'zignites-chat'),
             'customer'      => __('Customer', 'zignites-chat'),
+            'send'          => __('Send', 'zignites-chat'),
+            'sending'       => __('Sending…', 'zignites-chat'),
+            'replyEmpty'    => __('Type a message before sending.', 'zignites-chat'),
+            'replyError'    => __('The message could not be sent. Please try again.', 'zignites-chat'),
+            'windowClosedNote' => __('The 24-hour window has closed — a reply now requires an approved template.', 'zignites-chat'),
         ],
     ]);
 }
@@ -138,4 +143,74 @@ function zignites_chat_ajax_inbox_thread() {
         'thread'   => $present,
         'messages' => $messages,
     ]);
+}
+
+/* ---------------------------------------------------------------------------
+ * AJAX — agent reply (free-form, within the 24h service window)
+ * ------------------------------------------------------------------------ */
+
+add_action('wp_ajax_zignites_chat_inbox_reply', 'zignites_chat_ajax_inbox_reply');
+function zignites_chat_ajax_inbox_reply() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Unauthorized', 'zignites-chat')], 403);
+    }
+    if (!check_ajax_referer('zignites_chat_inbox', 'nonce', false)) {
+        wp_send_json_error(['message' => __('Bad nonce', 'zignites-chat')], 400);
+    }
+    if (!zignites_chat_is_pro_active()) {
+        wp_send_json_error(['message' => __('Pro required', 'zignites-chat')], 403);
+    }
+
+    $conversation_id = isset($_POST['conversation_id']) ? (int) $_POST['conversation_id'] : 0;
+    $body            = isset($_POST['body']) ? sanitize_textarea_field(wp_unslash($_POST['body'])) : '';
+
+    if ($body === '') {
+        wp_send_json_error(['message' => __('Type a message before sending.', 'zignites-chat')], 422);
+    }
+
+    $thread = zignites_chat_inbox_get_thread($conversation_id);
+    if ($thread === null) {
+        wp_send_json_error(['message' => __('Not found', 'zignites-chat')], 404);
+    }
+
+    // The 24h customer-service window must still be open for a free-form send.
+    if (!zignites_chat_inbox_window_is_open($thread['last_inbound_at'] ?? '')) {
+        wp_send_json_error([
+            'message'     => __('The 24-hour service window has closed. Use an approved template to reach this customer.', 'zignites-chat'),
+            'windowOpen'  => false,
+        ], 422);
+    }
+
+    $phone = (string) $thread['phone'];
+    $sent  = zignites_chat_send_whatsapp_message($phone, $body, true, [
+        'type'     => 'inbox',
+        'order_id' => 0,
+    ]);
+    if (!$sent) {
+        wp_send_json_error(['message' => __('The message could not be sent. Check the log for details.', 'zignites-chat')], 502);
+    }
+
+    // Record the outbound reply into the thread and clear the unread badge.
+    $provider = get_option('zignites_chat_api_provider', 'twilio');
+    $result = zignites_chat_inbox_record_message([
+        'phone'     => $phone,
+        'direction' => 'out',
+        'body'      => $body,
+        'provider'  => $provider,
+        'status'    => 'sent',
+    ]);
+    zignites_chat_inbox_mark_read($conversation_id);
+
+    $message = [];
+    if (!is_wp_error($result)) {
+        $message = zignites_chat_inbox_present_message([
+            'id'         => (int) $result['message_id'],
+            'direction'  => 'out',
+            'body'       => $body,
+            'status'     => 'sent',
+            'created_at' => current_time('mysql'),
+        ]);
+    }
+
+    wp_send_json_success(['message' => $message]);
 }
