@@ -344,9 +344,25 @@ Surface attributed revenue per channel on Analytics.
 - [x] 3 new unit tests; 145 pass, PHPCS green; smoke-tested
 - [ ] live verification on a store with attributed orders (user action)
 
-### P3 — Modernize GPT
+### P3 — Modernize GPT — 🟡 In progress on `feat/pro-gpt-modernization`
 Replace `gpt-3.5-turbo` default with a current model; optional store-catalog
-context for the chatbot. — ⬜
+context for the chatbot.
+- [x] Central `zignites_chat_default_gpt_model()` (default `gpt-4o-mini`,
+      filterable) replaces the scattered `gpt-3.5-turbo` literals in
+      chatbot-engine, scheduler, and the Scheduler settings field + help text.
+      Only affects installs that never saved an explicit model.
+- [x] Opt-in store-catalog context (`includes/catalog-context.php`): pure,
+      tested `build_catalog_context()` + cached `get_catalog_context()`
+      (wc_get_products by popularity, capped, 1h transient invalidated on
+      product save/update and toggle change). Injected into the chatbot system
+      prompt when `zignites_chat_chatbot_catalog_context` is on.
+- [x] UI: Pro-gated "Product catalog context" select on the Chatbot tab;
+      setting registered in the chatbot group + cleaned on uninstall.
+- [x] 6 unit tests for the builder; 170 pass, PHPCS green.
+- [ ] Live verification: enable GPT fallback + catalog context, ask the bot a
+      product/price question (user action).
+- Decision: default-only model bump (existing saved values untouched);
+  catalog context off by default, top-20 products, name + price only.
 
 ### Quality backlog (fold into the above as touched)
 - [ ] Retire legacy `license-manager.php` once Freemius migration completes
@@ -355,17 +371,19 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**Two-way team inbox (P1) — I1–I5 complete on `feat/pro-inbox`; PR open.**
-Remaining: live smoke test against Twilio + Meta sandboxes (user action) —
-send an inbound message from a test number, confirm it threads in the Inbox,
-reply within the 24h window, and confirm an order/campaign send mirrors into
-an existing thread.
+**GPT modernization (P3) — in progress on `feat/pro-gpt-modernization`.**
+Model bump + opt-in catalog context are done with tests; open the PR against
+`pro`, then run the live verification (enable GPT fallback + catalog context,
+ask the bot a product/price question).
 
-After this merges, the open Pro backlog is **GPT modernization (P3)** plus the
-quality backlog (retire `license-manager.php` post-Freemius; central outbound
-rate limiter).
+Two-way inbox (P1) is **merged into `pro`** (PR #71); only its live Twilio/Meta
+smoke test remains (user action).
 
-Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above are **merged
-into `pro`**; only live smoke tests remain on those. The free build shipped
-from `master`. Remaining Pro backlog: **two-way inbox (P1)**, **GPT
-modernization (P3)**, plus the quality backlog.
+After P3 the open Pro backlog is the quality backlog only: retire
+`license-manager.php` post-Freemius; central outbound rate limiter shared by
+cart/scheduler/campaigns.
+
+Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above + the two-way
+inbox (P1) are **merged into `pro`**; only live smoke tests remain on those.
+The free build shipped from `master`. Remaining Pro backlog: **GPT
+modernization (P3, in progress)** plus the quality backlog.

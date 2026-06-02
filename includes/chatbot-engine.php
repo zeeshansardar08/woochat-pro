@@ -217,8 +217,8 @@ function zignites_chat_chatbot_gpt_rate_limit_ok($ip) {
 function zignites_chat_generate_chatbot_reply($user_message) {
     $endpoint = trim(get_option('zignites_chat_gpt_api_endpoint', ''));
     $api_key  = trim(get_option('zignites_chat_gpt_api_key', ''));
-    $model    = trim(get_option('zignites_chat_gpt_model', 'gpt-3.5-turbo'));
-    if ($model === '') $model = 'gpt-3.5-turbo';
+    $model    = trim(get_option('zignites_chat_gpt_model', zignites_chat_default_gpt_model()));
+    if ($model === '') $model = zignites_chat_default_gpt_model();
 
     if ($endpoint === '' || $api_key === '') {
         zignites_chat_record_gpt_error('chatbot', 'Chatbot GPT fallback enabled but the endpoint or API key is empty.');
@@ -229,6 +229,16 @@ function zignites_chat_generate_chatbot_reply($user_message) {
         'zignites_chat_chatbot_gpt_system_prompt',
         "You are a helpful customer-support assistant for an online store. Keep replies under 280 characters, friendly and direct. If the question is outside store/product/order topics or you don't know the answer, say so briefly and suggest the customer contact human support."
     );
+
+    // Optional store-catalog grounding: when enabled, append a compact product
+    // summary so the bot answers product/price questions from real data.
+    if (get_option('zignites_chat_chatbot_catalog_context', 'no') === 'yes'
+        && function_exists('zignites_chat_get_catalog_context')) {
+        $catalog = zignites_chat_get_catalog_context();
+        if ($catalog !== '') {
+            $system_prompt .= "\n\nProducts currently available in the store (use these to answer product and price questions; do not invent products or prices that are not listed):\n" . $catalog;
+        }
+    }
 
     $body = [
         'model'    => $model,

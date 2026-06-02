@@ -82,6 +82,7 @@ final class Plugin {
         require_once ZIGNITES_CHAT_PATH . 'includes/webhooks.php';
         require_once ZIGNITES_CHAT_PATH . 'admin/settings-page.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/chatbot-engine.php';
+        require_once ZIGNITES_CHAT_PATH . 'includes/catalog-context.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/license-manager.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/optout.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/delivery-receipts.php';

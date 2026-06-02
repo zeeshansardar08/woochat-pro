@@ -122,7 +122,7 @@ function zignites_chat_build_followup_message($order, $template = null) {
 function zignites_chat_generate_gpt_followup($order) {
     $endpoint = trim(get_option('zignites_chat_gpt_api_endpoint', ''));
     $api_key = trim(get_option('zignites_chat_gpt_api_key', ''));
-    $model = trim(get_option('zignites_chat_gpt_model', 'gpt-3.5-turbo')) ?: 'gpt-3.5-turbo';
+    $model = trim(get_option('zignites_chat_gpt_model', zignites_chat_default_gpt_model())) ?: zignites_chat_default_gpt_model();
 
     if (!$endpoint || !$api_key) {
         zignites_chat_record_gpt_error('followup', 'Missing endpoint or API key — GPT follow-up skipped, falling back to template.');

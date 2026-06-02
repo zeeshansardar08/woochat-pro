@@ -299,6 +299,19 @@ function zignites_chat_currency_symbol_text() {
 }
 
 /**
+ * Default GPT model for chatbot/follow-up generation.
+ *
+ * Used as the fallback when the zignites_chat_gpt_model option is unset or
+ * empty, so a single edit (and the filter) moves every call site forward as
+ * models evolve. Existing installs that saved an explicit model keep it.
+ *
+ * @return string Model id (default 'gpt-4o-mini').
+ */
+function zignites_chat_default_gpt_model() {
+    return (string) apply_filters('zignites_chat_default_gpt_model', 'gpt-4o-mini');
+}
+
+/**
  * Sanitize a JSON-encoded list of {name, phone} agents.
  *
  * Drops rows where either field is empty (a half-filled agent breaks

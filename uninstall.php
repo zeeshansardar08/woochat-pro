@@ -25,6 +25,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_cart_recovery_enabled',
     'zignites_chat_chatbot_enabled',
     'zignites_chat_chatbot_gpt_enabled',
+    'zignites_chat_chatbot_catalog_context',
     'zignites_chat_agents',
     'zignites_chat_agent_routing_mode',
     'zignites_chat_faq_pairs',

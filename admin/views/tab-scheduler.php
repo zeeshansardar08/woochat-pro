@@ -91,8 +91,8 @@ if (!defined('ABSPATH')) exit;
         <tr>
             <th scope="row"><label for="zignites_chat_gpt_model"><?php esc_html_e('GPT Model', 'zignites-chat'); ?></label></th>
             <td>
-                <input type="text" name="zignites_chat_gpt_model" id="zignites_chat_gpt_model" value="<?php echo esc_attr(get_option('zignites_chat_gpt_model', 'gpt-3.5-turbo')); ?>" class="regular-text" <?php disabled(!$is_pro); ?> />
-                <p class="description"><?php esc_html_e('Adjust for your provider (e.g., gpt-3.5-turbo, gpt-4o-mini, or a free-tier model).', 'zignites-chat'); ?></p>
+                <input type="text" name="zignites_chat_gpt_model" id="zignites_chat_gpt_model" value="<?php echo esc_attr(get_option('zignites_chat_gpt_model', zignites_chat_default_gpt_model())); ?>" class="regular-text" <?php disabled(!$is_pro); ?> />
+                <p class="description"><?php esc_html_e('Defaults to gpt-4o-mini. Adjust for your provider (e.g., gpt-4o, gpt-4o-mini, or any model your endpoint supports).', 'zignites-chat'); ?></p>
             </td>
         </tr>
     </table>

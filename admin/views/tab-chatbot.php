@@ -74,6 +74,22 @@ $zignites_chat_cb_pro = zignites_chat_is_pro_active();
                 <?php endif; ?>
             </td>
         </tr>
+        <tr>
+            <th scope="row"><label for="zignites_chat_chatbot_catalog_context"><?php esc_html_e('Product catalog context', 'zignites-chat'); ?><?php if (!$zignites_chat_cb_pro) : ?> <span class="zignites-chat-pro-tag"><?php esc_html_e('Pro', 'zignites-chat'); ?></span><?php endif; ?></label><span class="zignites-chat-help-icon">?<span class="zignites-chat-tooltip"><?php esc_html_e('When GPT Fallback is on, include a short summary of your products (names and prices) in the prompt so the bot can answer product and price questions accurately.', 'zignites-chat'); ?></span></span></th>
+            <td>
+                <?php $zignites_chat_catalog_ctx = get_option('zignites_chat_chatbot_catalog_context', 'no'); ?>
+                <select <?php echo $zignites_chat_cb_pro ? 'name="zignites_chat_chatbot_catalog_context"' : ''; ?> id="zignites_chat_chatbot_catalog_context" <?php disabled(!$zignites_chat_cb_pro); ?>>
+                    <option value="no" <?php selected($zignites_chat_catalog_ctx, 'no'); ?>><?php esc_html_e('No', 'zignites-chat'); ?></option>
+                    <option value="yes" <?php selected($zignites_chat_catalog_ctx, 'yes'); ?>><?php esc_html_e('Yes', 'zignites-chat'); ?></option>
+                </select>
+                <?php if (!$zignites_chat_cb_pro) : ?>
+                    <input type="hidden" name="zignites_chat_chatbot_catalog_context" value="<?php echo esc_attr($zignites_chat_catalog_ctx); ?>" />
+                    <p class="description"><?php esc_html_e('Catalog-aware replies are a Pro feature.', 'zignites-chat'); ?></p>
+                <?php else : ?>
+                    <p class="description"><?php esc_html_e('Adds your top products (name + price) to the GPT prompt. Cached hourly. Requires GPT Fallback above.', 'zignites-chat'); ?></p>
+                <?php endif; ?>
+            </td>
+        </tr>
     </table>
 
     <h3><?php esc_html_e('Agents', 'zignites-chat'); ?><?php if (!$zignites_chat_cb_pro) : ?> <span class="zignites-chat-pro-tag"><?php esc_html_e('Multi-agent is Pro', 'zignites-chat'); ?></span><?php endif; ?></h3>
