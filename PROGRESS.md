@@ -399,12 +399,17 @@ the customer to confirm via WhatsApp. Sends an approved template with quick-repl
 buttons (Confirm / Cancel) on a new COD order; the customer's button tap (already
 captured inbound by the inbox in I2) flips the WooCommerce order status.
 Planned increments:
-- [ ] C1 — Module + settings + send-on-COD-order: `includes/cod-confirmation.php`;
-      settings (enable, which gateways count as COD [default `cod`], template
-      mapping/keywords, on-confirm status [default `processing`], on-cancel
-      status [default `cancelled`]); on a new COD order, send the confirmation
-      and mark order meta `_zignites_chat_cod_status = pending`. Pure helpers
-      (is-COD-gateway test, reply→decision classifier) with tests.
+- [x] C1 — Module + settings + send-on-COD-order (`includes/cod-confirmation.php`,
+      `admin/views/tab-cod.php`): a `cod_confirmation` template type added to the
+      WA Templates page; a Pro "COD Confirmation" settings tab (enable, COD
+      gateways [default `cod`], fallback message, confirm/cancel keywords,
+      on-confirm [`processing`] / on-cancel [`cancelled`] statuses). Sends on
+      `woocommerce_checkout_order_processed` + the Store-API equivalent for COD
+      orders (idempotent via `_zignites_chat_cod_status` meta), attaching the
+      approved template via `maybe_apply_template('cod_confirmation')` with the
+      rendered text as fallback. Pure tested helpers: `is_cod_gateway`,
+      `classify_reply` (whole-word, cancel-wins-ties), `sanitize_gateways`.
+      Settings cleaned on uninstall. 6 unit tests; 182 pass, PHPCS green.
 - [ ] C2 — Inbound matching + status transition: map an inbound reply/button
       from a phone to its most-recent pending COD order, classify
       confirm/cancel, transition the order, add an order note, clear pending,
@@ -451,11 +456,16 @@ Build on the merged two-way inbox (P1):
 ---
 
 ## Next Action
-**Roadmap v2 kicked off — COD order confirmation (T1.1) IN PROGRESS on
-`feat/pro-cod-confirmation`.** Building in increments C1→C3; start with **C1
-(module + settings + send-on-COD-order)**. Then T1.2 (status/tracking) and
-T1.3 (opt-in capture), then Tier 2 (inbox→helpdesk), Tier 3 (automation), and
-the quick wins — see PHASE 9 above.
+**COD order confirmation (T1.1) — C1 done on `feat/pro-cod-confirmation`.**
+Next: **C2 (inbound matching + status transition)** — when an inbound
+reply/button arrives (hook the existing inbox capture / opt-out webhook), find
+the sender's most-recent order with `_zignites_chat_cod_status = pending`,
+classify the reply via `zignites_chat_cod_classify_reply()`, transition the
+order to the configured on-confirm / on-cancel status, add an order note, set
+`_zignites_chat_cod_status = confirmed|cancelled`, and optionally send an ack.
+Then C3 (orders-screen column/badge + analytics counters). After T1.1: T1.2
+(status/tracking), T1.3 (opt-in capture), then Tiers 2–3 and the quick wins —
+see PHASE 9 above.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

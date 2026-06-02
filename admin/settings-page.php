@@ -36,6 +36,15 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_messaging_group', 'zignites_chat_order_message_template_b', ['sanitize_callback' => 'zignites_chat_sanitize_textarea']);
     register_setting('zignites_chat_messaging_group', 'zignites_chat_order_message_ab_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
 
+    // COD order confirmation.
+    register_setting('zignites_chat_cod_group', 'zignites_chat_cod_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+    register_setting('zignites_chat_cod_group', 'zignites_chat_cod_gateways', ['sanitize_callback' => 'zignites_chat_cod_sanitize_gateways', 'default' => ['cod']]);
+    register_setting('zignites_chat_cod_group', 'zignites_chat_cod_message_template', ['sanitize_callback' => 'zignites_chat_sanitize_textarea']);
+    register_setting('zignites_chat_cod_group', 'zignites_chat_cod_confirm_keywords', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
+    register_setting('zignites_chat_cod_group', 'zignites_chat_cod_cancel_keywords', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
+    register_setting('zignites_chat_cod_group', 'zignites_chat_cod_on_confirm_status', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
+    register_setting('zignites_chat_cod_group', 'zignites_chat_cod_on_cancel_status', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
+
     // Chatbot.
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_gpt_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
@@ -102,6 +111,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-wa-templates',  __('WhatsApp Templates', 'zignites-chat'), 'zignites_chat_render_wa_templates_page', true],
         ['zignites-chat-chatbot',       __('Chatbot', 'zignites-chat'),          'zignites_chat_render_chatbot_page'],
         ['zignites-chat-cart-recovery', __('Cart Recovery', 'zignites-chat'),    'zignites_chat_render_cart_recovery_page', true],
+        ['zignites-chat-cod',           __('COD Confirmation', 'zignites-chat'), 'zignites_chat_render_cod_page',           true],
         ['zignites-chat-scheduler',     __('Scheduler', 'zignites-chat'),        'zignites_chat_render_scheduler_page',     true],
         ['zignites-chat-campaigns',     __('Campaigns', 'zignites-chat'),        'zignites_chat_render_campaigns_page',     true],
         ['zignites-chat-inbox',         __('Inbox', 'zignites-chat'),            'zignites_chat_render_inbox_page',         true],
@@ -358,6 +368,24 @@ function zignites_chat_render_campaigns_page() {
     zignites_chat_admin_page_close();
 }
 
+function zignites_chat_render_cod_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'));
+    }
+    zignites_chat_admin_page_open(__('COD Order Confirmation', 'zignites-chat'));
+    if (!zignites_chat_is_pro_active()) {
+        zignites_chat_render_pro_upgrade_notice('cod');
+        zignites_chat_admin_page_close();
+        return;
+    }
+    echo '<form method="post" action="options.php">';
+    settings_fields('zignites_chat_cod_group');
+    require ZIGNITES_CHAT_PATH . 'admin/views/tab-cod.php';
+    submit_button();
+    echo '</form>';
+    zignites_chat_admin_page_close();
+}
+
 function zignites_chat_render_analytics_page() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'));
@@ -457,6 +485,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Per message-type template + language mapping', 'zignites-chat'),
                 __('Map order/cart/follow-up data to template variables', 'zignites-chat'),
                 __('Protects your sender number from quality downgrades', 'zignites-chat'),
+            ],
+        ],
+        'cod' => [
+            'title'       => __('COD Order Confirmation', 'zignites-chat'),
+            'description' => __('Cut fake and abandoned cash-on-delivery orders. Ask customers to confirm a new COD order over WhatsApp; their reply updates the order automatically.', 'zignites-chat'),
+            'benefits'    => [
+                __('Auto-send a confirmation on every new COD order', 'zignites-chat'),
+                __('Quick-reply Confirm / Cancel buttons via approved templates', 'zignites-chat'),
+                __('Order status updates from the customer reply', 'zignites-chat'),
+                __('Reduce return-to-origin (RTO) shipping losses', 'zignites-chat'),
             ],
         ],
         'inbox' => [
