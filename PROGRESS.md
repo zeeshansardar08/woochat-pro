@@ -478,7 +478,15 @@ existing opt-out pipeline. Compliance + list growth.
 
 ### Tier 2 — turn the inbox into a real helpdesk
 Build on the merged two-way inbox (P1):
-- [ ] T2.1 — Agent assignment + per-agent views (make `agent_id` actionable).
+- [x] T2.1 — Agent assignment + per-agent views — done on
+      `feat/pro-inbox-agent-assignment`. `agent_id` is now actionable:
+      `assign_thread` storage + an `agent_id` filter on `get_threads`; AJAX
+      `zignites_chat_inbox_assign` (claim/assign/unassign, validates the agent
+      is an admin/shop-manager); the thread list shows the assignee, the panel
+      header has a Claim button + assign dropdown, and a list filter (All /
+      Assigned to me / Unassigned). Pure helpers `scope_to_agent_filter`,
+      `agent_name`; presenter exposes `agent_id`. 3 unit tests; 200 pass,
+      PHPCS + lint green.
 - [ ] T2.2 — Canned / quick replies in the inbox composer.
 - [ ] T2.3 — Customer context panel (order history, LTV) beside the thread.
 - [ ] T2.4 — Internal notes on a conversation.
@@ -505,11 +513,11 @@ Build on the merged two-way inbox (P1):
 are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
-Next: **Tier 2 — turn the inbox into a real helpdesk.** Start with **T2.1 —
-agent assignment + per-agent views** (make the inbox `agent_id` actionable:
-claim/assign a thread, filter "my conversations"), then T2.2 canned replies,
-T2.3 customer-context panel, T2.4 internal notes, T2.5 agent notifications.
-Then Tier 3 (automation) and the quick wins — see PHASE 9.
+Tier 2 in progress: **T2.1 (agent assignment) DONE** on
+`feat/pro-inbox-agent-assignment`. Next: **T2.2 — canned / quick replies** in
+the inbox composer (a small library of saved snippets the agent can insert),
+then T2.3 customer-context panel, T2.4 internal notes, T2.5 agent
+notifications. Then Tier 3 (automation) and the quick wins — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

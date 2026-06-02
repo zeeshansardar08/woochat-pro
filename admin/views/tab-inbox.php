@@ -13,6 +13,11 @@ $zignites_chat_threads = zignites_chat_inbox_get_threads(['limit' => 100]);
         <div class="zignites-chat-inbox-search">
             <input type="search" id="zignites-chat-inbox-search" class="regular-text"
                    placeholder="<?php esc_attr_e('Search name or number…', 'zignites-chat'); ?>" />
+            <select id="zignites-chat-inbox-filter" style="margin-top:8px; width:100%;">
+                <option value="all"><?php esc_html_e('All conversations', 'zignites-chat'); ?></option>
+                <option value="mine"><?php esc_html_e('Assigned to me', 'zignites-chat'); ?></option>
+                <option value="unassigned"><?php esc_html_e('Unassigned', 'zignites-chat'); ?></option>
+            </select>
         </div>
         <ul class="zignites-chat-inbox-threads" id="zignites-chat-inbox-threads">
             <?php if (empty($zignites_chat_threads)) : ?>
@@ -46,6 +51,11 @@ $zignites_chat_threads = zignites_chat_inbox_get_threads(['limit' => 100]);
             <div class="zignites-chat-inbox-thread-header">
                 <span class="zignites-chat-inbox-thread-title" id="zignites-chat-inbox-thread-title"></span>
                 <span class="zignites-chat-inbox-thread-phone" id="zignites-chat-inbox-thread-phone"></span>
+                <span class="zignites-chat-inbox-assign" id="zignites-chat-inbox-assign">
+                    <span class="zignites-chat-inbox-assignee" id="zignites-chat-inbox-assignee"></span>
+                    <button type="button" class="button button-small" id="zignites-chat-inbox-claim"></button>
+                    <select id="zignites-chat-inbox-assign-select"></select>
+                </span>
             </div>
             <div class="zignites-chat-inbox-window" id="zignites-chat-inbox-window"></div>
             <div class="zignites-chat-inbox-messages" id="zignites-chat-inbox-messages"></div>

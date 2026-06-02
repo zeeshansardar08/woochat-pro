@@ -89,6 +89,33 @@
     white-space: nowrap;
 }
 
+.zignites-chat-inbox-thread-agent {
+    grid-column: 1 / -1;
+    color: #2271b1;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.zignites-chat-inbox-assign {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: auto;
+    font-size: 12px;
+}
+
+.zignites-chat-inbox-assignee {
+    color: #50575e;
+}
+
+.zignites-chat-inbox-thread-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .zignites-chat-inbox-badge {
     grid-area: badge;
     justify-self: end;
