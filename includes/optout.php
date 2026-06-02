@@ -212,6 +212,13 @@ function zignites_chat_optout_webhook_handler(WP_REST_Request $request) {
         }
     }
 
+    // Two-way inbox: record any inbound message(s) into conversation threads.
+    // Runs before opt-out handling so an opt-out keyword is still captured in
+    // the thread. No-op when the inbox module is absent or Pro is inactive.
+    if (function_exists('zignites_chat_inbox_capture_request')) {
+        zignites_chat_inbox_capture_request($request);
+    }
+
     $from = (string) $request->get_param('from');
     $body = (string) $request->get_param('body');
 

@@ -285,6 +285,33 @@ function zignites_chat_inbox_get_thread($conversation_id) {
 }
 
 /**
+ * Whether an inbound message with this provider message id is already stored.
+ *
+ * Providers re-deliver webhooks until they get a 200, so inbound capture
+ * dedupes on the provider message id before inserting. Empty ids are treated
+ * as "not seen" (nothing to match on) — callers should still record them.
+ *
+ * @param string $message_id Provider message id (Twilio SID / Meta wamid).
+ * @return bool True when a matching inbound row already exists.
+ */
+function zignites_chat_inbox_inbound_exists($message_id) {
+    global $wpdb;
+    $message_id = (string) $message_id;
+    if ($message_id === '') {
+        return false;
+    }
+    $table = zignites_chat_messages_table_name();
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $found = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT id FROM {$table} WHERE message_id = %s AND direction = 'in' LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $message_id
+        )
+    );
+    return $found !== null;
+}
+
+/**
  * Record a message and upsert its conversation thread in one call.
  *
  * Ensures a thread exists for the phone, inserts the message row, then writes

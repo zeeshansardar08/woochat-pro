@@ -236,10 +236,15 @@ Planned increments (each its own commit; tests + PHPCS green per step):
       window_is_open (24h check), build_message_row, build_thread_update.
       `zignites_chat_inbox_record_message()` upserts thread + inserts message.
       8 unit tests; 156 pass, PHPCS green.
-- [ ] I2 — Inbound capture: extend the Meta webhook (optout.php) +
-      add a Twilio inbound route to record incoming messages into threads
-      (reuse signature verification). Opt-out keyword handling stays. Pure
-      payload→message normalizers (Meta `messages[]`, Twilio form) with tests.
+- [x] I2 — Inbound capture (`includes/inbox-capture.php`): a `/inbound` REST
+      alias reusing the signature/token-verified opt-out handler; capture step
+      wired into `zignites_chat_optout_webhook_handler()` (runs before opt-out
+      so a keyword message is still threaded). Pure normalizers:
+      `normalize_twilio_inbound`, `normalize_meta_messages` (+ type-aware
+      `extract_meta_message_body`: text/button/interactive/media-caption).
+      Dedupes on provider message id (`zignites_chat_inbox_inbound_exists`) so
+      webhook retries don't double-insert; Pro-gated. 6 unit tests; 162 pass,
+      PHPCS green.
 - [ ] I3 — Admin Inbox view: new Pro submenu listing conversations
       (unread first) + a thread panel; AJAX to fetch a thread and poll for
       new messages.
@@ -330,12 +335,12 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**Two-way team inbox (P1) — I1 done on `feat/pro-inbox`.** Next: **I2
-(inbound capture)** — extend the Meta webhook (`optout.php`) + add a Twilio
-inbound route to record incoming messages via
-`zignites_chat_inbox_record_message()`, reusing the existing signature
-verification. Opt-out keyword handling stays. Add pure payload→message
-normalizers (Meta `messages[]`, Twilio form) with tests.
+**Two-way team inbox (P1) — I1 + I2 done on `feat/pro-inbox`.** Next: **I3
+(admin Inbox view)** — a new Pro submenu listing conversations (unread first)
+with a thread panel; AJAX to fetch a thread and poll for new messages. Read
+helpers needed: list threads (ordered, paginated) + fetch a thread's messages.
+Surface the 24h window via `zignites_chat_inbox_window_is_open()` (banner +
+disabled reply, per resolved decision). Mark-as-read on open.
 
 Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above are **merged
 into `pro`**; only live smoke tests remain on those. The free build shipped
