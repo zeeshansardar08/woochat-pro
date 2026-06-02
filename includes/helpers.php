@@ -116,6 +116,7 @@ function zignites_chat_get_migrations() {
         3 => 'zignites_chat_migration_v3_campaign_tables',
         4 => 'zignites_chat_migration_v4_campaign_scheduled_at',
         5 => 'zignites_chat_migration_v5_campaign_media',
+        6 => 'zignites_chat_migration_v6_inbox_tables',
     ];
 }
 
@@ -192,6 +193,18 @@ function zignites_chat_migration_v4_campaign_scheduled_at() {
 function zignites_chat_migration_v5_campaign_media() {
     if (function_exists('zignites_chat_create_campaign_tables')) {
         zignites_chat_create_campaign_tables();
+    }
+}
+
+/**
+ * v6: create the two-way inbox tables (zignites_chat_conversations +
+ * zignites_chat_messages). dbDelta-based and idempotent; same WC-state guard
+ * shape as the campaign migrations — inbox.php is only loaded once
+ * boot_modules() runs, and the activation hook re-creates the tables too.
+ */
+function zignites_chat_migration_v6_inbox_tables() {
+    if (function_exists('zignites_chat_create_inbox_tables')) {
+        zignites_chat_create_inbox_tables();
     }
 }
 

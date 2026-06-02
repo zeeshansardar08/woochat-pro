@@ -227,11 +227,15 @@ Ingest inbound Cloud API / Twilio messages (signatures already verified in
 read and reply within WhatsApp's 24h service window.
 
 Planned increments (each its own commit; tests + PHPCS green per step):
-- [ ] I1 — Schema + storage: `{prefix}zignites_chat_conversations` (one row
-      per phone: last_message_at, last_excerpt, unread_count, agent_id) and
-      `{prefix}zignites_chat_messages` (direction in/out, body, provider
-      message_id, status, created_at). Migration v6. Pure thread-upsert +
-      message-insert helpers.
+- [x] I1 — Schema + storage (`includes/inbox.php`): `{prefix}zignites_chat_conversations`
+      (one row per phone: last_message_at, **last_inbound_at**, last_excerpt,
+      last_direction, unread_count, agent_id) + `{prefix}zignites_chat_messages`
+      (direction in/out, body, provider, message_id, status, created_at).
+      Migration v6 (idempotent dbDelta, wired into the runner + activation hook
+      + uninstall drop). Pure helpers: normalize_direction, make_excerpt,
+      window_is_open (24h check), build_message_row, build_thread_update.
+      `zignites_chat_inbox_record_message()` upserts thread + inserts message.
+      8 unit tests; 156 pass, PHPCS green.
 - [ ] I2 — Inbound capture: extend the Meta webhook (optout.php) +
       add a Twilio inbound route to record incoming messages into threads
       (reuse signature verification). Opt-out keyword handling stays. Pure
@@ -246,9 +250,13 @@ Planned increments (each its own commit; tests + PHPCS green per step):
       sends into the matching thread so the inbox shows the full history.
 - [ ] Tests for all pure helpers; live smoke test against Twilio + Meta.
 
-Open questions to resolve at the start: thread retention vs. the existing
-`data_retention_days`; whether replies are gated to a single assigned agent
-or any manager; and how 24h-window expiry is surfaced in the UI.
+Open questions — **resolved 2026-06-02**: (1) retention reuses the existing
+`data_retention_days` (a prune pass will drop inbox rows on the same window —
+to wire in a later increment); (2) any `manage_woocommerce` user can read +
+reply to any thread, `agent_id` is informational only (no claim/assign gating);
+(3) the 24h service window is surfaced as a banner + disabled free-form reply
+box once `last_inbound_at` is >24h old (`zignites_chat_inbox_window_is_open()`
+is the pure check, landed in I1).
 
 ### P1 — Scheduled campaigns — ✅ Merged into `pro` (live smoke test pending)
 Campaigns were send-now only; added "send at <datetime>" + recent-recipient
@@ -322,9 +330,12 @@ context for the chatbot. — ⬜
 ---
 
 ## Next Action
-**START HERE → Two-way team inbox (P1).** Branch `feat/pro-inbox` off `pro`
-and begin increment **I1 (schema + storage + migration v6)**. Resolve the
-three open questions above first (retention, reply gating, 24h-window UI).
+**Two-way team inbox (P1) — I1 done on `feat/pro-inbox`.** Next: **I2
+(inbound capture)** — extend the Meta webhook (`optout.php`) + add a Twilio
+inbound route to record incoming messages via
+`zignites_chat_inbox_record_message()`, reusing the existing signature
+verification. Opt-out keyword handling stays. Add pure payload→message
+normalizers (Meta `messages[]`, Twilio form) with tests.
 
 Status snapshot (as of 2026-06-02): P0 + all P1/P2 items above are **merged
 into `pro`**; only live smoke tests remain on those. The free build shipped
