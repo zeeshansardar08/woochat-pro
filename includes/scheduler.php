@@ -40,9 +40,15 @@ function zignites_chat_send_followup_message_handler($order_id) {
     $to = sanitize_text_field($order->get_billing_phone());
     if (!$to) return;
 
-    // Permanent skip: opt-outs never reach the provider, so retrying just
-    // burns attempts on the same `false` return.
-    if (zignites_chat_is_opted_out($to)) return;
+    // Permanent skip: opt-outs (and, when consent is required, non-consented
+    // numbers) never reach the provider, so retrying just burns attempts on
+    // the same `false` return. Follow-ups are marketing, so the consent gate
+    // applies.
+    if (function_exists('zignites_chat_marketing_blocked')) {
+        if (zignites_chat_marketing_blocked($to)) return;
+    } elseif (zignites_chat_is_opted_out($to)) {
+        return;
+    }
 
     // Central outbound budget: if the shared per-minute cap is hit, defer this
     // follow-up by re-scheduling shortly. This is a deferral, not a failure —

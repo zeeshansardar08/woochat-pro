@@ -452,9 +452,29 @@ injected tracking link/number (pull from common shipment plugins).
 - [ ] Live smoke test: move an order to a tracked status, confirm the WhatsApp
       lands with the tracking link (user action).
 
-#### T1.3 — WhatsApp opt-in capture — ⬜
-Proactive consent: checkout checkbox / widget + a consent log, complementing
-the existing opt-out pipeline. Compliance + list growth.
+#### T1.3 — WhatsApp opt-in capture — ✅ Done on `feat/pro-optin-capture` (live smoke test pending)
+Proactive consent: checkout checkbox + a consent log, complementing the
+existing opt-out pipeline. Compliance + list growth.
+- [x] `includes/optin.php`: consent log option (`zignites_chat_optin_log`,
+      phone → {time, source}); `record_optin` / `has_consent` / `get_optin_log`.
+      An explicit opt-in clears a prior opt-out (filterable) and fires the
+      `customer.opted_in` webhook.
+- [x] Classic-checkout checkbox (`woocommerce_review_order_before_submit`)
+      with a customizable label + pre-checked option; captured on
+      `woocommerce_checkout_order_processed` (order meta `_zignites_chat_optin`
+      + consent log).
+- [x] Marketing gate: `zignites_chat_marketing_blocked()` (opted-out OR
+      consent-required-and-missing) wired into the three bulk senders
+      (cart-recovery queue, campaign chunk, follow-up handler); transactional
+      sends (order/COD/status) untouched.
+- [x] Pure, tested helpers: `optin_log_add`, `optin_decide_blocked`.
+- [x] Pro "Opt-in" tab: enable, label, pre-checked, require-consent, plus an
+      opted-in count; settings + log cleaned on uninstall.
+- [x] 5 unit tests; 197 pass, PHPCS + lint green.
+- Note: block-checkout checkbox UI deferred (classic checkout + the
+      programmatic `record_optin()` API ship now).
+- [ ] Live smoke test: opt in at checkout, confirm the log + that a campaign
+      skips a non-consented number when "require consent" is on (user action).
 
 ### Tier 2 — turn the inbox into a real helpdesk
 Build on the merged two-way inbox (P1):
@@ -481,13 +501,15 @@ Build on the merged two-way inbox (P1):
 ---
 
 ## Next Action
-**T1.2 — Order-status + tracking notifications — DONE on
-`feat/pro-status-tracking-notifications`** (live smoke test pending). T1.1 (COD)
-is also complete and merged.
+**Tier 1 COMPLETE.** T1.1 (COD), T1.2 (status/tracking), T1.3 (opt-in capture)
+are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
+awaiting PR. Live smoke tests pending on each (user action).
 
-Next feature: **T1.3 — WhatsApp opt-in capture** (checkout checkbox / widget +
-a consent log, complementing the existing opt-out pipeline). Then Tier 2
-(inbox→helpdesk), Tier 3 (automation), and the quick wins — see PHASE 9.
+Next: **Tier 2 — turn the inbox into a real helpdesk.** Start with **T2.1 —
+agent assignment + per-agent views** (make the inbox `agent_id` actionable:
+claim/assign a thread, filter "my conversations"), then T2.2 canned replies,
+T2.3 customer-context panel, T2.4 internal notes, T2.5 agent notifications.
+Then Tier 3 (automation) and the quick wins — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

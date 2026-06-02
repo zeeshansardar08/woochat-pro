@@ -88,6 +88,7 @@ final class Plugin {
         require_once ZIGNITES_CHAT_PATH . 'includes/optout.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/delivery-receipts.php';
 
+        require_once ZIGNITES_CHAT_PATH . 'includes/optin.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/order-hooks.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/cod-confirmation.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/status-notifications.php';

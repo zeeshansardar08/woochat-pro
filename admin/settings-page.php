@@ -49,6 +49,12 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_status_group', 'zignites_chat_status_notify_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_status_group', 'zignites_chat_status_notifications', ['sanitize_callback' => 'zignites_chat_status_sanitize_notifications', 'default' => []]);
 
+    // WhatsApp opt-in capture.
+    register_setting('zignites_chat_optin_group', 'zignites_chat_optin_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+    register_setting('zignites_chat_optin_group', 'zignites_chat_optin_label', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
+    register_setting('zignites_chat_optin_group', 'zignites_chat_optin_default_checked', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+    register_setting('zignites_chat_optin_group', 'zignites_chat_optin_required', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+
     // Chatbot.
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_gpt_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
@@ -115,6 +121,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-wa-templates',  __('WhatsApp Templates', 'zignites-chat'), 'zignites_chat_render_wa_templates_page', true],
         ['zignites-chat-chatbot',       __('Chatbot', 'zignites-chat'),          'zignites_chat_render_chatbot_page'],
         ['zignites-chat-cart-recovery', __('Cart Recovery', 'zignites-chat'),    'zignites_chat_render_cart_recovery_page', true],
+        ['zignites-chat-optin',         __('Opt-in', 'zignites-chat'),           'zignites_chat_render_optin_page',         true],
         ['zignites-chat-cod',           __('COD Confirmation', 'zignites-chat'), 'zignites_chat_render_cod_page',           true],
         ['zignites-chat-scheduler',     __('Scheduler', 'zignites-chat'),        'zignites_chat_render_scheduler_page',     true],
         ['zignites-chat-status',        __('Status Notifications', 'zignites-chat'), 'zignites_chat_render_status_page',     true],
@@ -373,6 +380,24 @@ function zignites_chat_render_campaigns_page() {
     zignites_chat_admin_page_close();
 }
 
+function zignites_chat_render_optin_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'));
+    }
+    zignites_chat_admin_page_open(__('WhatsApp Opt-in', 'zignites-chat'));
+    if (!zignites_chat_is_pro_active()) {
+        zignites_chat_render_pro_upgrade_notice('optin');
+        zignites_chat_admin_page_close();
+        return;
+    }
+    echo '<form method="post" action="options.php">';
+    settings_fields('zignites_chat_optin_group');
+    require ZIGNITES_CHAT_PATH . 'admin/views/tab-optin.php';
+    submit_button();
+    echo '</form>';
+    zignites_chat_admin_page_close();
+}
+
 function zignites_chat_render_status_page() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'));
@@ -508,6 +533,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Per message-type template + language mapping', 'zignites-chat'),
                 __('Map order/cart/follow-up data to template variables', 'zignites-chat'),
                 __('Protects your sender number from quality downgrades', 'zignites-chat'),
+            ],
+        ],
+        'optin' => [
+            'title'       => __('WhatsApp Opt-in & Consent', 'zignites-chat'),
+            'description' => __('Grow a compliant marketing list. Capture explicit WhatsApp consent at checkout, keep a consent log, and optionally restrict marketing sends to customers who opted in.', 'zignites-chat'),
+            'benefits'    => [
+                __('Checkout opt-in checkbox with a customizable label', 'zignites-chat'),
+                __('Timestamped consent log per phone number', 'zignites-chat'),
+                __('Require consent before cart recovery / campaigns / follow-ups', 'zignites-chat'),
+                __('Explicit opt-in clears a prior opt-out', 'zignites-chat'),
             ],
         ],
         'status' => [
