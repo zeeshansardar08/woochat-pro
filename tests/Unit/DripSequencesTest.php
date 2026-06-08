@@ -117,4 +117,33 @@ final class DripSequencesTest extends TestCase
         $this->assertSame($row['enrolled_at'], $row['next_run_at']);
         $this->assertSame('[]', $row['context']);
     }
+
+    public function test_plan_advance_schedules_next_step(): void
+    {
+        $seq = ['id' => 'w', 'steps' => [
+            ['delay_value' => 0, 'delay_unit' => 'minutes', 'message' => 'a'],
+            ['delay_value' => 1, 'delay_unit' => 'hours', 'message' => 'b'],
+        ]];
+        $now  = 2000000;
+        $plan = \zignites_chat_seq_plan_advance($seq, 0, $now);
+
+        $this->assertSame('active', $plan['status']);
+        $this->assertSame(1, $plan['current_step']);
+        $this->assertSame(\zignites_chat_seq_format_mysql($now + HOUR_IN_SECONDS), $plan['next_run_at']);
+        $this->assertSame(\zignites_chat_seq_format_mysql($now), $plan['last_step_at']);
+    }
+
+    public function test_plan_advance_completes_after_last_step(): void
+    {
+        $seq = ['id' => 'w', 'steps' => [
+            ['delay_value' => 0, 'delay_unit' => 'minutes', 'message' => 'a'],
+        ]];
+        $now  = 2000000;
+        $plan = \zignites_chat_seq_plan_advance($seq, 0, $now);
+
+        $this->assertSame('completed', $plan['status']);
+        $this->assertSame(1, $plan['current_step']);
+        $this->assertNull($plan['next_run_at']);
+        $this->assertSame(\zignites_chat_seq_format_mysql($now), $plan['last_step_at']);
+    }
 }

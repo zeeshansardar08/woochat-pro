@@ -548,10 +548,18 @@ Build on the merged two-way inbox (P1):
         `seq_format_mysql` + `seq_build_enrollment_row` (schedules step 0 at
         enroll + delay, serializes context). Gating stays at send time (S3).
         3 new unit tests; 247 pass, PHPCS green.
-  - [ ] S3 — Cron processor + sender: walk due enrollments, send the step via
-        the dispatcher (opt-out/consent/quiet-hours/rate-limit gates), advance
-        `current_step`/`next_run_at`, complete at the end. Chunked like the
-        other bulk senders.
+  - [x] S3 — Cron processor + sender, on `feat/pro-drip-sender`. A recurring
+        5-minute event (`zignites_chat_process_sequences`, reusing the shared
+        `zignites_chat_five_minutes` schedule; unscheduled on deactivate, cleared
+        on uninstall) pulls due active enrollments (`next_run_at <= now`, chunked
+        30), renders the current step from the stored context, sends via the
+        dispatcher (`type=sequence`), then advances. Gating: quiet hours skip the
+        whole run; opt-out / missing-consent and a removed/disabled sequence
+        cancel the enrollment permanently; the shared rate limiter breaks the run
+        (rows stay due for the next tick). Advance is fire-and-forget like the
+        other senders. Pure tested helper `seq_plan_advance` (next step → active
+        with new next_run_at, or completed). 2 new unit tests; 249 pass, PHPCS
+        green.
   - [ ] S4 — Admin CRUD UI: a Pro "Sequences" submenu to create/edit sequences
         (trigger + ordered steps with delays + messages) and an enrollment
         count per sequence.
@@ -621,8 +629,10 @@ Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (all merged into
 `pro`). Remaining quick win: **Q5 sender-health**.
 
 **Tier 3 — T3.1 drip & automation sequences IN PROGRESS** (incremental PRs).
-**S1 (engine foundation) + S2 (enrollment + triggers) DONE** (S1 merged into
-`pro`; S2 on `feat/pro-drip-enrollment` awaiting PR). Next: S3 cron sender →
+**S1 (engine foundation), S2 (enrollment + triggers) + S3 (cron sender) DONE**
+(S1/S2 merged into `pro`; S3 on `feat/pro-drip-sender` awaiting PR). At this
+point drip sequences are fully functional end-to-end — they just lack a UI, so
+sequences must be defined via the `zignites_chat_sequences` option/filter. Next:
 S4 admin UI → S5 scan-based triggers. See PHASE 9 → Tier 3 for the breakdown.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item

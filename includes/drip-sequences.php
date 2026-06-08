@@ -18,8 +18,13 @@
  *     the placeholder values captured when the trigger fires, idempotent
  *     `zignites_chat_seq_enroll()`, and the order-completed / opt-in entry
  *     points that enroll a phone into every active sequence for that trigger.
+ *   - S3 (cron processor + sender): a recurring 5-minute event that sends each
+ *     active enrollment's due step through the dispatcher — applying the
+ *     marketing gates (quiet hours skip the run, opt-out/consent cancel the
+ *     enrollment, the shared rate limiter stops the run) — then advances the
+ *     step or completes the enrollment.
  *
- * The cron sender and the admin CRUD UI land in later increments.
+ * The admin CRUD UI lands in a later increment.
  *
  * @package Zignites_Chat
  */
@@ -528,4 +533,209 @@ function zignites_chat_seq_enroll_on_optin($phone, $source = '') {
         '{name}' => '',
         '{site}' => function_exists('get_bloginfo') ? get_bloginfo('name') : '',
     ));
+}
+
+/* -------------------------------------------------------------------------
+ * Cron processor + sender (S3)
+ * ----------------------------------------------------------------------- */
+
+// Reuse the 5-minute schedule registered by cart-recovery.php; re-declare the
+// guarded filter so the processor doesn't depend on module load order.
+add_filter('cron_schedules', function ($schedules) {
+    if (!isset($schedules['zignites_chat_five_minutes'])) {
+        $schedules['zignites_chat_five_minutes'] = array(
+            'interval' => 5 * MINUTE_IN_SECONDS,
+            'display'  => __('Every 5 minutes (Zignites Chat)', 'zignites-chat'),
+        );
+    }
+    return $schedules;
+});
+
+add_action('init', 'zignites_chat_seq_schedule_cron');
+add_action('zignites_chat_process_sequences', 'zignites_chat_seq_process_enrollments');
+
+/**
+ * Ensure the recurring sequence processor event is scheduled.
+ */
+function zignites_chat_seq_schedule_cron() {
+    if (!wp_next_scheduled('zignites_chat_process_sequences')) {
+        wp_schedule_event(time() + 60, 'zignites_chat_five_minutes', 'zignites_chat_process_sequences');
+    }
+}
+
+/**
+ * Clear the processor event (deactivation / uninstall).
+ */
+function zignites_chat_seq_unschedule_cron() {
+    $timestamp = wp_next_scheduled('zignites_chat_process_sequences');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'zignites_chat_process_sequences');
+    }
+}
+
+/**
+ * Compute the enrollment's state after sending its current step. Pure.
+ *
+ * The next step's delay is measured from $now_ts (this send time), so delays
+ * accumulate step over step. When there is no next step the enrollment is
+ * completed (next_run_at cleared).
+ *
+ * @param array  $sequence     Sanitized sequence.
+ * @param int    $current_step Index of the step just sent.
+ * @param int    $now_ts       Send timestamp (WP-local epoch).
+ * @return array{status:string, current_step:int, next_run_at:?string, last_step_at:string}
+ */
+function zignites_chat_seq_plan_advance($sequence, $current_step, $now_ts) {
+    $next   = (int) $current_step + 1;
+    $run_ts = zignites_chat_seq_next_run_at($sequence, $next, $now_ts);
+    $last   = zignites_chat_seq_format_mysql($now_ts);
+
+    if ($run_ts) {
+        return array(
+            'status'       => 'active',
+            'current_step' => $next,
+            'next_run_at'  => zignites_chat_seq_format_mysql($run_ts),
+            'last_step_at' => $last,
+        );
+    }
+    return array(
+        'status'       => 'completed',
+        'current_step' => $next,
+        'next_run_at'  => null,
+        'last_step_at' => $last,
+    );
+}
+
+/**
+ * Cron callback: send the due step for each active enrollment, then advance it.
+ *
+ * Chunked like the other bulk senders. Quiet hours skip the whole run (picked
+ * up next tick); the shared rate limiter stops the run mid-way (remaining rows
+ * stay due). Opt-out / missing-consent and removed/disabled sequences cancel
+ * the enrollment permanently rather than retrying.
+ *
+ * @return void
+ */
+function zignites_chat_seq_process_enrollments() {
+    if (function_exists('zignites_chat_is_pro_active') && !zignites_chat_is_pro_active()) {
+        return;
+    }
+    // Quiet hours: defer the entire run to a later tick (drip is marketing).
+    if (function_exists('zignites_chat_quiet_hours_active') && zignites_chat_quiet_hours_active()) {
+        return;
+    }
+
+    global $wpdb;
+    $table = zignites_chat_seq_enrollments_table_name();
+    $now   = current_time('mysql');
+    $chunk = max(1, min(100, (int) apply_filters('zignites_chat_seq_chunk_size', 30)));
+
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT id, sequence_id, phone, current_step, context FROM {$table}
+         WHERE status = 'active' AND next_run_at IS NOT NULL AND next_run_at <= %s
+         ORDER BY next_run_at ASC LIMIT %d",
+        $now,
+        $chunk
+    ));
+    if (!$rows) {
+        return;
+    }
+
+    foreach ($rows as $row) {
+        $sequence = zignites_chat_seq_find($row->sequence_id);
+
+        // Sequence removed or switched off mid-flight → stop this enrollment.
+        if (!is_array($sequence) || $sequence['enabled'] !== 'yes') {
+            zignites_chat_seq_cancel_enrollment((int) $row->id);
+            continue;
+        }
+
+        // Marketing gate: opted out, or consent required and missing → permanent.
+        if (function_exists('zignites_chat_marketing_blocked') && zignites_chat_marketing_blocked($row->phone)) {
+            zignites_chat_seq_cancel_enrollment((int) $row->id);
+            continue;
+        }
+
+        $step = zignites_chat_seq_get_step($sequence, (int) $row->current_step);
+        if ($step === null) {
+            // current_step fell out of range (sequence shrank) → done.
+            zignites_chat_seq_complete_enrollment((int) $row->id);
+            continue;
+        }
+
+        // Shared per-minute budget: stop the run when exhausted; the rows left
+        // stay due and the next tick resumes. Checked before the send so a
+        // saturated window doesn't advance anyone.
+        if (function_exists('zignites_chat_outbound_rate_acquire') && !zignites_chat_outbound_rate_acquire()) {
+            break;
+        }
+
+        $context = json_decode((string) $row->context, true);
+        if (!is_array($context)) {
+            $context = array();
+        }
+        $message = zignites_chat_seq_render_message($step['message'], $context);
+
+        if (trim($message) !== '') {
+            zignites_chat_send_whatsapp_message($row->phone, $message, false, array(
+                'type'        => 'sequence',
+                'sequence_id' => $sequence['id'],
+                'step'        => (int) $row->current_step,
+            ));
+        }
+
+        // Fire-and-forget advance (mirrors back-in-stock / status sends): the
+        // analytics log records delivery state; we always move the step on.
+        $plan = zignites_chat_seq_plan_advance($sequence, (int) $row->current_step, current_time('timestamp'));
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $wpdb->update(
+            $table,
+            array(
+                'status'       => $plan['status'],
+                'current_step' => $plan['current_step'],
+                'next_run_at'  => $plan['next_run_at'],
+                'last_step_at' => $plan['last_step_at'],
+            ),
+            array('id' => (int) $row->id),
+            array('%s', '%d', '%s', '%s'),
+            array('%d')
+        );
+    }
+}
+
+/**
+ * Mark an enrollment cancelled (permanent stop, no more sends).
+ *
+ * @param int $id
+ * @return void
+ */
+function zignites_chat_seq_cancel_enrollment($id) {
+    global $wpdb;
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $wpdb->update(
+        zignites_chat_seq_enrollments_table_name(),
+        array('status' => 'cancelled', 'next_run_at' => null),
+        array('id' => (int) $id),
+        array('%s', '%s'),
+        array('%d')
+    );
+}
+
+/**
+ * Mark an enrollment completed (reached the end of the sequence).
+ *
+ * @param int $id
+ * @return void
+ */
+function zignites_chat_seq_complete_enrollment($id) {
+    global $wpdb;
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $wpdb->update(
+        zignites_chat_seq_enrollments_table_name(),
+        array('status' => 'completed', 'next_run_at' => null),
+        array('id' => (int) $id),
+        array('%s', '%s'),
+        array('%d')
+    );
 }

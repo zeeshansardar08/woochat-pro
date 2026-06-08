@@ -147,6 +147,7 @@ $zignites_chat_cron_hooks = array(
 	'zignites_chat_send_review_request',
 	'zignites_chat_webhook_retry',
 	'zignites_chat_process_stock_alerts',
+	'zignites_chat_process_sequences',
 );
 foreach ($zignites_chat_cron_hooks as $zignites_chat_hook) {
 	wp_clear_scheduled_hook($zignites_chat_hook);
