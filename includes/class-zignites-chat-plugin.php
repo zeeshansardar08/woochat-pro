@@ -99,6 +99,7 @@ final class Plugin {
         require_once ZIGNITES_CHAT_PATH . 'includes/campaigns.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/back-in-stock.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/review-request.php';
+        require_once ZIGNITES_CHAT_PATH . 'includes/drip-sequences.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/inbox.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/inbox-capture.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/inbox-admin.php';
@@ -121,6 +122,8 @@ final class Plugin {
         zignites_chat_create_inbox_tables();
         require_once ZIGNITES_CHAT_PATH . 'includes/back-in-stock.php';
         zignites_chat_create_stock_subs_table();
+        require_once ZIGNITES_CHAT_PATH . 'includes/drip-sequences.php';
+        zignites_chat_create_sequence_enrollments_table();
         zignites_chat_schedule_cart_recovery_cron();
         zignites_chat_run_migrations();
     }

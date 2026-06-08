@@ -109,6 +109,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_inbox_canned_replies',
     'zignites_chat_inbox_notify_enabled',
     'zignites_chat_inbox_notify_email',
+    'zignites_chat_sequences',
 ];
 
 foreach ($zignites_chat_option_keys as $zignites_chat_key) {
@@ -128,6 +129,7 @@ $zignites_chat_tables = array(
 	$wpdb->prefix . 'zignites_chat_conversations',
 	$wpdb->prefix . 'zignites_chat_messages',
 	$wpdb->prefix . 'zignites_chat_stock_subs',
+	$wpdb->prefix . 'zignites_chat_sequence_enrollments',
 );
 foreach ( $zignites_chat_tables as $zignites_chat_table ) {
 	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- One-time uninstall cleanup; table name is built from $wpdb->prefix, no user input.
