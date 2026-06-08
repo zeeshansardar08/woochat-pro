@@ -84,4 +84,37 @@ final class DripSequencesTest extends TestCase
     {
         $this->assertSame([], \zignites_chat_seq_sanitize_sequences('nope'));
     }
+
+    public function test_format_mysql_is_utc_deterministic(): void
+    {
+        $this->assertSame('1970-01-01 00:00:00', \zignites_chat_seq_format_mysql(0));
+        $this->assertSame('1970-01-12 13:46:40', \zignites_chat_seq_format_mysql(1000000));
+    }
+
+    public function test_build_enrollment_row_schedules_first_step(): void
+    {
+        $seq = [
+            'id'    => 'welcome',
+            'steps' => [['delay_value' => 2, 'delay_unit' => 'days', 'message' => 'hi']],
+        ];
+        $base = 1000000;
+        $row  = \zignites_chat_seq_build_enrollment_row($seq, '15551234567', $base, ['{name}' => 'Ana']);
+
+        $this->assertSame('welcome', $row['sequence_id']);
+        $this->assertSame('15551234567', $row['phone']);
+        $this->assertSame('active', $row['status']);
+        $this->assertSame(0, $row['current_step']);
+        $this->assertNull($row['last_step_at']);
+        $this->assertSame(\zignites_chat_seq_format_mysql($base), $row['enrolled_at']);
+        $this->assertSame(\zignites_chat_seq_format_mysql($base + 2 * DAY_IN_SECONDS), $row['next_run_at']);
+        $this->assertSame('{"{name}":"Ana"}', $row['context']);
+    }
+
+    public function test_build_enrollment_row_zero_delay_runs_at_enroll(): void
+    {
+        $seq = ['id' => 's', 'steps' => [['delay_value' => 0, 'delay_unit' => 'minutes', 'message' => 'x']]];
+        $row = \zignites_chat_seq_build_enrollment_row($seq, '123', 555, []);
+        $this->assertSame($row['enrolled_at'], $row['next_run_at']);
+        $this->assertSame('[]', $row['context']);
+    }
 }

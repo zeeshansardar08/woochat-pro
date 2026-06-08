@@ -124,6 +124,16 @@ function zignites_chat_record_optin($phone, $source = 'checkout') {
     if (function_exists('zignites_chat_dispatch_webhook')) {
         zignites_chat_dispatch_webhook('customer.opted_in', ['phone' => $phone, 'source' => $source]);
     }
+
+    /**
+     * Fires after a phone gives explicit WhatsApp consent. Decoupled entry
+     * point for opt-in-triggered automations (e.g. drip welcome sequences).
+     *
+     * @param string $phone  Normalized phone (digits only).
+     * @param string $source Capture source.
+     */
+    do_action('zignites_chat_customer_opted_in', $phone, $source);
+
     return true;
 }
 

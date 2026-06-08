@@ -536,8 +536,18 @@ Build on the merged two-way inbox (P1):
         cumulative per-step offsets, `render_message`, `sanitize_step`).
         No enrollment/cron/UI yet — mirrors inbox I1. 8 unit tests; 244 pass,
         PHPCS green.
-  - [ ] S2 — Enrollment + trigger wiring (enroll on order_completed / optin;
-        idempotent upsert into the table; respects Pro + per-sequence enable).
+  - [x] S2 — Enrollment + trigger wiring, on `feat/pro-drip-enrollment`.
+        Added a `context` column (migration v10) holding the placeholder values
+        captured when the trigger fires. `zignites_chat_seq_enroll()` is
+        idempotent (UNIQUE sequence_id+phone, existence check) and Pro-gated;
+        `enroll_all_for_trigger()` fans a phone into every active sequence for a
+        trigger. Two entry points: `woocommerce_order_status_completed` (captures
+        {name}/{order_id}/{total}/{currency_symbol}/{site}) and a new
+        `zignites_chat_customer_opted_in` action fired from
+        `zignites_chat_record_optin()` ({name}/{site}). Pure tested helpers
+        `seq_format_mysql` + `seq_build_enrollment_row` (schedules step 0 at
+        enroll + delay, serializes context). Gating stays at send time (S3).
+        3 new unit tests; 247 pass, PHPCS green.
   - [ ] S3 — Cron processor + sender: walk due enrollments, send the step via
         the dispatcher (opt-out/consent/quiet-hours/rate-limit gates), advance
         `current_step`/`next_run_at`, complete at the end. Chunked like the
@@ -611,9 +621,9 @@ Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (all merged into
 `pro`). Remaining quick win: **Q5 sender-health**.
 
 **Tier 3 — T3.1 drip & automation sequences IN PROGRESS** (incremental PRs).
-**S1 engine foundation DONE** on `feat/pro-drip-sequences` (awaiting PR). Next:
-S2 enrollment + trigger wiring → S3 cron sender → S4 admin UI → S5 scan-based
-triggers. See PHASE 9 → Tier 3 for the increment breakdown.
+**S1 (engine foundation) + S2 (enrollment + triggers) DONE** (S1 merged into
+`pro`; S2 on `feat/pro-drip-enrollment` awaiting PR). Next: S3 cron sender →
+S4 admin UI → S5 scan-based triggers. See PHASE 9 → Tier 3 for the breakdown.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —
