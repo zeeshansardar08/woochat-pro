@@ -571,8 +571,20 @@ Build on the merged two-way inbox (P1):
         the trigger dropdown reveals that trigger's placeholders. Upsell card
         added. Pure tested helper `seq_shape_counts` + a grouped-count query
         `seq_enrollment_counts`. 2 new unit tests; 251 pass, PHPCS + JS clean.
-  - [ ] S5 — Scan-based triggers: win-back (no order in N days) + browse-abandon
-        (viewed product, no order), each a scheduled scan that enrolls matches.
+  - [x] S5 — Win-back scan, on `feat/pro-drip-scan-triggers`. A daily cron
+        (`zignites_chat_seq_daily_scan`, unscheduled on deactivate, cleared on
+        uninstall) enrolls quiet customers into win_back sequences. To stay
+        bounded it scans only the one-day order slice that falls exactly N days
+        back (N = `zignites_chat_seq_winback_days`, default 60, set on the
+        Sequences page) and skips anyone who has ordered since (HPOS-safe
+        last-9-digits phone match, verified). Context {name}/{site}/{days_inactive};
+        enrollment idempotency prevents repeats. Pure tested helper
+        `seq_winback_window`. 2 new unit tests; 253 pass, PHPCS green.
+  - [ ] S6 — Browse-abandon scan (split out of S5, decision 2026-06-08): track
+        product views for logged-in customers who have a billing phone on file,
+        and a scan enrolls those who viewed but didn't buy within a window into
+        browse_abandon sequences ({product}/{product_url}). Guests aren't
+        targeted (no phone/consent) — documented limitation. Closes T3.1.
 
 ### Quick wins (reuse existing plumbing)
 - [x] Q1 — Back-in-stock alerts — done on `feat/pro-back-in-stock`.
@@ -637,12 +649,12 @@ Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (all merged into
 `pro`). Remaining quick win: **Q5 sender-health**.
 
 **Tier 3 — T3.1 drip & automation sequences IN PROGRESS** (incremental PRs).
-**S1–S4 DONE** (S1/S2/S3 merged into `pro`; S4 admin UI on
-`feat/pro-drip-admin-ui` awaiting PR). Drip sequences are now fully usable from
-the admin — create/edit sequences with trigger + delay/message steps, enroll on
-order-completed / opt-in, walk + send on the 5-minute cron with all marketing
-gates. Only **S5 (scan-based win-back + browse-abandon triggers)** remains to
-finish T3.1. See PHASE 9 → Tier 3 for the breakdown.
+**S1–S5 DONE** (S1–S4 merged into `pro`; S5 win-back scan on
+`feat/pro-drip-scan-triggers` awaiting PR). Drip sequences are fully usable —
+admin CRUD, order-completed / opt-in / win-back triggers, the 5-minute sender
+with all marketing gates. Only **S6 (browse-abandon scan)** remains to close
+T3.1; it was split out of S5 (2026-06-08) because browse-abandon can only target
+logged-in customers with a phone on file. See PHASE 9 → Tier 3.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

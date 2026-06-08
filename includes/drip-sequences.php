@@ -23,8 +23,12 @@
  *     marketing gates (quiet hours skip the run, opt-out/consent cancel the
  *     enrollment, the shared rate limiter stops the run) — then advances the
  *     step or completes the enrollment.
+ *   - S4 (admin UI): the "Sequences" settings page (CRUD over the option) +
+ *     per-sequence enrollment counts.
+ *   - S5 (win-back scan): a daily scan that enrolls customers who have gone
+ *     quiet (most recent order N days back) into win_back sequences.
  *
- * The admin CRUD UI lands in a later increment.
+ * Browse-abandon scanning is the remaining follow-up (S6).
  *
  * @package Zignites_Chat
  */
@@ -785,4 +789,160 @@ function zignites_chat_seq_enrollment_counts() {
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
     $rows = $wpdb->get_results("SELECT sequence_id, status, COUNT(*) AS c FROM {$table} GROUP BY sequence_id, status");
     return zignites_chat_seq_shape_counts($rows);
+}
+
+/* -------------------------------------------------------------------------
+ * Win-back scan trigger (S5)
+ *
+ * A daily scan enrolls customers who have gone quiet into win_back sequences.
+ * To stay bounded it only looks at the one-day order slice that falls exactly
+ * N days back (N = the configured inactivity threshold): a customer whose most
+ * recent order sits in that slice "went quiet" today, so they enroll today.
+ * Enrollment idempotency keeps a repeat from re-enrolling them.
+ * ----------------------------------------------------------------------- */
+
+add_action('init', 'zignites_chat_seq_schedule_scan_cron');
+add_action('zignites_chat_seq_daily_scan', 'zignites_chat_seq_run_winback_scan');
+
+/**
+ * Ensure the daily scan event is scheduled.
+ */
+function zignites_chat_seq_schedule_scan_cron() {
+    if (!wp_next_scheduled('zignites_chat_seq_daily_scan')) {
+        wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', 'zignites_chat_seq_daily_scan');
+    }
+}
+
+/**
+ * Clear the daily scan event (deactivation / uninstall).
+ */
+function zignites_chat_seq_unschedule_scan_cron() {
+    $timestamp = wp_next_scheduled('zignites_chat_seq_daily_scan');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'zignites_chat_seq_daily_scan');
+    }
+}
+
+/**
+ * Compute the win-back order slice: the one-day window that ends N days before
+ * $now_ts and opens N+1 days before. Pure.
+ *
+ * @param int $now_ts
+ * @param int $days Inactivity threshold (clamped to >= 1).
+ * @return array{after:int, before:int} Unix timestamps bounding the slice.
+ */
+function zignites_chat_seq_winback_window($now_ts, $days) {
+    $days = max(1, (int) $days);
+    return array(
+        'after'  => (int) $now_ts - ($days + 1) * DAY_IN_SECONDS,
+        'before' => (int) $now_ts - $days * DAY_IN_SECONDS,
+    );
+}
+
+/**
+ * Whether a phone has any completed/processing order placed after $since_ts.
+ * Used to drop customers who have actually come back (so they aren't won back).
+ *
+ * @param string $phone
+ * @param int    $since_ts
+ * @return bool
+ */
+function zignites_chat_seq_has_order_since($phone, $since_ts) {
+    if (!function_exists('wc_get_orders')) {
+        return false;
+    }
+    $digits = zignites_chat_normalize_phone($phone);
+    if ($digits === '') {
+        return false;
+    }
+    $suffix = substr($digits, -9);
+
+    $orders = wc_get_orders(array(
+        'limit'        => 5,
+        'return'       => 'objects',
+        'status'       => array('wc-completed', 'wc-processing'),
+        'date_created' => '>' . (int) $since_ts,
+        'meta_query'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+            array(
+                'key'     => '_billing_phone',
+                'value'   => $suffix,
+                'compare' => 'LIKE',
+            ),
+        ),
+    ));
+    if (empty($orders) || !is_array($orders)) {
+        return false;
+    }
+    foreach ($orders as $order) {
+        if (!is_object($order)) {
+            continue;
+        }
+        // Confirm the last-digits LIKE wasn't a coincidental collision.
+        if (!function_exists('zignites_chat_cod_phone_matches')
+            || zignites_chat_cod_phone_matches($digits, $order->get_billing_phone())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Daily win-back scan: enroll customers whose most recent order falls in the
+ * N-days-back slice into every active win_back sequence.
+ *
+ * @return void
+ */
+function zignites_chat_seq_run_winback_scan() {
+    if (function_exists('zignites_chat_is_pro_active') && !zignites_chat_is_pro_active()) {
+        return;
+    }
+    $sequences = zignites_chat_seq_active_for_trigger('win_back');
+    if (empty($sequences) || !function_exists('wc_get_orders')) {
+        return;
+    }
+
+    $days   = max(1, (int) get_option('zignites_chat_seq_winback_days', 60));
+    $window = zignites_chat_seq_winback_window(current_time('timestamp'), $days);
+    $limit  = max(1, (int) apply_filters('zignites_chat_seq_winback_scan_limit', 300));
+
+    $orders = wc_get_orders(array(
+        'limit'        => $limit,
+        'orderby'      => 'date',
+        'order'        => 'DESC',
+        'return'       => 'objects',
+        'status'       => array('wc-completed', 'wc-processing'),
+        'date_created' => $window['after'] . '...' . $window['before'],
+    ));
+    if (empty($orders) || !is_array($orders)) {
+        return;
+    }
+
+    $site = function_exists('get_bloginfo') ? get_bloginfo('name') : '';
+    $seen = array();
+
+    foreach ($orders as $order) {
+        if (!is_object($order)) {
+            continue;
+        }
+        $phone  = $order->get_billing_phone();
+        $digits = zignites_chat_normalize_phone($phone);
+        if ($digits === '' || isset($seen[$digits])) {
+            continue;
+        }
+        $seen[$digits] = true;
+
+        // Skip anyone who ordered again after the slice — they're active.
+        if (zignites_chat_seq_has_order_since($digits, $window['before'])) {
+            continue;
+        }
+
+        $context = array(
+            '{name}'          => $order->get_billing_first_name(),
+            '{site}'          => $site,
+            '{days_inactive}' => $days,
+        );
+        foreach ($sequences as $sequence) {
+            zignites_chat_seq_enroll($sequence, $phone, $context);
+        }
+    }
 }
