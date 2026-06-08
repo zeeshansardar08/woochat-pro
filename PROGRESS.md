@@ -558,8 +558,20 @@ Build on the merged two-way inbox (P1):
       overnight), `quiet_minutes_until_end`, `quiet_sanitize_time`. Pro "Quiet
       Hours" tab; settings cleaned on uninstall. 6 unit tests; 220 pass, PHPCS
       + lint green.
-- [ ] Q4 — Template sync from the Meta Graph API (pull approved templates
-      instead of manual mapping in `wa-templates.php`).
+- [x] Q4 — Template sync from the Meta Graph API — done on
+      `feat/pro-template-sync`. `includes/wa-template-sync.php`: a "Sync from
+      Meta" card on the WA Templates page pulls approved templates straight from
+      `GET /{waba_id}/message_templates` (paginated, capped) using the saved
+      Cloud token + a new `zignites_chat_cloud_waba_id` setting. Synced
+      templates are cached (`zignites_chat_wa_synced_templates` / `_synced_at`)
+      and surfaced two ways: a reference table (name · language · status ·
+      category · variable count) and a `<datalist>` of approved names that
+      autocompletes the per-type "Template name" inputs — no more typing exact
+      names by hand. AJAX `zignites_chat_sync_templates` (cap + nonce + Pro
+      gated); pure tested helpers `wa_template_endpoint`,
+      `wa_count_body_params` (highest {{n}} in the BODY component),
+      `wa_sync_normalize_templates`. Options cleaned on uninstall. 8 unit tests;
+      236 pass, PHPCS + JS clean.
 - [ ] Q5 — Sender health panel: WABA quality rating + messaging tier on the
       dashboard.
 
@@ -570,11 +582,11 @@ Build on the merged two-way inbox (P1):
 are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
-**Tier 2 COMPLETE.** Quick wins **Q3 (quiet hours), Q1 (back-in-stock) +
-Q2 (review/NPS request) DONE** (Q1 merged into `pro`; Q2 on
-`feat/pro-review-request` awaiting PR). Remaining quick wins: **Q4 Meta template
-sync**, **Q5 sender-health**. Plus the big **Tier 3 — T3.1 drip & automation
-sequences**. Suggested next: Q4 / Q5 or start T3.1 — see PHASE 9.
+**Tier 2 COMPLETE.** Quick wins **Q3 (quiet hours), Q1 (back-in-stock),
+Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (Q1/Q2 merged into
+`pro`; Q4 on `feat/pro-template-sync` awaiting PR). Remaining quick win:
+**Q5 sender-health**. Plus the big **Tier 3 — T3.1 drip & automation
+sequences**. Suggested next: Q5 or start T3.1 — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

@@ -117,6 +117,8 @@ function zignites_chat_register_settings() {
         'sanitize_callback' => 'zignites_chat_sanitize_wa_templates',
         'default'           => [],
     ]);
+    // WABA ID drives the "Sync from Meta" pull on the same page.
+    register_setting('zignites_chat_wa_templates_group', 'zignites_chat_cloud_waba_id', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 
     // License.
     register_setting('zignites_chat_license_group', 'zignites_chat_license_key', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
@@ -252,6 +254,19 @@ function zignites_chat_enqueue_admin_scripts($hook) {
                 'completed'    => __('Completed', 'zignites-chat'),
                 'running'      => __('Running', 'zignites-chat'),
                 'queued'       => __('Queued', 'zignites-chat'),
+            ],
+        ]);
+    }
+
+    // WhatsApp Templates page — "Sync from Meta" button.
+    if (strpos($hook, 'zignites-chat-wa-templates') !== false) {
+        wp_enqueue_script('zignites-chat-wa-template-sync-js', ZIGNITES_CHAT_URL . 'assets/js/wa-template-sync.js', [], ZIGNITES_CHAT_VERSION, true);
+        wp_localize_script('zignites-chat-wa-template-sync-js', 'zignitesChatTemplateSync', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('zignites_chat_sync_templates'),
+            'i18n'    => [
+                'syncing' => __('Syncing…', 'zignites-chat'),
+                'error'   => __('Could not sync templates. Please try again.', 'zignites-chat'),
             ],
         ]);
     }
