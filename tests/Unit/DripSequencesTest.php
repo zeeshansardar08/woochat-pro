@@ -168,4 +168,22 @@ final class DripSequencesTest extends TestCase
         $this->assertSame([], \zignites_chat_seq_shape_counts('nope'));
         $this->assertSame([], \zignites_chat_seq_shape_counts([['status' => 'active', 'c' => 1]])); // no sequence_id
     }
+
+    public function test_winback_window_brackets_the_slice(): void
+    {
+        $now = 100 * DAY_IN_SECONDS;
+        $win = \zignites_chat_seq_winback_window($now, 60);
+        $this->assertSame($now - 61 * DAY_IN_SECONDS, $win['after']);
+        $this->assertSame($now - 60 * DAY_IN_SECONDS, $win['before']);
+        // The slice is always exactly one day wide.
+        $this->assertSame(DAY_IN_SECONDS, $win['before'] - $win['after']);
+    }
+
+    public function test_winback_window_clamps_days(): void
+    {
+        $now = 1000000;
+        $win = \zignites_chat_seq_winback_window($now, 0); // clamps to 1
+        $this->assertSame($now - 2 * DAY_IN_SECONDS, $win['after']);
+        $this->assertSame($now - 1 * DAY_IN_SECONDS, $win['before']);
+    }
 }

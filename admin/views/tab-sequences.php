@@ -134,6 +134,16 @@ $zignites_chat_render_card = function ($si, $seq, $is_new, $counts) use ($zignit
     <?php esc_html_e('Build multi-step WhatsApp journeys that send themselves. Pick a trigger, then add steps — each step waits a delay and sends a message. Customers are enrolled when the trigger fires and walk the steps automatically. Marketing rules apply: opt-outs and missing consent stop a sequence, and quiet hours / rate limits are respected.', 'zignites-chat'); ?>
 </p>
 
+<table class="form-table" role="presentation">
+    <tr>
+        <th scope="row"><label for="zignites_chat_seq_winback_days"><?php esc_html_e('Win-back inactivity (days)', 'zignites-chat'); ?></label></th>
+        <td>
+            <input type="number" min="1" step="1" class="small-text" id="zignites_chat_seq_winback_days" name="zignites_chat_seq_winback_days" value="<?php echo esc_attr((string) max(1, (int) get_option('zignites_chat_seq_winback_days', 60))); ?>" />
+            <p class="description"><?php esc_html_e('A daily scan enrolls customers into your “win-back” sequences once their most recent order is this many days old. Only used by sequences with the win-back trigger.', 'zignites-chat'); ?></p>
+        </td>
+    </tr>
+</table>
+
 <div id="zignites-chat-sequences-list">
     <?php foreach ($zignites_chat_seq_list as $zignites_chat_si => $zignites_chat_seq) {
         $zignites_chat_render_card($zignites_chat_si, $zignites_chat_seq, false, $zignites_chat_seq_counts);

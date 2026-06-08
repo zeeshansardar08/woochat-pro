@@ -110,6 +110,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_inbox_notify_enabled',
     'zignites_chat_inbox_notify_email',
     'zignites_chat_sequences',
+    'zignites_chat_seq_winback_days',
 ];
 
 foreach ($zignites_chat_option_keys as $zignites_chat_key) {
@@ -148,6 +149,7 @@ $zignites_chat_cron_hooks = array(
 	'zignites_chat_webhook_retry',
 	'zignites_chat_process_stock_alerts',
 	'zignites_chat_process_sequences',
+	'zignites_chat_seq_daily_scan',
 );
 foreach ($zignites_chat_cron_hooks as $zignites_chat_hook) {
 	wp_clear_scheduled_hook($zignites_chat_hook);
