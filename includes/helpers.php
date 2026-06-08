@@ -120,6 +120,7 @@ function zignites_chat_get_migrations() {
         7 => 'zignites_chat_migration_v7_inbox_notes',
         8 => 'zignites_chat_migration_v8_stock_subs',
         9 => 'zignites_chat_migration_v9_sequence_enrollments',
+        10 => 'zignites_chat_migration_v10_sequence_context',
     ];
 }
 
@@ -238,6 +239,17 @@ function zignites_chat_migration_v8_stock_subs() {
  * only loaded once boot_modules() runs).
  */
 function zignites_chat_migration_v9_sequence_enrollments() {
+    if (function_exists('zignites_chat_create_sequence_enrollments_table')) {
+        zignites_chat_create_sequence_enrollments_table();
+    }
+}
+
+/**
+ * v10: add the enrollments `context` column (placeholder values captured at
+ * trigger time). Idempotent dbDelta re-run of the table creator, same guard
+ * shape as the other table migrations.
+ */
+function zignites_chat_migration_v10_sequence_context() {
     if (function_exists('zignites_chat_create_sequence_enrollments_table')) {
         zignites_chat_create_sequence_enrollments_table();
     }

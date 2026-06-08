@@ -9,15 +9,17 @@
  * the customer is *enrolled*; a background processor then walks the steps,
  * sending each after its delay elapses.
  *
- * This file is the pure data layer only — mirroring inbox I1:
- *   - the enrollments table (idempotent dbDelta) + migration v9,
- *   - sequence-definition storage (option `zignites_chat_sequences`) with a
- *     sanitizer + normalizing getters,
- *   - pure, unit-tested helpers for delay maths, step lookup, scheduling and
- *     message rendering.
+ * Increments so far:
+ *   - S1 (engine foundation): the enrollments table (idempotent dbDelta) +
+ *     migration v9, sequence-definition storage (option `zignites_chat_sequences`)
+ *     with a sanitizer + normalizing getters, and pure unit-tested helpers for
+ *     delay maths, step lookup, scheduling and message rendering.
+ *   - S2 (enrollment + triggers): a `context` column (migration v10) holding
+ *     the placeholder values captured when the trigger fires, idempotent
+ *     `zignites_chat_seq_enroll()`, and the order-completed / opt-in entry
+ *     points that enroll a phone into every active sequence for that trigger.
  *
- * Enrollment + trigger wiring, the cron sender, and the admin CRUD UI land in
- * later increments on top of these primitives.
+ * The cron sender and the admin CRUD UI land in later increments.
  *
  * @package Zignites_Chat
  */
@@ -61,6 +63,7 @@ function zignites_chat_create_sequence_enrollments_table() {
         next_run_at DATETIME NULL,
         enrolled_at DATETIME NOT NULL,
         last_step_at DATETIME NULL,
+        context LONGTEXT NULL,
         PRIMARY KEY  (id),
         UNIQUE KEY sequence_phone (sequence_id, phone),
         KEY status_next (status, next_run_at)
@@ -334,4 +337,195 @@ function zignites_chat_seq_active_for_trigger($trigger) {
         }
     }
     return $out;
+}
+
+/* -------------------------------------------------------------------------
+ * Enrollment
+ * ----------------------------------------------------------------------- */
+
+/**
+ * Format a Unix timestamp as a MySQL datetime string. Pure.
+ *
+ * Used for the table's DATETIME columns. The caller passes a WP-local
+ * timestamp (current_time('timestamp')) so the stored value is comparable to
+ * current_time('mysql') without a timezone round-trip.
+ *
+ * @param int $ts
+ * @return string
+ */
+function zignites_chat_seq_format_mysql($ts) {
+    return gmdate('Y-m-d H:i:s', (int) $ts);
+}
+
+/**
+ * Build the row to insert for a new enrollment. Pure (no DB).
+ *
+ * Step 0's delay is measured from the enrollment time, so the first send is
+ * scheduled at enroll + step[0] delay. A step-0 delay of 0 schedules it for
+ * the next processor tick.
+ *
+ * @param array  $sequence Sanitized sequence (must have id + steps).
+ * @param string $phone    Normalized phone.
+ * @param int    $now_ts   Enrollment timestamp (WP-local epoch).
+ * @param array  $context  Placeholder => value map captured at trigger time.
+ * @return array{sequence_id:string, phone:string, status:string, current_step:int, next_run_at:string, enrolled_at:string, last_step_at:null, context:string}
+ */
+function zignites_chat_seq_build_enrollment_row($sequence, $phone, $now_ts, $context = array()) {
+    $now_mysql = zignites_chat_seq_format_mysql($now_ts);
+    $run_ts    = zignites_chat_seq_next_run_at($sequence, 0, $now_ts);
+
+    return array(
+        'sequence_id'  => (string) ($sequence['id'] ?? ''),
+        'phone'        => (string) $phone,
+        'status'       => 'active',
+        'current_step' => 0,
+        'next_run_at'  => $run_ts ? zignites_chat_seq_format_mysql($run_ts) : $now_mysql,
+        'enrolled_at'  => $now_mysql,
+        'last_step_at' => null,
+        'context'      => wp_json_encode(is_array($context) ? $context : array()),
+    );
+}
+
+/**
+ * Whether a phone is already enrolled in a sequence (any status). Used to keep
+ * enrollment idempotent so a repeat trigger doesn't restart the sequence.
+ *
+ * @param string $sequence_id
+ * @param string $phone Normalized phone.
+ * @return bool
+ */
+function zignites_chat_seq_enrollment_exists($sequence_id, $phone) {
+    global $wpdb;
+    $table = zignites_chat_seq_enrollments_table_name();
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    return (bool) $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM {$table} WHERE sequence_id = %s AND phone = %s",
+        (string) $sequence_id,
+        (string) $phone
+    ));
+}
+
+/**
+ * Enroll a phone into a sequence. Idempotent: a number already enrolled in the
+ * same sequence is skipped. Gating (opt-out / consent / quiet hours / rate
+ * limit) is applied later at send time, not here.
+ *
+ * @param array|string $sequence Sanitized sequence array or its id.
+ * @param string       $phone    Phone in any format.
+ * @param array        $context  Placeholder => value map for later rendering.
+ * @return bool True when a new enrollment was created.
+ */
+function zignites_chat_seq_enroll($sequence, $phone, $context = array()) {
+    if (is_string($sequence)) {
+        $sequence = zignites_chat_seq_find($sequence);
+    }
+    if (!is_array($sequence) || empty($sequence['id']) || empty($sequence['steps'])) {
+        return false;
+    }
+    if (function_exists('zignites_chat_is_pro_active') && !zignites_chat_is_pro_active()) {
+        return false;
+    }
+
+    $phone = zignites_chat_normalize_phone($phone);
+    if ($phone === '') {
+        return false;
+    }
+    if (zignites_chat_seq_enrollment_exists($sequence['id'], $phone)) {
+        return false;
+    }
+
+    $row = zignites_chat_seq_build_enrollment_row($sequence, $phone, current_time('timestamp'), $context);
+
+    global $wpdb;
+    $table = zignites_chat_seq_enrollments_table_name();
+    // last_step_at is left to its NULL column default.
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $wpdb->insert(
+        $table,
+        array(
+            'sequence_id'  => $row['sequence_id'],
+            'phone'        => $row['phone'],
+            'status'       => $row['status'],
+            'current_step' => $row['current_step'],
+            'next_run_at'  => $row['next_run_at'],
+            'enrolled_at'  => $row['enrolled_at'],
+            'context'      => $row['context'],
+        ),
+        array('%s', '%s', '%s', '%d', '%s', '%s', '%s')
+    );
+
+    return (bool) $wpdb->insert_id;
+}
+
+/**
+ * Enroll a phone into every active sequence for a trigger, sharing one context.
+ *
+ * @param string $trigger
+ * @param string $phone
+ * @param array  $context
+ * @return void
+ */
+function zignites_chat_seq_enroll_all_for_trigger($trigger, $phone, $context = array()) {
+    if (function_exists('zignites_chat_is_pro_active') && !zignites_chat_is_pro_active()) {
+        return;
+    }
+    foreach (zignites_chat_seq_active_for_trigger($trigger) as $sequence) {
+        zignites_chat_seq_enroll($sequence, $phone, $context);
+    }
+}
+
+/* -------------------------------------------------------------------------
+ * Triggers
+ * ----------------------------------------------------------------------- */
+
+add_action('woocommerce_order_status_completed', 'zignites_chat_seq_enroll_on_order_completed', 20, 1);
+add_action('zignites_chat_customer_opted_in', 'zignites_chat_seq_enroll_on_optin', 10, 2);
+
+/**
+ * order_completed trigger — enroll the order's billing phone into every active
+ * post-purchase sequence, capturing order placeholders for later rendering.
+ *
+ * @param int $order_id
+ * @return void
+ */
+function zignites_chat_seq_enroll_on_order_completed($order_id) {
+    $sequences = zignites_chat_seq_active_for_trigger('order_completed');
+    if (empty($sequences)) {
+        return;
+    }
+    $order = function_exists('wc_get_order') ? wc_get_order($order_id) : null;
+    if (!$order) {
+        return;
+    }
+    $phone = $order->get_billing_phone();
+    if (!$phone) {
+        return;
+    }
+
+    $context = array(
+        '{name}'            => $order->get_billing_first_name(),
+        '{order_id}'        => $order->get_id(),
+        '{total}'           => $order->get_total(),
+        '{currency_symbol}' => function_exists('zignites_chat_currency_symbol_text') ? zignites_chat_currency_symbol_text() : '',
+        '{site}'            => function_exists('get_bloginfo') ? get_bloginfo('name') : '',
+    );
+
+    foreach ($sequences as $sequence) {
+        zignites_chat_seq_enroll($sequence, $phone, $context);
+    }
+}
+
+/**
+ * optin trigger — enroll a freshly-consented phone into every active welcome
+ * sequence. Fired by zignites_chat_record_optin().
+ *
+ * @param string $phone
+ * @param string $source
+ * @return void
+ */
+function zignites_chat_seq_enroll_on_optin($phone, $source = '') {
+    zignites_chat_seq_enroll_all_for_trigger('optin', $phone, array(
+        '{name}' => '',
+        '{site}' => function_exists('get_bloginfo') ? get_bloginfo('name') : '',
+    ));
 }
