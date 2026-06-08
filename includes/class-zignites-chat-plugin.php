@@ -140,6 +140,9 @@ final class Plugin {
         if (function_exists('zignites_chat_unschedule_campaign_promoter_cron')) {
             zignites_chat_unschedule_campaign_promoter_cron();
         }
+        if (function_exists('zignites_chat_seq_unschedule_cron')) {
+            zignites_chat_seq_unschedule_cron();
+        }
         wp_clear_scheduled_hook('zignites_chat_cleanup_analytics');
     }
 
