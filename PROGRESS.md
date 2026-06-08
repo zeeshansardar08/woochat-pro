@@ -520,9 +520,33 @@ Build on the merged two-way inbox (P1):
       doesn't wipe canned replies. 3 unit tests; 214 pass, PHPCS + lint green.
 
 ### Tier 3 — platform / automation
-- [ ] T3.1 — Drip & automation sequences (welcome, win-back, browse-abandon)
+- [🟡] T3.1 — Drip & automation sequences (welcome, win-back, browse-abandon)
       as multi-step, rule-based flows rather than discrete features. Biggest
-      build; the strategic differentiator.
+      build; the strategic differentiator. **Built in reviewable increments**
+      (decision 2026-06-08), one PR each off `pro`:
+  - [x] S1 — Engine foundation, on `feat/pro-drip-sequences`.
+        `includes/drip-sequences.php`: the enrollments table
+        (`{prefix}zignites_chat_sequence_enrollments`, migration v9 + activation
+        + uninstall drop); sequence-definition storage (option
+        `zignites_chat_sequences`) with a pure sanitizer + normalizing getters
+        (`get_sequences`/`find`/`active_for_trigger`); a trigger catalogue
+        (order_completed / optin / win_back / browse_abandon, each with its
+        placeholder set); and pure, unit-tested scheduling helpers
+        (`delay_to_seconds`, `step_count`, `get_step`, `next_run_at` with
+        cumulative per-step offsets, `render_message`, `sanitize_step`).
+        No enrollment/cron/UI yet — mirrors inbox I1. 8 unit tests; 244 pass,
+        PHPCS green.
+  - [ ] S2 — Enrollment + trigger wiring (enroll on order_completed / optin;
+        idempotent upsert into the table; respects Pro + per-sequence enable).
+  - [ ] S3 — Cron processor + sender: walk due enrollments, send the step via
+        the dispatcher (opt-out/consent/quiet-hours/rate-limit gates), advance
+        `current_step`/`next_run_at`, complete at the end. Chunked like the
+        other bulk senders.
+  - [ ] S4 — Admin CRUD UI: a Pro "Sequences" submenu to create/edit sequences
+        (trigger + ordered steps with delays + messages) and an enrollment
+        count per sequence.
+  - [ ] S5 — Scan-based triggers: win-back (no order in N days) + browse-abandon
+        (viewed product, no order), each a scheduled scan that enrolls matches.
 
 ### Quick wins (reuse existing plumbing)
 - [x] Q1 — Back-in-stock alerts — done on `feat/pro-back-in-stock`.
@@ -583,10 +607,13 @@ are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
 **Tier 2 COMPLETE.** Quick wins **Q3 (quiet hours), Q1 (back-in-stock),
-Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (Q1/Q2 merged into
-`pro`; Q4 on `feat/pro-template-sync` awaiting PR). Remaining quick win:
-**Q5 sender-health**. Plus the big **Tier 3 — T3.1 drip & automation
-sequences**. Suggested next: Q5 or start T3.1 — see PHASE 9.
+Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (all merged into
+`pro`). Remaining quick win: **Q5 sender-health**.
+
+**Tier 3 — T3.1 drip & automation sequences IN PROGRESS** (incremental PRs).
+**S1 engine foundation DONE** on `feat/pro-drip-sequences` (awaiting PR). Next:
+S2 enrollment + trigger wiring → S3 cron sender → S4 admin UI → S5 scan-based
+triggers. See PHASE 9 → Tier 3 for the increment breakdown.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

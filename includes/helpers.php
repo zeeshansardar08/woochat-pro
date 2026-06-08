@@ -119,6 +119,7 @@ function zignites_chat_get_migrations() {
         6 => 'zignites_chat_migration_v6_inbox_tables',
         7 => 'zignites_chat_migration_v7_inbox_notes',
         8 => 'zignites_chat_migration_v8_stock_subs',
+        9 => 'zignites_chat_migration_v9_sequence_enrollments',
     ];
 }
 
@@ -228,6 +229,17 @@ function zignites_chat_migration_v7_inbox_notes() {
 function zignites_chat_migration_v8_stock_subs() {
     if (function_exists('zignites_chat_create_stock_subs_table')) {
         zignites_chat_create_stock_subs_table();
+    }
+}
+
+/**
+ * v9: create the drip-sequence enrollments table. Idempotent dbDelta; same
+ * WC-state guard shape as the other table migrations (drip-sequences.php is
+ * only loaded once boot_modules() runs).
+ */
+function zignites_chat_migration_v9_sequence_enrollments() {
+    if (function_exists('zignites_chat_create_sequence_enrollments_table')) {
+        zignites_chat_create_sequence_enrollments_table();
     }
 }
 
