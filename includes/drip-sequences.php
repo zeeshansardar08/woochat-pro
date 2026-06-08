@@ -739,3 +739,50 @@ function zignites_chat_seq_complete_enrollment($id) {
         array('%d')
     );
 }
+
+/* -------------------------------------------------------------------------
+ * Enrollment counts (admin UI)
+ * ----------------------------------------------------------------------- */
+
+/**
+ * Shape grouped (sequence_id, status, count) rows into a per-sequence map. Pure.
+ *
+ * @param array $rows Rows with ->sequence_id, ->status, ->c (or array keys).
+ * @return array<string, array{active:int, completed:int, cancelled:int, total:int}>
+ */
+function zignites_chat_seq_shape_counts($rows) {
+    $out = array();
+    if (!is_array($rows)) {
+        return $out;
+    }
+    foreach ($rows as $row) {
+        $row    = (array) $row;
+        $id     = (string) ($row['sequence_id'] ?? '');
+        $status = (string) ($row['status'] ?? '');
+        $count  = (int) ($row['c'] ?? 0);
+        if ($id === '') {
+            continue;
+        }
+        if (!isset($out[$id])) {
+            $out[$id] = array('active' => 0, 'completed' => 0, 'cancelled' => 0, 'total' => 0);
+        }
+        if (isset($out[$id][$status])) {
+            $out[$id][$status] += $count;
+        }
+        $out[$id]['total'] += $count;
+    }
+    return $out;
+}
+
+/**
+ * Per-sequence enrollment counts by status, for the admin Sequences page.
+ *
+ * @return array<string, array{active:int, completed:int, cancelled:int, total:int}>
+ */
+function zignites_chat_seq_enrollment_counts() {
+    global $wpdb;
+    $table = zignites_chat_seq_enrollments_table_name();
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    $rows = $wpdb->get_results("SELECT sequence_id, status, COUNT(*) AS c FROM {$table} GROUP BY sequence_id, status");
+    return zignites_chat_seq_shape_counts($rows);
+}

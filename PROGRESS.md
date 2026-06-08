@@ -560,9 +560,17 @@ Build on the merged two-way inbox (P1):
         other senders. Pure tested helper `seq_plan_advance` (next step → active
         with new next_run_at, or completed). 2 new unit tests; 249 pass, PHPCS
         green.
-  - [ ] S4 — Admin CRUD UI: a Pro "Sequences" submenu to create/edit sequences
-        (trigger + ordered steps with delays + messages) and an enrollment
-        count per sequence.
+  - [x] S4 — Admin CRUD UI, on `feat/pro-drip-admin-ui`. A Pro "Sequences"
+        submenu (`tab-sequences.php` + `assets/js/sequences.js`): each sequence
+        is an editable card (id, name, enabled, trigger, ordered delay+message
+        steps); steps and whole sequences are added/removed client-side and the
+        `zignites_chat_sequences` option round-trips through the existing
+        sanitizer on save (registered in `zignites_chat_sequences_group`), so
+        blank/removed cards drop server-side. Existing cards show their live
+        enrollment counts (active/completed/cancelled) and a read-only id;
+        the trigger dropdown reveals that trigger's placeholders. Upsell card
+        added. Pure tested helper `seq_shape_counts` + a grouped-count query
+        `seq_enrollment_counts`. 2 new unit tests; 251 pass, PHPCS + JS clean.
   - [ ] S5 — Scan-based triggers: win-back (no order in N days) + browse-abandon
         (viewed product, no order), each a scheduled scan that enrolls matches.
 
@@ -629,11 +637,12 @@ Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (all merged into
 `pro`). Remaining quick win: **Q5 sender-health**.
 
 **Tier 3 — T3.1 drip & automation sequences IN PROGRESS** (incremental PRs).
-**S1 (engine foundation), S2 (enrollment + triggers) + S3 (cron sender) DONE**
-(S1/S2 merged into `pro`; S3 on `feat/pro-drip-sender` awaiting PR). At this
-point drip sequences are fully functional end-to-end — they just lack a UI, so
-sequences must be defined via the `zignites_chat_sequences` option/filter. Next:
-S4 admin UI → S5 scan-based triggers. See PHASE 9 → Tier 3 for the breakdown.
+**S1–S4 DONE** (S1/S2/S3 merged into `pro`; S4 admin UI on
+`feat/pro-drip-admin-ui` awaiting PR). Drip sequences are now fully usable from
+the admin — create/edit sequences with trigger + delay/message steps, enroll on
+order-completed / opt-in, walk + send on the 5-minute cron with all marketing
+gates. Only **S5 (scan-based win-back + browse-abandon triggers)** remains to
+finish T3.1. See PHASE 9 → Tier 3 for the breakdown.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —
