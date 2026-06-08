@@ -535,7 +535,20 @@ Build on the merged two-way inbox (P1):
       `stock_render_message`. Pro "Back in Stock" tab (enable, heading, message
       template). Table + options + cron cleaned on uninstall; table created on
       activation. 3 unit tests; 223 pass, PHPCS + lint + JS clean.
-- [ ] Q2 — Review / NPS request post-delivery.
+- [x] Q2 — Review / NPS request post-delivery — done on `feat/pro-review-request`.
+      `includes/review-request.php`: when an order enters the configured
+      delivered status (default `completed`) it schedules a single
+      `zignites_chat_send_review_request` cron event after N days (default 3),
+      then sends a WhatsApp review/NPS ask. Reuses the follow-up scheduler
+      plumbing — per-order meta dedup (`_zignites_chat_review_scheduled`),
+      marketing consent gate, quiet-hours + rate-limiter deferral, and a bounded
+      3-attempt retry (30/120-min backoff) with sent/failed terminal flags.
+      Placeholders {name}/{order_id}/{product}/{review_url}/{site}; {review_url}
+      points at any configurable review or NPS link. Pure tested helpers
+      `review_normalize_status`, `review_delay_seconds`, `review_render_message`.
+      Pro "Review Requests" tab (enable, trigger status, delay days, link,
+      message) + upsell card; settings + cron cleaned on uninstall. 5 unit
+      tests; 228 pass, PHPCS green.
 - [x] Q3 — Quiet hours — done on `feat/pro-quiet-hours`.
       `includes/quiet-hours.php`: a configurable nightly window (store timezone)
       that defers marketing sends — cart-recovery queue skips the run, campaign
@@ -557,11 +570,11 @@ Build on the merged two-way inbox (P1):
 are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
-**Tier 2 COMPLETE.** Quick wins **Q3 (quiet hours) + Q1 (back-in-stock) DONE**
-(Q1 on `feat/pro-back-in-stock`). Remaining quick wins: **Q2 review/NPS**, **Q4
-Meta template sync**, **Q5 sender-health**. Plus the big **Tier 3 — T3.1 drip &
-automation sequences**. Suggested next: Q2 (review/NPS request — reuses the
-follow-up scheduler) or start T3.1 — see PHASE 9.
+**Tier 2 COMPLETE.** Quick wins **Q3 (quiet hours), Q1 (back-in-stock) +
+Q2 (review/NPS request) DONE** (Q1 merged into `pro`; Q2 on
+`feat/pro-review-request` awaiting PR). Remaining quick wins: **Q4 Meta template
+sync**, **Q5 sender-health**. Plus the big **Tier 3 — T3.1 drip & automation
+sequences**. Suggested next: Q4 / Q5 or start T3.1 — see PHASE 9.
 
 The original Pro backlog is otherwise cleared into `pro`; the only blocked item
 is retiring `license-manager.php` (needs the Freemius credentials migration —

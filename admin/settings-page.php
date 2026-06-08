@@ -68,6 +68,13 @@ function zignites_chat_register_settings() {
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_icon', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
     register_setting('zignites_chat_chatbot_group', 'zignites_chat_chatbot_welcome', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 
+    // Review / NPS request.
+    register_setting('zignites_chat_review_group', 'zignites_chat_review_request_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
+    register_setting('zignites_chat_review_group', 'zignites_chat_review_trigger_status', ['sanitize_callback' => 'zignites_chat_sanitize_text', 'default' => 'completed']);
+    register_setting('zignites_chat_review_group', 'zignites_chat_review_delay_days', ['sanitize_callback' => 'zignites_chat_sanitize_int']);
+    register_setting('zignites_chat_review_group', 'zignites_chat_review_url', ['sanitize_callback' => 'zignites_chat_sanitize_url']);
+    register_setting('zignites_chat_review_group', 'zignites_chat_review_message', ['sanitize_callback' => 'zignites_chat_sanitize_textarea']);
+
     // Back-in-stock alerts.
     register_setting('zignites_chat_stock_group', 'zignites_chat_stock_alerts_enabled', ['sanitize_callback' => 'zignites_chat_sanitize_yes_no']);
     register_setting('zignites_chat_stock_group', 'zignites_chat_stock_alert_message', ['sanitize_callback' => 'zignites_chat_sanitize_textarea']);
@@ -145,6 +152,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-status',        __('Status Notifications', 'zignites-chat'), 'zignites_chat_render_status_page',     true],
         ['zignites-chat-quiet',         __('Quiet Hours', 'zignites-chat'),      'zignites_chat_render_quiet_page',         true],
         ['zignites-chat-stock',         __('Back in Stock', 'zignites-chat'),    'zignites_chat_render_stock_page',         true],
+        ['zignites-chat-review',        __('Review Requests', 'zignites-chat'),  'zignites_chat_render_review_page',        true],
         ['zignites-chat-campaigns',     __('Campaigns', 'zignites-chat'),        'zignites_chat_render_campaigns_page',     true],
         ['zignites-chat-inbox',         __('Inbox', 'zignites-chat'),            'zignites_chat_render_inbox_page',         true],
         ['zignites-chat-analytics',     __('Analytics', 'zignites-chat'),        'zignites_chat_render_analytics_page',     true],
@@ -436,6 +444,24 @@ function zignites_chat_render_stock_page() {
     zignites_chat_admin_page_close();
 }
 
+function zignites_chat_render_review_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'));
+    }
+    zignites_chat_admin_page_open(__('Review / NPS Request', 'zignites-chat'));
+    if (!zignites_chat_is_pro_active()) {
+        zignites_chat_render_pro_upgrade_notice('review');
+        zignites_chat_admin_page_close();
+        return;
+    }
+    echo '<form method="post" action="options.php">';
+    settings_fields('zignites_chat_review_group');
+    require ZIGNITES_CHAT_PATH . 'admin/views/tab-review.php';
+    submit_button();
+    echo '</form>';
+    zignites_chat_admin_page_close();
+}
+
 function zignites_chat_render_quiet_page() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'));
@@ -609,6 +635,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Automatic alert the moment a product is restocked', 'zignites-chat'),
                 __('Throttled, opt-out-aware, respects quiet hours', 'zignites-chat'),
                 __('Turn dead stock-outs into recovered revenue', 'zignites-chat'),
+            ],
+        ],
+        'review' => [
+            'title'       => __('Review / NPS Requests', 'zignites-chat'),
+            'description' => __('Turn happy customers into social proof. A few days after delivery, automatically ask for a review or NPS rating over WhatsApp.', 'zignites-chat'),
+            'benefits'    => [
+                __('Auto-ask for a review days after an order is delivered', 'zignites-chat'),
+                __('Point customers at any review or NPS link', 'zignites-chat'),
+                __('Respects opt-outs, consent and quiet hours', 'zignites-chat'),
+                __('Grow ratings without lifting a finger', 'zignites-chat'),
             ],
         ],
         'quiet' => [

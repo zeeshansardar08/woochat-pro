@@ -145,6 +145,7 @@ require_once __DIR__ . '/../includes/media.php';
 require_once __DIR__ . '/../includes/cart-recovery.php';
 require_once __DIR__ . '/../includes/campaigns.php';
 require_once __DIR__ . '/../includes/back-in-stock.php';
+require_once __DIR__ . '/../includes/review-request.php';
 require_once __DIR__ . '/../includes/inbox.php';
 require_once __DIR__ . '/../includes/inbox-capture.php';
 require_once __DIR__ . '/../includes/inbox-admin.php';
