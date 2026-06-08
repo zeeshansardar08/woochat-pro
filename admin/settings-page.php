@@ -120,6 +120,12 @@ function zignites_chat_register_settings() {
     // WABA ID drives the "Sync from Meta" pull on the same page.
     register_setting('zignites_chat_wa_templates_group', 'zignites_chat_cloud_waba_id', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 
+    // Drip & automation sequences (Pro).
+    register_setting('zignites_chat_sequences_group', 'zignites_chat_sequences', [
+        'sanitize_callback' => 'zignites_chat_seq_sanitize_sequences',
+        'default'           => [],
+    ]);
+
     // License.
     register_setting('zignites_chat_license_group', 'zignites_chat_license_key', ['sanitize_callback' => 'zignites_chat_sanitize_text']);
 }
@@ -155,6 +161,7 @@ function zignites_chat_register_admin_menus() {
         ['zignites-chat-quiet',         __('Quiet Hours', 'zignites-chat'),      'zignites_chat_render_quiet_page',         true],
         ['zignites-chat-stock',         __('Back in Stock', 'zignites-chat'),    'zignites_chat_render_stock_page',         true],
         ['zignites-chat-review',        __('Review Requests', 'zignites-chat'),  'zignites_chat_render_review_page',        true],
+        ['zignites-chat-sequences',     __('Sequences', 'zignites-chat'),        'zignites_chat_render_sequences_page',     true],
         ['zignites-chat-campaigns',     __('Campaigns', 'zignites-chat'),        'zignites_chat_render_campaigns_page',     true],
         ['zignites-chat-inbox',         __('Inbox', 'zignites-chat'),            'zignites_chat_render_inbox_page',         true],
         ['zignites-chat-analytics',     __('Analytics', 'zignites-chat'),        'zignites_chat_render_analytics_page',     true],
@@ -254,6 +261,16 @@ function zignites_chat_enqueue_admin_scripts($hook) {
                 'completed'    => __('Completed', 'zignites-chat'),
                 'running'      => __('Running', 'zignites-chat'),
                 'queued'       => __('Queued', 'zignites-chat'),
+            ],
+        ]);
+    }
+
+    // Sequences page — dynamic add/remove of sequences + steps.
+    if (strpos($hook, 'zignites-chat-sequences') !== false) {
+        wp_enqueue_script('zignites-chat-sequences-js', ZIGNITES_CHAT_URL . 'assets/js/sequences.js', [], ZIGNITES_CHAT_VERSION, true);
+        wp_localize_script('zignites-chat-sequences-js', 'zignitesChatSequences', [
+            'i18n' => [
+                'removeSequence' => __('Remove this sequence? It will be deleted when you save.', 'zignites-chat'),
             ],
         ]);
     }
@@ -477,6 +494,24 @@ function zignites_chat_render_review_page() {
     zignites_chat_admin_page_close();
 }
 
+function zignites_chat_render_sequences_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('Unauthorized', 'zignites-chat'));
+    }
+    zignites_chat_admin_page_open(__('Drip & Automation Sequences', 'zignites-chat'));
+    if (!zignites_chat_is_pro_active()) {
+        zignites_chat_render_pro_upgrade_notice('sequences');
+        zignites_chat_admin_page_close();
+        return;
+    }
+    echo '<form method="post" action="options.php">';
+    settings_fields('zignites_chat_sequences_group');
+    require ZIGNITES_CHAT_PATH . 'admin/views/tab-sequences.php';
+    submit_button();
+    echo '</form>';
+    zignites_chat_admin_page_close();
+}
+
 function zignites_chat_render_quiet_page() {
     if (!current_user_can('manage_options')) {
         wp_die(esc_html__('Unauthorized', 'zignites-chat'));
@@ -660,6 +695,16 @@ function zignites_chat_render_pro_upgrade_notice($feature = '') {
                 __('Point customers at any review or NPS link', 'zignites-chat'),
                 __('Respects opt-outs, consent and quiet hours', 'zignites-chat'),
                 __('Grow ratings without lifting a finger', 'zignites-chat'),
+            ],
+        ],
+        'sequences' => [
+            'title'       => __('Drip & Automation Sequences', 'zignites-chat'),
+            'description' => __('Build multi-step WhatsApp journeys — welcome series, win-back, browse abandonment — that send themselves on a schedule once a customer triggers them.', 'zignites-chat'),
+            'benefits'    => [
+                __('Multi-step flows with per-step delays and messages', 'zignites-chat'),
+                __('Triggered by order completed, opt-in and more', 'zignites-chat'),
+                __('Customers walk the steps automatically over days', 'zignites-chat'),
+                __('Respects opt-outs, consent, quiet hours and rate limits', 'zignites-chat'),
             ],
         ],
         'quiet' => [

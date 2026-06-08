@@ -146,4 +146,26 @@ final class DripSequencesTest extends TestCase
         $this->assertNull($plan['next_run_at']);
         $this->assertSame(\zignites_chat_seq_format_mysql($now), $plan['last_step_at']);
     }
+
+    public function test_shape_counts_buckets_by_sequence_and_status(): void
+    {
+        $rows = [
+            ['sequence_id' => 'welcome', 'status' => 'active', 'c' => 3],
+            ['sequence_id' => 'welcome', 'status' => 'completed', 'c' => 5],
+            ['sequence_id' => 'welcome', 'status' => 'cancelled', 'c' => 1],
+            ['sequence_id' => 'winback', 'status' => 'active', 'c' => 2],
+            ['sequence_id' => 'winback', 'status' => 'weird', 'c' => 4], // unknown status: only totalled
+        ];
+        $out = \zignites_chat_seq_shape_counts($rows);
+
+        $this->assertSame(['active' => 3, 'completed' => 5, 'cancelled' => 1, 'total' => 9], $out['welcome']);
+        $this->assertSame(2, $out['winback']['active']);
+        $this->assertSame(6, $out['winback']['total']);
+    }
+
+    public function test_shape_counts_handles_junk(): void
+    {
+        $this->assertSame([], \zignites_chat_seq_shape_counts('nope'));
+        $this->assertSame([], \zignites_chat_seq_shape_counts([['status' => 'active', 'c' => 1]])); // no sequence_id
+    }
 }
