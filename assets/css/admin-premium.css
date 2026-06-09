@@ -879,6 +879,88 @@ body.zignites-chat-dark-mode .zignites-chat-dashboard-teaser h3 {
   color: #2ec4b6 !important;
 }
 
+/* Campaigns + WhatsApp Templates build their content on light card surfaces
+   (.zignites-chat-card / .zignites-chat-campaign-create, with inline or CSS
+   light backgrounds). Unlike the rest of the wrap these were never flipped for
+   dark mode, so the surface stayed white while the headings, labels and
+   descriptions turned light — leaving them unreadable. Flip the surfaces dark
+   so the existing light text sits on a dark panel like every other page. */
+body.zignites-chat-dark-mode .zignites-chat-card,
+body.zignites-chat-dark-mode .zignites-chat-campaign-create {
+  background: #20272c !important;
+  border-color: #2f3439 !important;
+  box-shadow: none !important;
+}
+
+/* Data tables on those pages: dark surface, light text, subtle borders so the
+   rows stay legible (mirrors the agents-table treatment above). */
+body.zignites-chat-dark-mode .zignites-chat-card .widefat,
+body.zignites-chat-dark-mode .zignites-chat-card .widefat th,
+body.zignites-chat-dark-mode .zignites-chat-card .widefat td,
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list,
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list th,
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list td {
+  background: #23272b !important;
+  color: #d8dde2 !important;
+  border-color: #2f3439 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-card .widefat.striped tbody tr:nth-child(odd),
+body.zignites-chat-dark-mode .zignites-chat-card .widefat.striped tbody tr:nth-child(odd) td,
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list.striped tbody tr:nth-child(odd),
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list.striped tbody tr:nth-child(odd) td {
+  background: #1c2125 !important;
+}
+
+/* COD status cards (.zignites-chat-cod-stats) use light pastel backgrounds
+   inline to colour-code each status. In dark mode those stay light and the
+   text washes out, so flip them to a dark surface and keep the status cue as a
+   coloured left accent: awaiting (amber), confirmed (green), cancelled (red),
+   send failed (grey). */
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div {
+  background: #23272b !important;
+  color: #d8dde2 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div .description {
+  color: #b9c0c6 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div:nth-child(1) {
+  border-left: 3px solid #dba617 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div:nth-child(2) {
+  border-left: 3px solid #46b450 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div:nth-child(3) {
+  border-left: 3px solid #d63638 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div:nth-child(4) {
+  border-left: 3px solid #8c8f94 !important;
+}
+
+/* Analytics stat tiles, the opt-in stat, and the drip sequence cards all use
+   light card surfaces set inline with no dark override, so their (now light)
+   number + label text washes out in dark mode. Flip the surfaces dark like the
+   other cards/tiles. */
+body.zignites-chat-dark-mode .zignites-chat-analytics-card,
+body.zignites-chat-dark-mode .zignites-chat-optin-stat {
+  background: #23272b !important;
+  border-color: #2f3439 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-seq-card {
+  background: #20272c !important;
+  border-color: #2f3439 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-seq-step {
+  background: #23272b !important;
+  border-left-color: #2ec4b6 !important;
+}
+
+/* "Compare Free vs Pro" modal: the comparison table header kept a light fill
+   sitting on the dark modal surface. */
+body.zignites-chat-dark-mode .zignites-chat-upgrade-modal-content .zignites-chat-comparison-table th {
+  background: #23272b !important;
+  color: #e5e5e5 !important;
+}
+
 /* Pro upsell notice — readable body text + compact, consistent buttons.
    WordPress relocates this notice into the plugin wrap, so without scoping
    it inherits the wrap's oversized .button-primary styling. */
@@ -920,4 +1002,82 @@ body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-benefits li::before {
 }
 body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-price {
   color: #8a929a;
+}
+
+/* -------------------------------------------------------------------------
+ * Filter / action toolbar — shared across admin views (Logs, Analytics, …).
+ *
+ * A flex row of labelled fields followed by action buttons. Every control is
+ * normalised to one height and the fields' baselines align with the buttons,
+ * so a label sitting above an input no longer pushes that column out of line.
+ * ----------------------------------------------------------------------- */
+.zignites-chat-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 14px 0;
+}
+.zignites-chat-filter-bar > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.zignites-chat-filter-bar label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #50575e;
+  line-height: 1.2;
+  margin-bottom: 5px;
+}
+/* The label is followed by a <br> in the markup; the toolbar layout makes it
+   redundant, so collapse it. */
+.zignites-chat-filter-bar label + br {
+  display: none;
+}
+
+/* One consistent control height across inputs, selects and buttons. */
+.zignites-chat-filter-bar input,
+.zignites-chat-filter-bar select,
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button,
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button-primary {
+  height: 36px;
+  box-sizing: border-box;
+  margin: 0;
+  vertical-align: middle;
+}
+.zignites-chat-filter-bar input,
+.zignites-chat-filter-bar select {
+  line-height: normal;
+}
+
+/* Buttons + button-links: center their label/icon and use a compact size.
+   The wrap's oversized .button-primary (the page "Save Changes" style) is
+   reset here so the inline "Apply" / "Filter" button matches the toolbar. */
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button,
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 4px;
+  box-shadow: none;
+}
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button-primary {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  border: none;
+  color: #fff;
+}
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button-primary:hover {
+  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
+}
+/* Icons inside toolbar button-links sit inline with the label via flex; drop
+   the old per-element line-height hacks. */
+.zignites-chat-filter-bar .button .dashicons {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 1;
 }

@@ -66,7 +66,7 @@ $zignites_chat_log_clear_url = wp_nonce_url(
         <div class="notice notice-warning is-dismissible" style="margin:10px 0;"><p><?php esc_html_e('Log file does not exist yet — nothing to download.', 'zignites-chat'); ?></p></div>
     <?php endif; ?>
 
-    <div class="zignites-chat-log-filters" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
+    <div class="zignites-chat-log-filters zignites-chat-filter-bar">
         <div>
             <label for="zignites_chat_log_q"><?php esc_html_e('Keyword', 'zignites-chat'); ?></label><br>
             <input type="text" id="zignites_chat_log_q" name="zignites_chat_log_q" value="<?php echo esc_attr($zignites_chat_log_keyword); ?>" placeholder="opt-out, sent, error" />
@@ -95,11 +95,11 @@ $zignites_chat_log_clear_url = wp_nonce_url(
         </div>
         <?php if ($zignites_chat_log_pro) : ?>
         <div>
-            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Download log', 'zignites-chat'); ?></a>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_download_url); ?>"><span class="dashicons dashicons-download"></span> <?php esc_html_e('Download log', 'zignites-chat'); ?></a>
         </div>
         <?php endif; ?>
         <div>
-            <a class="button" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Clear log', 'zignites-chat'); ?></a>
+            <a class="button" href="<?php echo esc_url($zignites_chat_log_clear_url); ?>" id="zignites-chat-log-clear-button" style="color:#b32d2e;"><span class="dashicons dashicons-trash"></span> <?php esc_html_e('Clear log', 'zignites-chat'); ?></a>
         </div>
     </div>
 
