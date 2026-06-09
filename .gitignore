@@ -2,6 +2,10 @@
 .DS_Store
 Thumbs.db
 
+# Release build output (produced by bin/build-release.ps1 / wp dist-archive)
+build/
+dist/
+
 # Ignore logs
 *.log
 
