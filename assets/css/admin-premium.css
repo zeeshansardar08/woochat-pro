@@ -911,6 +911,31 @@ body.zignites-chat-dark-mode .zignites-chat-campaigns-list.striped tbody tr:nth-
   background: #1c2125 !important;
 }
 
+/* COD status cards (.zignites-chat-cod-stats) use light pastel backgrounds
+   inline to colour-code each status. In dark mode those stay light and the
+   text washes out, so flip them to a dark surface and keep the status cue as a
+   coloured left accent: awaiting (amber), confirmed (green), cancelled (red),
+   send failed (grey). */
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div {
+  background: #23272b !important;
+  color: #d8dde2 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div .description {
+  color: #b9c0c6 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div:nth-child(1) {
+  border-left: 3px solid #dba617 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div:nth-child(2) {
+  border-left: 3px solid #46b450 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div:nth-child(3) {
+  border-left: 3px solid #d63638 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-cod-stats > div:nth-child(4) {
+  border-left: 3px solid #8c8f94 !important;
+}
+
 /* Pro upsell notice — readable body text + compact, consistent buttons.
    WordPress relocates this notice into the plugin wrap, so without scoping
    it inherits the wrap's oversized .button-primary styling. */
