@@ -111,6 +111,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_inbox_notify_email',
     'zignites_chat_sequences',
     'zignites_chat_seq_winback_days',
+    'zignites_chat_seq_browse_days',
 ];
 
 foreach ($zignites_chat_option_keys as $zignites_chat_key) {
@@ -135,6 +136,11 @@ $zignites_chat_tables = array(
 foreach ( $zignites_chat_tables as $zignites_chat_table ) {
 	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- One-time uninstall cleanup; table name is built from $wpdb->prefix, no user input.
 	$wpdb->query( "DROP TABLE IF EXISTS `{$zignites_chat_table}`" );
+}
+
+// Drop the browse-abandon view-tracking user meta (drip sequences S6).
+foreach ( array( '_zignites_chat_last_view_at', '_zignites_chat_last_view_product' ) as $zignites_chat_meta_key ) {
+	delete_metadata( 'user', 0, $zignites_chat_meta_key, '', true );
 }
 
 // Clear any scheduled cron events the plugin registered.
