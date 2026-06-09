@@ -254,3 +254,54 @@ function zignites_chat_optout_webhook_handler(WP_REST_Request $request) {
         'message' => $saved ? __('Opted out', 'zignites-chat') : __('Invalid phone', 'zignites-chat'),
     ], $saved ? 200 : 400);
 }
+
+/* -------------------------------------------------------------------------
+ * Admin notice: missing Meta App Secret
+ *
+ * The inbound webhook verifies a Meta signature only when an App Secret is
+ * configured (see zignites_chat_verify_meta_signature). On the Cloud provider
+ * an empty App Secret therefore silently downgrades incoming webhooks
+ * (opt-outs, replies, delivery receipts) to the static-token fallback, so they
+ * aren't cryptographically verified. Nudge the admin to set it.
+ * ----------------------------------------------------------------------- */
+
+/**
+ * Whether the "set your App Secret" notice should show. Pure.
+ *
+ * @param string $provider   Active API provider ('twilio' | 'cloud').
+ * @param string $app_secret Configured Meta App Secret.
+ * @return bool True when the provider is Cloud and the App Secret is empty.
+ */
+function zignites_chat_meta_app_secret_notice_needed($provider, $app_secret) {
+    return (string) $provider === 'cloud' && trim((string) $app_secret) === '';
+}
+
+add_action('admin_notices', 'zignites_chat_render_meta_app_secret_notice');
+
+/**
+ * Render the missing-App-Secret notice on the plugin's admin screens.
+ */
+function zignites_chat_render_meta_app_secret_notice() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if (!$screen || strpos($screen->id, 'zignites-chat') === false) {
+        return;
+    }
+    if (!zignites_chat_meta_app_secret_notice_needed(
+        get_option('zignites_chat_api_provider', 'twilio'),
+        get_option('zignites_chat_cloud_app_secret', '')
+    )) {
+        return;
+    }
+    ?>
+    <div class="notice notice-warning">
+        <p>
+            <strong><?php esc_html_e('Zignites Chat:', 'zignites-chat'); ?></strong>
+            <?php esc_html_e('Your WhatsApp Cloud API provider is active but no App Secret is set, so incoming webhooks (opt-outs, replies, delivery receipts) can’t be cryptographically verified. Add your Meta App Secret to secure them.', 'zignites-chat'); ?>
+            <a href="<?php echo esc_url(admin_url('admin.php?page=zignites-chat-general')); ?>"><?php esc_html_e('Add Cloud App Secret', 'zignites-chat'); ?></a>
+        </p>
+    </div>
+    <?php
+}

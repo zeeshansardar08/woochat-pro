@@ -158,6 +158,7 @@ require_once __DIR__ . '/../includes/quiet-hours.php';
 require_once __DIR__ . '/../includes/cod-confirmation.php';
 require_once __DIR__ . '/../includes/status-notifications.php';
 require_once __DIR__ . '/../includes/optin.php';
+require_once __DIR__ . '/../includes/optout.php';
 require_once __DIR__ . '/../includes/blocks.php';
 require_once __DIR__ . '/../includes/analytics.php';
 require_once __DIR__ . '/../includes/delivery-receipts.php';
