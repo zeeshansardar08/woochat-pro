@@ -879,6 +879,38 @@ body.zignites-chat-dark-mode .zignites-chat-dashboard-teaser h3 {
   color: #2ec4b6 !important;
 }
 
+/* Campaigns + WhatsApp Templates build their content on light card surfaces
+   (.zignites-chat-card / .zignites-chat-campaign-create, with inline or CSS
+   light backgrounds). Unlike the rest of the wrap these were never flipped for
+   dark mode, so the surface stayed white while the headings, labels and
+   descriptions turned light — leaving them unreadable. Flip the surfaces dark
+   so the existing light text sits on a dark panel like every other page. */
+body.zignites-chat-dark-mode .zignites-chat-card,
+body.zignites-chat-dark-mode .zignites-chat-campaign-create {
+  background: #20272c !important;
+  border-color: #2f3439 !important;
+  box-shadow: none !important;
+}
+
+/* Data tables on those pages: dark surface, light text, subtle borders so the
+   rows stay legible (mirrors the agents-table treatment above). */
+body.zignites-chat-dark-mode .zignites-chat-card .widefat,
+body.zignites-chat-dark-mode .zignites-chat-card .widefat th,
+body.zignites-chat-dark-mode .zignites-chat-card .widefat td,
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list,
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list th,
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list td {
+  background: #23272b !important;
+  color: #d8dde2 !important;
+  border-color: #2f3439 !important;
+}
+body.zignites-chat-dark-mode .zignites-chat-card .widefat.striped tbody tr:nth-child(odd),
+body.zignites-chat-dark-mode .zignites-chat-card .widefat.striped tbody tr:nth-child(odd) td,
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list.striped tbody tr:nth-child(odd),
+body.zignites-chat-dark-mode .zignites-chat-campaigns-list.striped tbody tr:nth-child(odd) td {
+  background: #1c2125 !important;
+}
+
 /* Pro upsell notice — readable body text + compact, consistent buttons.
    WordPress relocates this notice into the plugin wrap, so without scoping
    it inherits the wrap's oversized .button-primary styling. */
