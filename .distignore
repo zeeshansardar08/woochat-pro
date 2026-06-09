@@ -1,0 +1,48 @@
+# Files and folders that must NOT ship in the customer plugin zip.
+#
+# Consumed by `wp dist-archive` and mirrored by bin/build-release.ps1. Keep the
+# two in sync. Runtime code, assets, languages, templates, the Freemius SDK,
+# readme.txt and uninstall.php are intentionally NOT listed, so they ship.
+
+# Version control / CI
+.git
+.github
+.gitignore
+.distignore
+
+# Build tooling + output
+bin
+build
+dist
+
+# Dev dependency manifests (the plugin has no runtime Composer deps)
+composer.json
+composer.lock
+vendor
+
+# Node tooling (no build step; JS is hand-written)
+node_modules
+package.json
+package-lock.json
+
+# Test + lint harness
+tests
+phpunit.xml
+phpunit.xml.dist
+phpcs.xml
+phpcs.xml.dist
+.phpunit.result.cache
+.phpcs.cache
+
+# Internal dev docs — never ship to customers (readme.txt is the customer doc)
+PROGRESS.md
+README.md
+WooChat-Master-Development-Prompt.md
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.bak
+*.swp
+*.tmp
+*.log
