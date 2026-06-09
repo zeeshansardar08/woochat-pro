@@ -186,4 +186,31 @@ final class DripSequencesTest extends TestCase
         $this->assertSame($now - 2 * DAY_IN_SECONDS, $win['after']);
         $this->assertSame($now - 1 * DAY_IN_SECONDS, $win['before']);
     }
+
+    public function test_lookback_window_brackets_the_slice(): void
+    {
+        $now = 100 * DAY_IN_SECONDS;
+        $win = \zignites_chat_seq_lookback_window($now, 7);
+        $this->assertSame($now - 8 * DAY_IN_SECONDS, $win['after']);
+        $this->assertSame($now - 7 * DAY_IN_SECONDS, $win['before']);
+        // The slice is always exactly one day wide.
+        $this->assertSame(DAY_IN_SECONDS, $win['before'] - $win['after']);
+    }
+
+    public function test_lookback_window_clamps_days(): void
+    {
+        $now = 1000000;
+        $win = \zignites_chat_seq_lookback_window($now, 0); // clamps to 1 (browse default)
+        $this->assertSame($now - 2 * DAY_IN_SECONDS, $win['after']);
+        $this->assertSame($now - 1 * DAY_IN_SECONDS, $win['before']);
+    }
+
+    public function test_winback_window_delegates_to_lookback(): void
+    {
+        $now = 5_000_000;
+        $this->assertSame(
+            \zignites_chat_seq_lookback_window($now, 60),
+            \zignites_chat_seq_winback_window($now, 60)
+        );
+    }
 }

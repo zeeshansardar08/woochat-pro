@@ -520,7 +520,7 @@ Build on the merged two-way inbox (P1):
       doesn't wipe canned replies. 3 unit tests; 214 pass, PHPCS + lint green.
 
 ### Tier 3 — platform / automation
-- [🟡] T3.1 — Drip & automation sequences (welcome, win-back, browse-abandon)
+- [x] T3.1 — Drip & automation sequences (welcome, win-back, browse-abandon)
       as multi-step, rule-based flows rather than discrete features. Biggest
       build; the strategic differentiator. **Built in reviewable increments**
       (decision 2026-06-08), one PR each off `pro`:
@@ -580,11 +580,22 @@ Build on the merged two-way inbox (P1):
         last-9-digits phone match, verified). Context {name}/{site}/{days_inactive};
         enrollment idempotency prevents repeats. Pure tested helper
         `seq_winback_window`. 2 new unit tests; 253 pass, PHPCS green.
-  - [ ] S6 — Browse-abandon scan (split out of S5, decision 2026-06-08): track
-        product views for logged-in customers who have a billing phone on file,
-        and a scan enrolls those who viewed but didn't buy within a window into
-        browse_abandon sequences ({product}/{product_url}). Guests aren't
-        targeted (no phone/consent) — documented limitation. Closes T3.1.
+  - [x] S6 — Browse-abandon scan, on `feat/pro-drip-browse-abandon`. Closes
+        T3.1. Two halves sharing the S5 daily-scan cron: (1) view tracking —
+        `woocommerce_before_single_product` stamps the most-recently-viewed
+        product + time onto user meta (`_zignites_chat_last_view_at` /
+        `_zignites_chat_last_view_product`), but only for logged-in customers
+        with a billing phone on file and only while a browse_abandon sequence is
+        active (no wasted writes); (2) the scan reuses the shared one-day
+        lookback slice — a customer whose last view aged to exactly N days old
+        today (`zignites_chat_seq_browse_days`, default 1, set on the Sequences
+        page) and who hasn't ordered since enrolls into every active
+        browse_abandon sequence with {product}/{product_url}. Guests aren't
+        targeted (no phone/consent) and only the latest view is kept per user —
+        both documented limitations. Win-back's window helper was generalized to
+        `seq_lookback_window` (win-back now a thin alias). Settings + view meta
+        cleaned on uninstall; the scan cron was already wired into
+        deactivate/uninstall in S5. 3 new unit tests; 256 pass, PHPCS green.
 
 ### Quick wins (reuse existing plumbing)
 - [x] Q1 — Back-in-stock alerts — done on `feat/pro-back-in-stock`.
@@ -648,17 +659,17 @@ awaiting PR. Live smoke tests pending on each (user action).
 Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (all merged into
 `pro`). Remaining quick win: **Q5 sender-health**.
 
-**Tier 3 — T3.1 drip & automation sequences IN PROGRESS** (incremental PRs).
-**S1–S5 DONE** (S1–S4 merged into `pro`; S5 win-back scan on
-`feat/pro-drip-scan-triggers` awaiting PR). Drip sequences are fully usable —
-admin CRUD, order-completed / opt-in / win-back triggers, the 5-minute sender
-with all marketing gates. Only **S6 (browse-abandon scan)** remains to close
-T3.1; it was split out of S5 (2026-06-08) because browse-abandon can only target
-logged-in customers with a phone on file. See PHASE 9 → Tier 3.
+**Tier 3 — T3.1 drip & automation sequences COMPLETE.** All increments S1–S6
+built (S1–S5 merged into `pro`; S6 browse-abandon scan on
+`feat/pro-drip-browse-abandon` awaiting PR). Drip sequences are fully usable —
+admin CRUD, order-completed / opt-in / win-back / browse-abandon triggers, the
+5-minute sender with all marketing gates, and two daily-scan triggers. See
+PHASE 9 → Tier 3.
 
-The original Pro backlog is otherwise cleared into `pro`; the only blocked item
-is retiring `license-manager.php` (needs the Freemius credentials migration —
-user action).
+**Only remaining roadmap item: Q5 — sender health panel** (WABA quality rating
++ messaging tier on the dashboard). Everything else in the Pro backlog is
+cleared into `pro`; the one blocked item is retiring `license-manager.php`
+(needs the Freemius credentials migration — user action).
 
 Pending live verifications (user action): two-way inbox Twilio/Meta smoke test
 (PR #71, merged); GPT catalog context (PR #72, merged); and observing the rate

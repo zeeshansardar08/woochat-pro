@@ -126,6 +126,7 @@ function zignites_chat_register_settings() {
         'default'           => [],
     ]);
     register_setting('zignites_chat_sequences_group', 'zignites_chat_seq_winback_days', ['sanitize_callback' => 'zignites_chat_sanitize_int']);
+    register_setting('zignites_chat_sequences_group', 'zignites_chat_seq_browse_days', ['sanitize_callback' => 'zignites_chat_sanitize_int']);
 
     // License.
     register_setting('zignites_chat_license_group', 'zignites_chat_license_key', ['sanitize_callback' => 'zignites_chat_sanitize_text']);

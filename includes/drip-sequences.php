@@ -27,8 +27,12 @@
  *     per-sequence enrollment counts.
  *   - S5 (win-back scan): a daily scan that enrolls customers who have gone
  *     quiet (most recent order N days back) into win_back sequences.
- *
- * Browse-abandon scanning is the remaining follow-up (S6).
+ *   - S6 (browse-abandon scan): track product views for logged-in customers
+ *     who have a billing phone on file, then a daily scan enrolls those who
+ *     browsed N days back but haven't bought since into browse_abandon
+ *     sequences (with {product}/{product_url} context). Guests are not
+ *     targeted — they have no phone/consent on file — so browse-abandon only
+ *     covers logged-in shoppers; this is a documented limitation.
  *
  * @package Zignites_Chat
  */
@@ -824,19 +828,33 @@ function zignites_chat_seq_unschedule_scan_cron() {
 }
 
 /**
- * Compute the win-back order slice: the one-day window that ends N days before
- * $now_ts and opens N+1 days before. Pure.
+ * Compute a one-day lookback slice: the window that ends N days before $now_ts
+ * and opens N+1 days before. Pure. Shared by the win-back and browse-abandon
+ * scans so each only has to inspect the single day that "aged into" its
+ * threshold today, keeping the scan bounded.
+ *
+ * @param int $now_ts
+ * @param int $days Threshold in days (clamped to >= 1).
+ * @return array{after:int, before:int} Unix timestamps bounding the slice.
+ */
+function zignites_chat_seq_lookback_window($now_ts, $days) {
+    $days = max(1, (int) $days);
+    return array(
+        'after'  => (int) $now_ts - ($days + 1) * DAY_IN_SECONDS,
+        'before' => (int) $now_ts - $days * DAY_IN_SECONDS,
+    );
+}
+
+/**
+ * Compute the win-back order slice. Pure. Thin alias over the shared lookback
+ * window (kept for call-site clarity / back-compat).
  *
  * @param int $now_ts
  * @param int $days Inactivity threshold (clamped to >= 1).
  * @return array{after:int, before:int} Unix timestamps bounding the slice.
  */
 function zignites_chat_seq_winback_window($now_ts, $days) {
-    $days = max(1, (int) $days);
-    return array(
-        'after'  => (int) $now_ts - ($days + 1) * DAY_IN_SECONDS,
-        'before' => (int) $now_ts - $days * DAY_IN_SECONDS,
-    );
+    return zignites_chat_seq_lookback_window($now_ts, $days);
 }
 
 /**
@@ -940,6 +958,158 @@ function zignites_chat_seq_run_winback_scan() {
             '{name}'          => $order->get_billing_first_name(),
             '{site}'          => $site,
             '{days_inactive}' => $days,
+        );
+        foreach ($sequences as $sequence) {
+            zignites_chat_seq_enroll($sequence, $phone, $context);
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------
+ * Browse-abandon scan trigger (S6)
+ *
+ * Two halves sharing the daily-scan cron from S5:
+ *   1. View tracking — when a logged-in customer with a billing phone on file
+ *      opens a product page we stamp their most-recently-viewed product + the
+ *      time onto user meta (only while a browse_abandon sequence is active, so
+ *      stores not using the feature take no extra writes). Guests are skipped:
+ *      with no phone/consent there's nobody to message later — the documented
+ *      limitation that scoped S6 to logged-in shoppers.
+ *   2. The scan — the same one-day lookback slice as win-back: a customer whose
+ *      last view aged to exactly N days old today, and who hasn't ordered
+ *      since, gets enrolled into every active browse_abandon sequence with
+ *      {product}/{product_url} for the thing they left behind.
+ *
+ * Only the latest view is kept per user (one stamp, overwritten), so the scan
+ * targets the most recent browse intent and storage stays bounded — also a
+ * documented limitation.
+ * ----------------------------------------------------------------------- */
+
+add_action('woocommerce_before_single_product', 'zignites_chat_seq_track_product_view');
+add_action('zignites_chat_seq_daily_scan', 'zignites_chat_seq_run_browse_abandon_scan');
+
+/**
+ * User-meta key holding the Unix timestamp of a customer's most recent product
+ * view (scanned as a numeric range).
+ */
+function zignites_chat_seq_browse_view_at_meta_key() {
+    return '_zignites_chat_last_view_at';
+}
+
+/**
+ * User-meta key holding the product id of a customer's most recent view.
+ */
+function zignites_chat_seq_browse_view_product_meta_key() {
+    return '_zignites_chat_last_view_product';
+}
+
+/**
+ * Record a product view for the current logged-in customer.
+ *
+ * Fired on the single-product template. Only stamps the view when Pro is
+ * active, at least one browse_abandon sequence is live, and the visitor is a
+ * logged-in customer with a usable billing phone on file — everyone else can't
+ * be targeted by the later scan, so there's nothing to record.
+ *
+ * @return void
+ */
+function zignites_chat_seq_track_product_view() {
+    if (!is_user_logged_in()) {
+        return; // Guests have no phone/consent — not targeted (documented).
+    }
+    if (function_exists('zignites_chat_is_pro_active') && !zignites_chat_is_pro_active()) {
+        return;
+    }
+    // Skip the write entirely when no browse_abandon sequence would use it.
+    if (empty(zignites_chat_seq_active_for_trigger('browse_abandon'))) {
+        return;
+    }
+
+    global $product;
+    $product_id = 0;
+    if (is_object($product) && method_exists($product, 'get_id')) {
+        $product_id = (int) $product->get_id();
+    } elseif (function_exists('get_the_ID')) {
+        $product_id = (int) get_the_ID();
+    }
+    if ($product_id <= 0) {
+        return;
+    }
+
+    $user_id = get_current_user_id();
+    $phone   = get_user_meta($user_id, 'billing_phone', true);
+    if (!$phone || zignites_chat_normalize_phone($phone) === '') {
+        return; // No phone on file → can't message later.
+    }
+
+    update_user_meta($user_id, zignites_chat_seq_browse_view_at_meta_key(), (int) current_time('timestamp'));
+    update_user_meta($user_id, zignites_chat_seq_browse_view_product_meta_key(), $product_id);
+}
+
+/**
+ * Daily browse-abandon scan: enroll logged-in customers whose most recent
+ * product view falls in the N-days-back slice and who haven't ordered since.
+ *
+ * @return void
+ */
+function zignites_chat_seq_run_browse_abandon_scan() {
+    if (function_exists('zignites_chat_is_pro_active') && !zignites_chat_is_pro_active()) {
+        return;
+    }
+    $sequences = zignites_chat_seq_active_for_trigger('browse_abandon');
+    if (empty($sequences)) {
+        return;
+    }
+
+    $days   = max(1, (int) get_option('zignites_chat_seq_browse_days', 1));
+    $window = zignites_chat_seq_lookback_window(current_time('timestamp'), $days);
+    $limit  = max(1, (int) apply_filters('zignites_chat_seq_browse_scan_limit', 300));
+
+    $user_ids = get_users(array(
+        'number'     => $limit,
+        'fields'     => 'ID',
+        // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+        'meta_query' => array(
+            array(
+                'key'     => zignites_chat_seq_browse_view_at_meta_key(),
+                'value'   => array($window['after'], $window['before']),
+                'compare' => 'BETWEEN',
+                'type'    => 'NUMERIC',
+            ),
+        ),
+    ));
+    if (empty($user_ids) || !is_array($user_ids)) {
+        return;
+    }
+
+    $site = function_exists('get_bloginfo') ? get_bloginfo('name') : '';
+    $seen = array();
+
+    foreach ($user_ids as $user_id) {
+        $user_id = (int) $user_id;
+        $phone   = get_user_meta($user_id, 'billing_phone', true);
+        $digits  = zignites_chat_normalize_phone($phone);
+        if ($digits === '' || isset($seen[$digits])) {
+            continue;
+        }
+        $seen[$digits] = true;
+
+        // Skip anyone who bought after they browsed — they converted.
+        if (zignites_chat_seq_has_order_since($digits, $window['before'])) {
+            continue;
+        }
+
+        $product_id = (int) get_user_meta($user_id, zignites_chat_seq_browse_view_product_meta_key(), true);
+        $product    = ($product_id > 0 && function_exists('wc_get_product')) ? wc_get_product($product_id) : null;
+        if (!$product) {
+            continue; // Product gone / unpublished → nothing to reference.
+        }
+
+        $context = array(
+            '{name}'        => get_user_meta($user_id, 'billing_first_name', true),
+            '{site}'        => $site,
+            '{product}'     => $product->get_name(),
+            '{product_url}' => get_permalink($product_id),
         );
         foreach ($sequences as $sequence) {
             zignites_chat_seq_enroll($sequence, $phone, $context);

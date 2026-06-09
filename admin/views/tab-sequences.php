@@ -142,6 +142,13 @@ $zignites_chat_render_card = function ($si, $seq, $is_new, $counts) use ($zignit
             <p class="description"><?php esc_html_e('A daily scan enrolls customers into your “win-back” sequences once their most recent order is this many days old. Only used by sequences with the win-back trigger.', 'zignites-chat'); ?></p>
         </td>
     </tr>
+    <tr>
+        <th scope="row"><label for="zignites_chat_seq_browse_days"><?php esc_html_e('Browse-abandon delay (days)', 'zignites-chat'); ?></label></th>
+        <td>
+            <input type="number" min="1" step="1" class="small-text" id="zignites_chat_seq_browse_days" name="zignites_chat_seq_browse_days" value="<?php echo esc_attr((string) max(1, (int) get_option('zignites_chat_seq_browse_days', 1))); ?>" />
+            <p class="description"><?php esc_html_e('A daily scan enrolls customers into your “browse-abandon” sequences this many days after they last viewed a product without ordering. Only logged-in customers with a billing phone on file are tracked — guests can’t be messaged. Only used by sequences with the browse-abandon trigger.', 'zignites-chat'); ?></p>
+        </td>
+    </tr>
 </table>
 
 <div id="zignites-chat-sequences-list">
