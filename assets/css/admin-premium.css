@@ -921,3 +921,81 @@ body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-benefits li::before {
 body.zignites-chat-dark-mode .zignites-chat-pro-upgrade-price {
   color: #8a929a;
 }
+
+/* -------------------------------------------------------------------------
+ * Filter / action toolbar — shared across admin views (Logs, Analytics, …).
+ *
+ * A flex row of labelled fields followed by action buttons. Every control is
+ * normalised to one height and the fields' baselines align with the buttons,
+ * so a label sitting above an input no longer pushes that column out of line.
+ * ----------------------------------------------------------------------- */
+.zignites-chat-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 14px 0;
+}
+.zignites-chat-filter-bar > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.zignites-chat-filter-bar label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #50575e;
+  line-height: 1.2;
+  margin-bottom: 5px;
+}
+/* The label is followed by a <br> in the markup; the toolbar layout makes it
+   redundant, so collapse it. */
+.zignites-chat-filter-bar label + br {
+  display: none;
+}
+
+/* One consistent control height across inputs, selects and buttons. */
+.zignites-chat-filter-bar input,
+.zignites-chat-filter-bar select,
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button,
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button-primary {
+  height: 36px;
+  box-sizing: border-box;
+  margin: 0;
+  vertical-align: middle;
+}
+.zignites-chat-filter-bar input,
+.zignites-chat-filter-bar select {
+  line-height: normal;
+}
+
+/* Buttons + button-links: center their label/icon and use a compact size.
+   The wrap's oversized .button-primary (the page "Save Changes" style) is
+   reset here so the inline "Apply" / "Filter" button matches the toolbar. */
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button,
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 4px;
+  box-shadow: none;
+}
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button-primary {
+  background: linear-gradient(90deg, #1c7c54 60%, #2ec4b6 100%);
+  border: none;
+  color: #fff;
+}
+.zignites-chat-admin-premium-wrap .zignites-chat-filter-bar .button-primary:hover {
+  background: linear-gradient(90deg, #2ec4b6 0%, #1c7c54 100%);
+}
+/* Icons inside toolbar button-links sit inline with the label via flex; drop
+   the old per-element line-height hacks. */
+.zignites-chat-filter-bar .button .dashicons {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 1;
+}

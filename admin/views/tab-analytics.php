@@ -41,7 +41,7 @@ if (!defined('ABSPATH')) exit;
         <button type="button" class="button button-small zignites-chat-analytics-preset" data-range="month"><?php esc_html_e('This month', 'zignites-chat'); ?></button>
         <button type="button" class="button button-small zignites-chat-analytics-preset" data-range="all"><?php esc_html_e('All time', 'zignites-chat'); ?></button>
     </div>
-    <div class="zignites-chat-analytics-filters" style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
+    <div class="zignites-chat-analytics-filters zignites-chat-filter-bar">
         <div>
             <label for="zignites_chat_type"><?php esc_html_e('Type', 'zignites-chat'); ?></label><br>
             <input type="text" id="zignites_chat_type" name="zignites_chat_type" value="<?php echo esc_attr($filters['type']); ?>" placeholder="order, cart_recovery" />
@@ -66,7 +66,7 @@ if (!defined('ABSPATH')) exit;
             <button type="button" class="button button-primary" id="zignites-chat-analytics-filter-button"><?php esc_html_e('Filter', 'zignites-chat'); ?></button>
         </div>
         <div>
-            <a class="button" href="<?php echo esc_url($export_url); ?>" id="zignites-chat-analytics-export-csv"><span class="dashicons dashicons-download" style="vertical-align:middle;line-height:28px;"></span> <?php esc_html_e('Export CSV', 'zignites-chat'); ?></a>
+            <a class="button" href="<?php echo esc_url($export_url); ?>" id="zignites-chat-analytics-export-csv"><span class="dashicons dashicons-download"></span> <?php esc_html_e('Export CSV', 'zignites-chat'); ?></a>
         </div>
     </div>
     <div class="zignites-chat-analytics-cards" style="display:flex;gap:12px;flex-wrap:wrap;">
