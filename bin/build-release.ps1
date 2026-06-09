@@ -43,7 +43,7 @@ Remove-Item $tar
 # Strip dev-only tracked files (mirror of .distignore). Kept explicit so the
 # build never depends on wp-cli parsing .distignore.
 $devPaths = @(
-    '.github', 'bin', '.gitignore', '.distignore',
+    '.github', 'bin', 'docs', '.gitignore', '.distignore',
     'composer.json', 'composer.lock',
     'tests', 'phpunit.xml.dist', 'phpcs.xml.dist',
     'PROGRESS.md', 'README.md', 'WooChat-Master-Development-Prompt.md'

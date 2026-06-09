@@ -35,6 +35,7 @@ phpcs.xml.dist
 .phpcs.cache
 
 # Internal dev docs — never ship to customers (readme.txt is the customer doc)
+docs
 PROGRESS.md
 README.md
 WooChat-Master-Development-Prompt.md
