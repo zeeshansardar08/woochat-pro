@@ -645,8 +645,20 @@ Build on the merged two-way inbox (P1):
       `wa_count_body_params` (highest {{n}} in the BODY component),
       `wa_sync_normalize_templates`. Options cleaned on uninstall. 8 unit tests;
       236 pass, PHPCS + JS clean.
-- [ ] Q5 — Sender health panel: WABA quality rating + messaging tier on the
-      dashboard.
+- [x] Q5 — Sender health panel — done on `feat/pro-sender-health`.
+      `includes/sender-health.php`: a dashboard panel showing the WhatsApp
+      sender's **quality rating** (GREEN/YELLOW/RED → High/Medium/Low, colour
+      coded) and **messaging limit tier** (TIER_* → "N customers / 24h"),
+      pulled from the Cloud API phone-number node
+      (`GET /{phone_id}?fields=quality_rating,messaging_limit_tier,…`) using the
+      saved Cloud token + `zignites_chat_cloud_phone_id`. Cloud-only — the panel
+      renders nothing on Twilio (no equivalent) or free builds. Cached in
+      `zignites_chat_sender_health` (with `checked_at`); a "Refresh" button
+      re-pulls on demand via AJAX (`zignites_chat_refresh_sender_health`, nonce +
+      manage_options + Pro gated), no cron. Reuses the Q4 Graph plumbing. Pure
+      tested helpers `health_endpoint`, `health_normalize`,
+      `health_quality_meta`, `health_tier_label`. Option cleaned on uninstall.
+      7 unit tests; 263 pass, PHPCS + JS clean.
 
 ---
 
@@ -655,21 +667,19 @@ Build on the merged two-way inbox (P1):
 are all built — T1.1/T1.2 merged into `pro`; T1.3 on `feat/pro-optin-capture`
 awaiting PR. Live smoke tests pending on each (user action).
 
-**Tier 2 COMPLETE.** Quick wins **Q3 (quiet hours), Q1 (back-in-stock),
-Q2 (review/NPS request) + Q4 (Meta template sync) DONE** (all merged into
-`pro`). Remaining quick win: **Q5 sender-health**.
+**Tier 2 COMPLETE.** All quick wins **Q1 (back-in-stock), Q2 (review/NPS),
+Q3 (quiet hours), Q4 (Meta template sync) DONE** (merged into `pro`); **Q5
+(sender health) DONE** on `feat/pro-sender-health` (awaiting PR).
 
 **Tier 3 — T3.1 drip & automation sequences COMPLETE.** All increments S1–S6
-built (S1–S5 merged into `pro`; S6 browse-abandon scan on
-`feat/pro-drip-browse-abandon` awaiting PR). Drip sequences are fully usable —
-admin CRUD, order-completed / opt-in / win-back / browse-abandon triggers, the
-5-minute sender with all marketing gates, and two daily-scan triggers. See
-PHASE 9 → Tier 3.
+built and merged into `pro`. Drip sequences are fully usable — admin CRUD,
+order-completed / opt-in / win-back / browse-abandon triggers, the 5-minute
+sender with all marketing gates, and two daily-scan triggers. See PHASE 9 →
+Tier 3.
 
-**Only remaining roadmap item: Q5 — sender health panel** (WABA quality rating
-+ messaging tier on the dashboard). Everything else in the Pro backlog is
-cleared into `pro`; the one blocked item is retiring `license-manager.php`
-(needs the Freemius credentials migration — user action).
+**Roadmap is now clear.** With Q5 done, every Pro backlog item is built; the
+only outstanding work is retiring `license-manager.php` (blocked on the
+Freemius credentials migration — user action) and the live smoke tests below.
 
 Pending live verifications (user action): two-way inbox Twilio/Meta smoke test
 (PR #71, merged); GPT catalog context (PR #72, merged); and observing the rate

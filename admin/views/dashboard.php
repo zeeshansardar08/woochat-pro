@@ -49,6 +49,13 @@ $zignites_chat_dash_open_rate = $zignites_chat_dash_totals['sent'] > 0
     </div>
 </div>
 
+<?php
+// Sender health (Pro + Cloud provider only — renders nothing otherwise).
+if (function_exists('zignites_chat_render_sender_health_panel')) {
+    zignites_chat_render_sender_health_panel();
+}
+?>
+
 <?php if (!$zignites_chat_dash_is_pro) : ?>
     <h2 style="margin-top:28px;"><?php esc_html_e('Unlock more with Zignites Chat Pro', 'zignites-chat'); ?></h2>
     <div class="zignites-chat-dashboard-teasers">

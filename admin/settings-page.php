@@ -249,6 +249,21 @@ function zignites_chat_enqueue_admin_scripts($hook) {
         ]);
     }
 
+    // Dashboard — sender-health "Refresh" button (Pro + Cloud provider only).
+    if (strpos($hook, 'zignites-chat-dashboard') !== false
+        && function_exists('zignites_chat_is_pro_active') && zignites_chat_is_pro_active()
+        && get_option('zignites_chat_api_provider', 'twilio') === 'cloud') {
+        wp_enqueue_script('zignites-chat-sender-health-js', ZIGNITES_CHAT_URL . 'assets/js/sender-health.js', [], ZIGNITES_CHAT_VERSION, true);
+        wp_localize_script('zignites-chat-sender-health-js', 'zignitesChatSenderHealth', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('zignites_chat_sender_health'),
+            'i18n'    => [
+                'checking' => __('Checking…', 'zignites-chat'),
+                'error'    => __('Could not refresh sender health. Please try again.', 'zignites-chat'),
+            ],
+        ]);
+    }
+
     // Campaigns page.
     if (strpos($hook, 'zignites-chat-campaigns') !== false) {
         wp_enqueue_media(); // WP media library frame for the campaign attachment picker.

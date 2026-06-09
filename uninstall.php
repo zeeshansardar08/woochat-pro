@@ -112,6 +112,7 @@ $zignites_chat_option_keys = [
     'zignites_chat_sequences',
     'zignites_chat_seq_winback_days',
     'zignites_chat_seq_browse_days',
+    'zignites_chat_sender_health',
 ];
 
 foreach ($zignites_chat_option_keys as $zignites_chat_key) {

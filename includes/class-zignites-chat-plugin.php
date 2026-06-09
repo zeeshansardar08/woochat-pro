@@ -72,6 +72,7 @@ final class Plugin {
         require_once ZIGNITES_CHAT_PATH . 'includes/providers/class-zignites-chat-provider-cloud.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/wa-templates.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/wa-template-sync.php';
+        require_once ZIGNITES_CHAT_PATH . 'includes/sender-health.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/media.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/rate-limiter.php';
         require_once ZIGNITES_CHAT_PATH . 'includes/quiet-hours.php';
